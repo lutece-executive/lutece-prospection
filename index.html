@@ -653,6 +653,25 @@ async function refreshCredits() {
 }
 
 /* ---------- Filtres Lusha (secteurs, effectifs) ---------- */
+const INDUSTRY_FR = {
+  "Hospitality": "Hôtellerie et restauration", "Manufacturing": "Industrie", "Retail": "Distribution", "Construction": "BTP et construction",
+  "Transportation & Logistics": "Transport et logistique", "Transportation": "Transport et logistique", "Healthcare": "Santé", "Health Care": "Santé",
+  "Finance": "Finance", "Financial Services": "Services financiers", "Insurance": "Assurance", "Real Estate": "Immobilier",
+  "Education": "Éducation", "Energy & Utilities": "Énergie", "Energy": "Énergie", "Government": "Secteur public", "Agriculture": "Agriculture",
+  "Media & Internet": "Médias et internet", "Telecommunications": "Télécommunications", "Software": "Logiciel", "Computers & Electronics": "Informatique et électronique",
+  "Business Services": "Services aux entreprises", "Consumer Services": "Services aux particuliers", "Minerals & Mining": "Mines et matériaux",
+  "Organizations": "Associations et organisations", "Non-Profit": "Associations", "Wholesale": "Commerce de gros", "Automotive": "Automobile",
+  "Chemicals": "Chimie", "Food & Beverage": "Agroalimentaire", "Pharmaceuticals": "Pharmacie", "Legal": "Juridique", "Aerospace & Defense": "Aéronautique et défense",
+};
+function parseSize(s) {
+  if (s && typeof s === "object") {
+    const min = s.min ?? s.from ?? s.minimum ?? null, max = s.max ?? s.to ?? s.maximum ?? null;
+    if (min != null || max != null) return { min: min == null ? null : Number(min), max: max == null ? null : Number(max) };
+    s = s.value ?? s.label ?? s.name ?? "";
+  }
+  const m = String(s ?? "").replace(/[\s,.]/g, "").match(/(\d+)(?:-(\d+)|\+)?/);
+  return m ? { min: Number(m[1]), max: m[2] ? Number(m[2]) : null } : null;
+}
 function findList(x) {
   if (Array.isArray(x)) return x;
   if (x && typeof x === "object") for (const v of Object.values(x)) { const l = findList(v); if (l.length) return l; }
@@ -668,9 +687,9 @@ async function loadMeta(force = false) {
   }
   S.meta.raw = meta;
   S.meta.industries = findList(meta.industries).map((i) => typeof i === "object"
-    ? { id: i.id ?? i.mainIndustryId ?? i.value ?? i.key, label: i.label ?? i.name ?? i.mainIndustry ?? i.text ?? i.value }
-    : null).filter((i) => i && i.id != null && i.label);
-  S.meta.sizes = findList(meta.sizes).map((s) => (typeof s === "object" ? { min: s.min ?? s.from ?? null, max: s.max ?? s.to ?? null } : null)).filter((s) => s && (s.min != null || s.max != null));
+    ? { id: i.main_industry_id ?? i.mainIndustryId ?? i.id ?? i.key, label: i.main_industry ?? i.mainIndustry ?? i.label ?? i.name ?? i.text ?? i.value }
+    : null).filter((i) => i && i.id != null && i.label).map((i) => ({ ...i, label: INDUSTRY_FR[i.label] ?? i.label })).sort((a, b) => a.label.localeCompare(b.label, "fr"));
+  S.meta.sizes = findList(meta.sizes).map(parseSize).filter(Boolean);
   if (!S.meta.industries.length && !S.metaError) S.metaError = meta.errors?.industries || "Réponse de Lusha inattendue pour la liste des secteurs.";
   if (S.meta.industries.length && !cached) await db(sb.from("settings").upsert({ key: "lusha_filters_v2", value: meta, updated_at: new Date().toISOString() }));
   if (!S.meta.sizes.length) S.meta.sizes = [{ min: 11, max: 50 }, { min: 51, max: 200 }, { min: 201, max: 500 }, { min: 501, max: 1000 }, { min: 1001, max: 5000 }, { min: 5001, max: null }];
