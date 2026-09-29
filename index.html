@@ -1,0 +1,1318 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="robots" content="noindex, nofollow">
+<title>Prospection Lutèce</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Instrument+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+html,body{margin:0}
+
+:root{
+  --bg:#F3F5F7; --surface:#FFFFFF; --surface-2:#EEF1F4; --line:#DCE2E8;
+  --ink:#16222E; --ink-2:#4A5A6A; --ink-3:#7A8998;
+  --accent:#1E5A7A; --accent-ink:#FFFFFF; --accent-soft:#E1EDF3;
+  --pd:#1A7F4B; --pd-soft:#E3F3EA;
+  --warn:#9A6200; --warn-soft:#FBF0DA;
+  --bad:#A33A3A; --bad-soft:#F7E4E4;
+  --neutral-soft:#E9EDF1;
+  --credit:#6B4FA0; --credit-soft:#EEE8F7;
+  --shadow:0 8px 30px rgba(22,34,46,.14);
+  --sans:"Instrument Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#0F161D; --surface:#17212B; --surface-2:#1E2A36; --line:#2B3947;
+    --ink:#E6ECF1; --ink-2:#A9B7C4; --ink-3:#7D8E9E;
+    --accent:#6FB3D6; --accent-ink:#0F161D; --accent-soft:#1D3342;
+    --pd:#5CC98F; --pd-soft:#16332A;
+    --warn:#E3B25A; --warn-soft:#3A2E17;
+    --bad:#E88A8A; --bad-soft:#3B2224;
+    --neutral-soft:#223040;
+    --credit:#B79CE6; --credit-soft:#2B2440;
+    --shadow:0 8px 30px rgba(0,0,0,.45);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#0F161D; --surface:#17212B; --surface-2:#1E2A36; --line:#2B3947;
+  --ink:#E6ECF1; --ink-2:#A9B7C4; --ink-3:#7D8E9E;
+  --accent:#6FB3D6; --accent-ink:#0F161D; --accent-soft:#1D3342;
+  --pd:#5CC98F; --pd-soft:#16332A;
+  --warn:#E3B25A; --warn-soft:#3A2E17;
+  --bad:#E88A8A; --bad-soft:#3B2224;
+  --neutral-soft:#223040;
+  --credit:#B79CE6; --credit-soft:#2B2440;
+  --shadow:0 8px 30px rgba(0,0,0,.45);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:14px;line-height:1.45}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+.demo{background:var(--warn-soft);color:var(--warn);text-align:center;font-size:12.5px;padding:6px 16px;font-weight:500}
+header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 16px;background:var(--surface);border-bottom:1px solid var(--line)}
+.brand{display:flex;flex-direction:column;line-height:1.15;margin-right:auto}
+.brand b{font-size:16px;letter-spacing:.01em}
+.brand span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.credits{display:flex;align-items:center;gap:8px;background:var(--credit-soft);color:var(--credit);padding:6px 10px;border-radius:8px;font-size:13px}
+.credits b{font-family:var(--mono);font-size:14px}
+.userpick{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
+select,input[type=date],input[type=text]{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
+
+.app{display:grid;grid-template-columns:260px minmax(0,1fr) 380px;gap:0;min-height:calc(100vh - 100px)}
+aside.criteria{background:var(--surface);border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px}
+.sect-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-size:12.5px;color:var(--ink-2);font-weight:500}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 10px;font-size:12.5px}
+.chip[aria-pressed="true"]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent);font-weight:600}
+.btn{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 12px;font-weight:600;font-size:13px;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.btn:hover{background:var(--surface-2)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.08)}
+.btn.pd{background:var(--pd);border-color:var(--pd);color:#fff}
+:root[data-theme="dark"] .btn.pd{color:#0F161D}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .btn.pd{color:#0F161D}}
+.btn[disabled]{opacity:.45;cursor:not-allowed;filter:none}
+.btn.small{padding:5px 9px;font-size:12px}
+.hint{font-size:12px;color:var(--ink-3)}
+.saved{display:flex;flex-direction:column;gap:4px}
+.saved button{text-align:left;border:0;background:none;padding:6px 8px;border-radius:6px;font-size:13px;display:flex;justify-content:space-between;gap:8px}
+.saved button:hover{background:var(--surface-2)}
+.saved button[aria-current="true"]{background:var(--accent-soft);color:var(--accent);font-weight:600}
+.saved small{color:var(--ink-3);font-family:var(--mono)}
+
+main.list{padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.listhead{display:flex;align-items:flex-end;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.listhead h1{font-size:19px;margin:0;text-wrap:balance}
+.listhead p{margin:2px 0 0;color:var(--ink-2);font-size:13px}
+.tabs{display:flex;gap:4px;flex-wrap:wrap}
+.tab{border:0;background:none;padding:5px 10px;border-radius:6px;font-size:12.5px;color:var(--ink-2)}
+.tab[aria-selected="true"]{background:var(--surface);color:var(--ink);font-weight:600;box-shadow:0 0 0 1px var(--line)}
+.tab small{font-family:var(--mono);color:var(--ink-3);margin-left:4px}
+.tablewrap{background:var(--surface);border:1px solid var(--line);border-radius:10px;overflow-x:auto}
+table{width:100%;border-collapse:collapse;min-width:640px}
+th{font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);text-align:left;font-weight:600;padding:9px 12px;border-bottom:1px solid var(--line);background:var(--surface-2)}
+td{padding:10px 12px;border-bottom:1px solid var(--line);vertical-align:middle}
+tbody tr{cursor:pointer}
+tbody tr:hover td{background:var(--surface-2)}
+tbody tr[aria-selected="true"] td{background:var(--accent-soft)}
+tbody tr:last-child td{border-bottom:0}
+.who b{display:block}
+.who span{font-size:12.5px;color:var(--ink-2)}
+.co b{display:block;font-weight:500}
+.co span{font-size:12px;color:var(--ink-3)}
+.pill{display:inline-flex;align-items:center;gap:5px;border-radius:999px;padding:2px 9px;font-size:12px;font-weight:600;white-space:nowrap}
+.pill::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.s-todo{background:var(--neutral-soft);color:var(--ink-2)}
+.s-vm{background:var(--warn-soft);color:var(--warn)}
+.s-nr{background:var(--warn-soft);color:var(--warn)}
+.s-cb{background:var(--accent-soft);color:var(--accent)}
+.s-int{background:var(--pd-soft);color:var(--pd)}
+.s-no{background:var(--bad-soft);color:var(--bad)}
+.pdtag{font-size:11.5px;color:var(--pd);font-weight:600;white-space:nowrap}
+.coords{display:flex;gap:6px;color:var(--ink-3);font-size:12px}
+.coords .on{color:var(--credit);font-weight:600}
+
+aside.detail{background:var(--surface);border-left:1px solid var(--line);padding:18px;display:flex;flex-direction:column;gap:16px;min-width:0}
+.d-head{display:flex;flex-direction:column;gap:4px}
+.d-head h2{margin:0;font-size:20px}
+.d-head .role{color:var(--ink-2)}
+.d-head a{color:var(--accent);font-size:13px;text-decoration:none;font-weight:500}
+.d-head a:hover{text-decoration:underline}
+.block{border-top:1px solid var(--line);padding-top:14px;display:flex;flex-direction:column;gap:10px}
+.kv{display:grid;grid-template-columns:110px minmax(0,1fr);gap:6px 10px;font-size:13px}
+.kv dt{color:var(--ink-3)}
+.kv dd{margin:0;overflow-wrap:anywhere}
+.reveal{display:grid;grid-template-columns:1fr;gap:8px}
+.revealbox{border:1px dashed var(--line);border-radius:8px;padding:10px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.revealbox .lbl{font-size:12px;color:var(--ink-3)}
+.revealbox .val{font-family:var(--mono);font-size:13.5px;overflow-wrap:anywhere}
+.revealbox.done{border-style:solid;border-color:var(--credit);background:var(--credit-soft)}
+.cost{font-family:var(--mono);font-size:11.5px}
+.outcomes{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.outcome{border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px;text-align:left;font-size:12.5px;display:flex;flex-direction:column;gap:2px}
+.outcome small{color:var(--ink-3);font-size:11.5px}
+.outcome[aria-pressed="true"]{border-color:var(--accent);background:var(--accent-soft)}
+.outcome[aria-pressed="true"] small{color:var(--accent)}
+.relance{display:flex;align-items:center;gap:8px;flex-wrap:wrap;background:var(--surface-2);border-radius:8px;padding:9px 10px;font-size:13px}
+.relance b{font-weight:600}
+.row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.empty{color:var(--ink-3);text-align:center;margin:auto;padding:40px 10px}
+
+/* modal */
+.scrim{position:fixed;inset:0;background:rgba(10,16,22,.5);display:flex;align-items:center;justify-content:center;padding:16px;z-index:20}
+.modal{background:var(--surface);border-radius:12px;box-shadow:var(--shadow);width:min(720px,100%);max-height:calc(100% - 32px);overflow:auto;display:flex;flex-direction:column}
+.modal header{padding:16px 18px;border-bottom:1px solid var(--line)}
+.modal header h3{margin:0;font-size:17px}
+.modal header p{margin:4px 0 0;color:var(--ink-2);font-size:13px}
+.modal .body{padding:16px 18px;display:flex;flex-direction:column;gap:14px}
+.modal footer{padding:12px 18px;border-top:1px solid var(--line);display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+.pdgrid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.pdcard{border:1px solid var(--line);border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-width:0}
+.pdcard h4{margin:0;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-3)}
+.pdcard .kv{grid-template-columns:1fr;gap:1px}
+.pdcard .kv dt{font-size:11.5px}
+.pdcard .kv dd{font-size:13px;margin-bottom:6px}
+.muted{color:var(--ink-3);font-style:italic}
+.dupwarn{background:var(--warn-soft);color:var(--warn);border-radius:8px;padding:10px 12px;font-size:13px;font-weight:500}
+.cmp{width:100%;border-collapse:collapse;min-width:0;font-size:13px}
+.cmp th,.cmp td{padding:7px 9px;border-bottom:1px solid var(--line);text-align:left}
+.cmp th{background:var(--surface-2)}
+.cmp td.diff{background:var(--warn-soft);font-weight:600}
+.choice{display:flex;flex-direction:column;gap:6px}
+.choice label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:8px;padding:9px 11px;cursor:pointer}
+.choice label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.choice small{display:block;color:var(--ink-2)}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);z-index:30;max-width:calc(100% - 32px)}
+
+@media (max-width:1100px){
+  .app{grid-template-columns:230px minmax(0,1fr)}
+  aside.detail{grid-column:1 / -1;border-left:0;border-top:1px solid var(--line)}
+}
+@media (max-width:720px){
+  .app{grid-template-columns:1fr}
+  aside.criteria{border-right:0;border-bottom:1px solid var(--line)}
+  .pdgrid{grid-template-columns:1fr}
+  .outcomes,.reveal{grid-template-columns:1fr}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+/* v2 */
+textarea{font:inherit;color:inherit;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:9px 10px;width:100%;resize:vertical;min-height:110px;line-height:1.5}
+.nums{display:flex;flex-direction:column;gap:6px}
+.num{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:4px 10px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:7px 9px}
+.num.called{border-color:var(--accent);box-shadow:0 0 0 1px var(--accent)}
+.num.bad .val{text-decoration:line-through;color:var(--ink-3)}
+.num .val{font-family:var(--mono);font-size:13.5px;overflow-wrap:anywhere}
+.num .type{font-size:11px;font-weight:600;color:var(--ink-2);background:var(--surface-2);border-radius:5px;padding:1px 6px;justify-self:start}
+.num .acts{grid-column:1 / -1;display:flex;gap:10px;flex-wrap:wrap;align-items:center;font-size:12px;color:var(--ink-2)}
+.num .acts label{display:flex;gap:4px;align-items:center;cursor:pointer}
+.num .acts button{border:0;background:none;padding:0;font-size:12px;color:var(--accent)}
+.saved-ind{font-size:11.5px;color:var(--pd)}
+.notebox{white-space:pre-wrap;font-size:13px;background:var(--surface-2);border-radius:7px;padding:8px 10px;margin:0}
+.mode{display:grid;grid-template-columns:1fr 1fr;background:var(--surface-2);border-radius:8px;padding:3px;gap:3px}
+.mode button{border:0;background:none;border-radius:6px;padding:6px 4px;font-size:12.5px;font-weight:600;color:var(--ink-2)}
+.mode button[aria-pressed="true"]{background:var(--surface);color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.fam{display:flex;flex-direction:column;gap:5px}
+.fam-h{display:flex;justify-content:space-between;align-items:center;font-size:12px;font-weight:600;color:var(--ink-2)}
+.fam-h button{border:0;background:none;color:var(--accent);font-size:11.5px;padding:0}
+.check{display:flex;gap:7px;align-items:flex-start;font-size:13px}
+.entities{display:flex;flex-direction:column;gap:2px;max-height:280px;overflow:auto;border:1px solid var(--line);border-radius:8px;padding:6px}
+.entities label{display:flex;gap:8px;align-items:center;padding:4px 6px;border-radius:5px;font-size:13px}
+.entities label:hover{background:var(--surface-2)}
+.entities small{margin-left:auto;color:var(--ink-3);font-size:11px}
+.ent-tools{display:flex;justify-content:space-between;gap:8px;font-size:12px}
+.ent-tools button{border:0;background:none;color:var(--accent);padding:0;font-size:12px}
+.pdstate{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;white-space:nowrap;border-radius:6px;padding:2px 7px}
+.pd-known{background:var(--warn-soft);color:var(--warn)}
+.pd-org{background:var(--neutral-soft);color:var(--ink-2)}
+.pd-new{color:var(--ink-3);font-weight:500}
+.pd-done{background:var(--pd-soft);color:var(--pd)}
+tr.grp td{background:var(--surface-2);font-size:11.5px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:700;cursor:default;padding:7px 12px}
+tr.grp:hover td{background:var(--surface-2)}
+tr.grp small{font-family:var(--mono);color:var(--ink-3);font-weight:500;margin-left:6px;letter-spacing:0}
+.pdbanner{border-radius:9px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.pdbanner.known{background:var(--warn-soft);color:var(--warn)}
+.pdbanner.org{background:var(--neutral-soft);color:var(--ink-2)}
+.pdbanner.done{background:var(--pd-soft);color:var(--pd)}
+.pdbanner .btn{align-self:flex-start}
+/* v4 réseau */
+.netbox{display:flex;flex-direction:column;gap:6px}
+.netrow{display:flex;justify-content:space-between;gap:8px;align-items:baseline;font-size:12.5px}
+.netrow small{color:var(--ink-3);font-size:11.5px;text-align:right}
+.deg{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:700;border-radius:5px;padding:2px 7px 2px 3px;margin-left:8px;vertical-align:2px;background:#0A66C2;color:#fff;white-space:nowrap}
+.deg i,.lihead i{font-style:normal;font-family:Arial,sans-serif;font-weight:700;background:#fff;color:#0A66C2;border-radius:3px;padding:0 3px;font-size:11px;line-height:15px}
+.relay-chip{display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;border-radius:5px;padding:2px 7px;margin-left:8px;vertical-align:2px;border:1px solid #0A66C2;color:#0A66C2;white-space:nowrap}
+:root[data-theme="dark"] .relay-chip{border-color:#70B5F9;color:#70B5F9}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .relay-chip{border-color:#70B5F9;color:#70B5F9}}
+.lihead{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#0A66C2;color:#fff;border-radius:10px;padding:12px 14px}
+.lihead i{font-size:15px;line-height:20px;padding:0 5px}
+.lihead div{display:flex;flex-direction:column;gap:1px;flex:1;min-width:160px}
+.lihead b{font-size:15px}
+.lihead span{font-size:12.5px;opacity:.9}
+.lihead a{background:#fff;color:#0A66C2;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;text-decoration:none;white-space:nowrap}
+.lihead.relay{background:transparent;color:#0A66C2;border:2px solid #0A66C2}
+.lihead.relay i{background:#0A66C2;color:#fff}
+.lihead.relay a{background:#0A66C2;color:#fff}
+:root[data-theme="dark"] .lihead.relay{color:#70B5F9;border-color:#70B5F9}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lihead.relay{color:#70B5F9;border-color:#70B5F9}}
+.relays{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.relays li{background:var(--surface);border-radius:7px;padding:7px 9px;font-size:13px;display:flex;flex-direction:column;gap:1px}
+.relays li span{color:var(--ink-2);font-size:12px}
+.relays li a{color:var(--accent);font-size:12px;text-decoration:none;font-weight:500}
+.steps{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.filebox{border:1px dashed var(--line);border-radius:9px;padding:14px;display:flex;flex-direction:column;gap:8px;align-items:flex-start}
+.who .deg{color:#fff;font-size:11.5px;margin:3px 6px 0 0}
+.who .relay-chip,.who .newtag{margin:3px 6px 0 0}
+.who .relay-chip{font-size:11.5px}
+:root[data-theme="dark"] .who .relay-chip{color:#70B5F9} 
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .who .relay-chip{color:#70B5F9}}
+.who .relay-chip{color:#0A66C2}
+.who .newtag{color:var(--accent);font-size:10.5px}
+.pdstate{white-space:normal}
+.who{min-width:200px}
+.introbox{display:flex;flex-direction:column;gap:8px;background:var(--surface);border-radius:8px;padding:10px 12px;border:1px solid var(--line)}
+.introbox ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13px}
+.libtn{display:inline-flex;align-items:center;gap:6px;background:#0A66C2;color:#fff;border-radius:999px;padding:6px 12px;font-weight:700;font-size:12.5px;text-decoration:none;align-self:flex-start}
+.libtn i{font-style:normal;background:#fff;color:#0A66C2;border-radius:3px;padding:0 3px;font-size:11px;font-family:Arial,sans-serif}
+.intro-chip{display:inline-flex;font-size:11.5px;font-weight:600;border-radius:5px;padding:2px 7px;margin:3px 6px 0 0;background:var(--pd-soft);color:var(--pd)}
+.who .intro-chip{color:var(--pd);font-size:11.5px}
+.pdbanner.intro{background:var(--pd-soft);color:var(--pd)}
+.relays li button{align-self:flex-start;margin-top:3px}
+/* v3 */
+[hidden]{display:none!important}
+:root{--hot:#C2410C;--hot-soft:#FDEBDD}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hot:#F59E6B;--hot-soft:#3A2418}}
+:root[data-theme="dark"]{--hot:#F59E6B;--hot-soft:#3A2418}
+.mode{grid-template-columns:repeat(3,1fr)}
+table{min-width:620px}
+.coords{margin-top:4px}
+.who b{white-space:normal}
+.sig{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.prio{display:inline-flex;align-items:center;gap:5px;font-size:11px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;white-space:nowrap}
+.prio i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.p3{color:var(--hot)} .p3 i{background:var(--hot)}
+.p2{color:var(--warn)} .p2 i{background:var(--warn)}
+.p1{color:var(--ink-3)} .p1 i{background:var(--ink-3)}
+.p0{color:var(--ink-3);font-weight:500;text-transform:none;letter-spacing:0}
+.siglbl{font-size:12px;color:var(--ink-2);max-width:170px}
+.newtag{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;color:var(--accent);background:var(--accent-soft);border-radius:4px;padding:1px 5px;margin-left:6px;vertical-align:1px}
+tr.dnc td{opacity:.55}
+tr.dnc[aria-selected="true"] td{opacity:1}
+.dncpill{background:var(--bad-soft);color:var(--bad)}
+.pdbanner.dnc{background:var(--bad-soft);color:var(--bad)}
+.pdbanner.move{background:var(--accent-soft);color:var(--accent)}
+.prep{display:flex;flex-direction:column;gap:12px;background:var(--surface-2);border-radius:10px;padding:12px}
+.prep h3{margin:0;font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3)}
+.siglist{display:flex;flex-direction:column;gap:6px;margin:0;padding:0;list-style:none}
+.siglist li{display:grid;grid-template-columns:auto minmax(0,1fr);gap:2px 8px;font-size:13px;background:var(--surface);border-radius:7px;padding:7px 9px;border-left:3px solid var(--line)}
+.siglist li.w3{border-left-color:var(--hot)} .siglist li.w2{border-left-color:var(--warn)}
+.siglist li b{grid-column:1 / -1}
+.siglist li span{color:var(--ink-3);font-size:12px}
+.hook{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px;line-height:1.55;margin:0}
+.figs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.fig{background:var(--surface);border-radius:7px;padding:7px 8px;display:flex;flex-direction:column;gap:1px;min-width:0}
+.fig span{font-size:11px;color:var(--ink-3)}
+.fig b{font-family:var(--mono);font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums}
+.fig small{font-size:11px;font-family:var(--mono)}
+.up{color:var(--pd)} .down{color:var(--bad)}
+.news{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.news li{font-size:13px;display:grid;grid-template-columns:62px minmax(0,1fr);gap:8px}
+.news time{font-family:var(--mono);font-size:11.5px;color:var(--ink-3);padding-top:1px}
+.news small{color:var(--ink-3)}
+.sigpick{display:flex;flex-direction:column;gap:4px}
+.sigpick label{display:flex;gap:8px;align-items:center;font-size:13px}
+.sigpick small{margin-left:auto;color:var(--ink-3);font-size:11px}
+.rec{font-size:11px;color:var(--accent);font-family:var(--mono)}
+.badge-new{background:var(--accent);color:var(--accent-ink);border-radius:999px;padding:0 6px;font-size:11px;font-weight:700;font-family:var(--sans)}
+.linkbtn{border:0;background:none;color:var(--ink-3);font-size:12.5px;padding:0;text-decoration:underline;align-self:flex-start}
+.linkbtn:hover{color:var(--bad)}
+.mailfields{display:flex;flex-direction:column;gap:10px}
+.mailfields input[type=text]{width:100%}
+.mailfields textarea{min-height:300px}
+@media (max-width:720px){.figs{grid-template-columns:1fr 1fr}}
+
+/* ===== Couleurs Lutèce (bleu marine + orange) ===== */
+:root{
+  --navy:#1B3A6B; --navy-2:#24508F; --orange:#E8772E; --orange-soft:#FDEEE2; --orange-ink:#B85A1B;
+  --bg:#F1F4F9; --surface-2:#EAF0F8; --line:#D6DFEB;
+  --accent:#24508F; --accent-soft:#E2EBF7; --hot:#E8772E; --hot-soft:#FDEEE2;
+  --head-ink:#FFFFFF;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --navy:#132A4D; --navy-2:#2A5A9C; --orange:#F29A55; --orange-soft:#3A2618; --orange-ink:#F6B380;
+  --bg:#0E1622; --surface-2:#1A2638; --line:#2A3A52; --accent:#86AEE6; --accent-soft:#1C2E48; --hot:#F29A55; --hot-soft:#3A2618;
+}}
+:root[data-theme="dark"]{
+  --navy:#132A4D; --navy-2:#2A5A9C; --orange:#F29A55; --orange-soft:#3A2618; --orange-ink:#F6B380;
+  --bg:#0E1622; --surface-2:#1A2638; --line:#2A3A52; --accent:#86AEE6; --accent-soft:#1C2E48; --hot:#F29A55; --hot-soft:#3A2618;
+}
+header.top{background:var(--navy);border-bottom:3px solid var(--orange);color:var(--head-ink)}
+.brand b{color:#fff;font-size:17px}
+.brand b::after{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--orange);margin-left:5px;vertical-align:2px}
+.brand span{color:#F6B380}
+header.top .credits{background:rgba(255,255,255,.12);color:#fff}
+header.top .credits b{color:#F6B380}
+header.top .userpick{color:#DCE6F5}
+header.top select{background:rgba(255,255,255,.1);color:#fff;border-color:rgba(255,255,255,.25)}
+header.top select option{color:#16222E}
+.sect-label{color:var(--navy-2)}
+.mode{background:var(--accent-soft)}
+.mode button[aria-pressed="true"]{background:var(--navy);color:#fff}
+.btn.primary{background:var(--navy-2);border-color:var(--navy-2);color:#fff}
+#run{background:var(--orange);border-color:var(--orange);color:#fff;font-size:14px;padding:10px 12px}
+#run:hover{filter:brightness(1.06)}
+.chip[aria-pressed="true"]{background:var(--navy-2);border-color:var(--navy-2);color:#fff}
+.fam-h button,.ent-tools button{color:var(--orange-ink)}
+.saved button[aria-current="true"]{background:var(--navy-2);color:#fff}
+.saved button[aria-current="true"] small{color:#DCE6F5}
+.badge-new{background:var(--orange);color:#fff}
+.rec{color:var(--orange-ink)}
+.saved button[aria-current="true"] .rec{color:#F6B380}
+.listhead h1{color:var(--navy)}
+:root[data-theme="dark"] .listhead h1{color:#DCE6F5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .listhead h1{color:#DCE6F5}}
+.tab[aria-selected="true"]{box-shadow:inset 0 -3px 0 var(--orange),0 0 0 1px var(--line);color:var(--navy-2)}
+th{background:var(--navy);color:#DCE6F5;border-bottom:0}
+.tablewrap{border-color:var(--navy)}
+tbody tr[aria-selected="true"] td{background:var(--accent-soft);box-shadow:inset 0 0 0 0 transparent}
+tbody tr[aria-selected="true"] td:first-child{box-shadow:inset 4px 0 0 var(--orange)}
+.newtag,.who .newtag{background:var(--orange-soft);color:var(--orange-ink)}
+.prep{background:linear-gradient(180deg,var(--orange-soft) 0,var(--surface-2) 120px);border-top:3px solid var(--orange)}
+.prep h3{color:var(--orange-ink)}
+.hook{border-left:3px solid var(--navy-2)}
+.d-head h2{color:var(--navy)}
+:root[data-theme="dark"] .d-head h2{color:#DCE6F5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .d-head h2{color:#DCE6F5}}
+.outcome[aria-pressed="true"]{border-color:var(--navy-2);background:var(--accent-soft)}
+.revealbox.done{border-color:var(--navy-2);background:var(--accent-soft)}
+.cost{color:var(--orange-ink)}
+.num.called{border-color:var(--orange);box-shadow:0 0 0 1px var(--orange)}
+.modal header{background:var(--navy);color:#fff;border-radius:12px 12px 0 0;border-bottom:3px solid var(--orange)}
+.modal header p{color:#DCE6F5}
+.pdcard h4{color:var(--navy-2)}
+
+/* ===== Application en ligne ===== */
+[hidden]{display:none!important}
+body{min-height:100vh}
+.login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:16px;background:var(--navy)}
+.login-card{background:var(--surface);border-radius:14px;padding:26px;width:min(380px,100%);display:flex;flex-direction:column;gap:14px;border-top:4px solid var(--orange);box-shadow:var(--shadow)}
+.login-brand{display:flex;flex-direction:column}
+.login-brand b{font-size:20px;color:var(--navy)}
+.login-brand span{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--orange-ink)}
+.login-card input{width:100%;padding:9px 10px}
+input[type=email],input[type=password]{background:var(--surface);border:1px solid var(--line);border-radius:7px;font:inherit;color:inherit}
+.btn.ghost{background:transparent;border-color:rgba(255,255,255,.35);color:#fff}
+.btn.ghost:hover{background:rgba(255,255,255,.1)}
+.cfgwarn{background:var(--bad-soft);color:var(--bad);padding:10px 16px;font-size:13px;font-weight:500}
+.suggest{border:1px solid var(--line);border-radius:8px;background:var(--surface);max-height:220px;overflow:auto;display:flex;flex-direction:column}
+.suggest button{border:0;background:none;text-align:left;padding:7px 10px;font-size:13px}
+.suggest button:hover{background:var(--surface-2)}
+.chip .x{margin-left:6px;opacity:.7}
+.busy{opacity:.6;pointer-events:none}
+.spinner{display:inline-block;width:12px;height:12px;border:2px solid currentColor;border-right-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.pdlink{color:var(--accent);font-size:12.5px;font-weight:600;text-decoration:none}
+.pdlink:hover{text-decoration:underline}
+#listfoot{margin-top:4px}
+
+</style>
+</head>
+<body>
+
+<!-- Écran de connexion -->
+<section id="login" class="login" hidden>
+  <form id="login-form" class="login-card" autocomplete="on">
+    <div class="login-brand"><b>Prospection Lutèce</b><span>Signaux → appel → Pipedrive</span></div>
+    <div class="field"><label for="lg-email">Email</label><input type="email" id="lg-email" required autocomplete="username"></div>
+    <div class="field"><label for="lg-pass">Mot de passe</label><input type="password" id="lg-pass" required autocomplete="current-password"></div>
+    <button class="btn primary" type="submit" id="lg-go">Se connecter</button>
+    <p class="hint" id="lg-msg" style="margin:0"></p>
+  </form>
+</section>
+
+<!-- Choix du profil à la première connexion -->
+<section id="whoami" class="login" hidden>
+  <div class="login-card">
+    <div class="login-brand"><b>Bienvenue</b><span>Première connexion</span></div>
+    <p style="margin:0">Qui êtes-vous ? Ce choix sert à attribuer les relances et le réseau LinkedIn.</p>
+    <div class="row"><button class="btn primary" data-who="Guillaume">Guillaume</button><button class="btn primary" data-who="Christophe">Christophe</button></div>
+  </div>
+</section>
+
+<!-- Application -->
+<div id="app" hidden>
+<header class="top">
+  <div class="brand"><b>Prospection Lutèce</b><span>Recherche → appel → Pipedrive</span></div>
+  <div class="credits" title="Crédits Lusha restants">Crédits Lusha <b id="credits">…</b></div>
+  <div class="userpick"><span id="me-name"></span><button class="btn small ghost" id="logout">Se déconnecter</button></div>
+</header>
+<div class="cfgwarn" id="cfgwarn" hidden></div>
+
+<div class="app">
+  <aside class="criteria" aria-label="Critères de recherche">
+    <div class="sect-label">Nouvelle recherche</div>
+    <div class="mode" id="mode">
+      <button data-m="crit" aria-pressed="true">Par critères</button>
+      <button data-m="grp" aria-pressed="false">Société / groupe</button>
+    </div>
+
+    <div id="grp-box" hidden style="display:flex;flex-direction:column;gap:10px">
+      <div class="field"><label for="g-q">Sociétés à cibler</label>
+        <input type="text" id="g-q" placeholder="Tapez un nom : LVMH, Louis Vuitton…" autocomplete="off">
+        <div class="suggest" id="g-sug" hidden></div></div>
+      <div class="chips" id="g-sel"></div>
+      <p class="hint" style="margin:0">Ajoutez la société mère puis chacune des filiales ou maisons à inclure. L'identification automatique des filiales arrivera avec le second lot.</p>
+    </div>
+
+    <div class="field"><label for="zone">Zone géographique</label>
+      <select id="zone"></select>
+      <span class="hint">Localisation du poste de la personne.</span></div>
+
+    <div class="field"><label>Fonctions</label><div id="c-fn" style="display:flex;flex-direction:column;gap:10px"></div></div>
+    <div class="field"><label for="c-extra">Autres intitulés (facultatif)</label>
+      <input type="text" id="c-extra" placeholder="Ex. Directeur financier groupe, Head of Finance"></div>
+
+    <div id="crit-box" style="display:flex;flex-direction:column;gap:14px">
+      <div class="field"><label>Secteurs <span class="hint">(aucun = tous)</span></label><div class="chips" id="c-sec"><span class="hint">Chargement…</span></div></div>
+      <div class="field"><label>Effectif</label><div class="chips" id="c-size"><span class="hint">Chargement…</span></div></div>
+    </div>
+
+    <div class="field"><label for="c-name">Nom de la liste</label>
+      <input type="text" id="c-name" placeholder="Ex. DAF industrie IDF"></div>
+    <label class="check"><input type="checkbox" id="c-rec"><span>Relancer chaque lundi et signaler les nouveaux profils</span></label>
+    <button class="btn primary" id="run">Lancer la recherche</button>
+    <p class="hint" style="margin:0">La recherche affiche noms, fonctions et sociétés, et vérifie qui est déjà dans Pipedrive. Elle ne consomme aucun crédit Lusha.</p>
+
+    <div class="sect-label" style="margin-top:8px">Réseau LinkedIn</div>
+    <div class="netbox" id="netbox"></div>
+
+    <div class="sect-label" style="margin-top:8px">Mes listes</div>
+    <div class="saved" id="saved"><span class="hint">Aucune liste pour l'instant.</span></div>
+  </aside>
+
+  <main class="list">
+    <div class="listhead">
+      <div><h1 id="lt">Aucune liste ouverte</h1><p id="ls">Lancez une recherche à gauche pour créer votre première liste.</p></div>
+      <div class="tabs" role="tablist" id="tabs"></div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead><tr><th>Prospect</th><th>Société</th><th>Pipedrive</th><th>Statut</th><th>Relance</th></tr></thead>
+        <tbody id="rows"></tbody>
+      </table>
+    </div>
+    <div class="row" id="listfoot" hidden>
+      <button class="btn" id="more">Charger 50 prospects de plus</button>
+      <button class="btn" id="rerun">Relancer la recherche</button>
+      <span class="hint" id="morehint"></span>
+      <button class="linkbtn" id="dellist" style="margin-left:auto">Supprimer cette liste</button>
+    </div>
+  </main>
+
+  <aside class="detail" id="detail" aria-live="polite"><p class="empty">Sélectionnez un prospect dans la liste.</p></aside>
+</div>
+</div>
+
+<div id="modal-root"></div>
+<div class="toast" id="toast" hidden></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/dist/umd/supabase.js"></script>
+<script>
+"use strict";
+/* =====================================================================
+   Prospection Lutèce · application (lot 1)
+   ===================================================================== */
+const CONFIG = {
+  supabaseUrl: "https://akxvwaepsiucxxtvthsz.supabase.co",
+  supabaseKey: "sb_publishable_pNBP6RF84CvPQaqZigwrdg_pQ4q3q87",
+  pipedriveDomain: "luteceexecutive-3efd79",
+};
+const sb = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
+
+/* ---------- Référentiels ---------- */
+const FEM = new Set(["claire","sophie","nathalie","isabelle","camille","helene","valerie","marion","aurelie","caroline","laure","elodie","anne","celine","juliette","agnes","sandrine","marie","julie","emilie","sarah","laura","lea","chloe","manon","pauline","audrey","stephanie","sylvie","catherine","christine","veronique","florence","virginie","delphine","nadia","karine","mathilde","charlotte","alice","clemence","ines","eva","margaux","morgane","agathe","beatrice","brigitte","corinne","dominique","estelle","fabienne","francoise","gaelle","helena","jeanne","josephine","laetitia","lucie","magali","martine","melanie","nathalie","patricia","sabine","severine","solene","sonia","vanessa","yasmine","zoe","anais","emma","louise","ophelie","perrine","raphaelle","roxane","sandra","valentine"]);
+const TEAM = { Guillaume: "Guillaume Alonso", Christophe: "Christophe Cognet" };
+const OUTCOMES = {
+  vm:  { label: "Message vocal laissé", sub: "Relance à J+3 ouvrés", days: 3, cls: "s-vm" },
+  nr:  { label: "Pas de réponse", sub: "Relance à J+1 ouvré", days: 1, cls: "s-nr" },
+  cb:  { label: "Joint, à rappeler", sub: "Date à choisir", manual: true, cls: "s-cb" },
+  int: { label: "Joint, intéressé", sub: "Action suivante à choisir", manual: true, cls: "s-int" },
+  no:  { label: "Pas intéressé", sub: "Aucune relance", none: true, cls: "s-no" },
+};
+// Chaque puce envoie à Lusha l'intitulé français et ses équivalents courants.
+const FAMS = {
+  "Finance": {
+    "DAF": ["DAF", "Directeur administratif et financier", "Directrice administrative et financière"],
+    "CFO": ["CFO", "Chief Financial Officer"],
+    "RAF": ["RAF", "Responsable administratif et financier", "Responsable administrative et financière"],
+    "Directeur financier": ["Directeur financier", "Directrice financière", "Finance Director", "Head of Finance"],
+  },
+  "Direction générale": {
+    "DG": ["Directeur général", "Directrice générale", "DG", "General Manager", "Managing Director"],
+    "PDG": ["PDG", "Président-directeur général"],
+    "CEO": ["CEO", "Chief Executive Officer"],
+    "Président": ["Président", "Présidente"],
+    "DG délégué": ["Directeur général délégué", "Directrice générale déléguée"],
+  },
+  "Ressources humaines": {
+    "DRH": ["DRH", "Directeur des ressources humaines", "Directrice des ressources humaines", "HR Director"],
+    "CHRO": ["CHRO", "Chief Human Resources Officer", "Chief People Officer"],
+    "RRH": ["RRH", "Responsable ressources humaines", "Responsable des ressources humaines"],
+  },
+};
+const REGIONS = ["Île-de-France", "Auvergne-Rhône-Alpes", "Hauts-de-France", "Grand Est", "Provence-Alpes-Côte d'Azur", "Nouvelle-Aquitaine", "Occitanie", "Pays de la Loire", "Bretagne", "Normandie", "Bourgogne-Franche-Comté", "Centre-Val de Loire", "Corse"];
+const ZONES = ["France entière", ...REGIONS, "Europe", "Monde"];
+const STATUS = ["À solliciter", "Demande envoyée", "Introduction faite", "Refus ou sans réponse"];
+
+/* ---------- État ---------- */
+const S = {
+  me: null, lists: [], cur: null, rows: [], sel: null, filter: "all", mode: "crit", zone: "France entière",
+  crit: { fn: new Set(["DAF", "Directeur financier"]), ind: new Set(), size: new Set() },
+  meta: { industries: [], sizes: [] }, locCache: {}, groupSel: [],
+  network: {}, conns: [], credits: null,
+};
+
+/* ---------- Utilitaires ---------- */
+const $ = (s) => document.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+const slug = (s) => String(s || "").toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+const normTxt = (s) => slug(s).replace(/-(sas|sa|sarl|sasu|group|groupe|france)$/, "").replace(/^(groupe|group)-/, "");
+const normUrl = (u) => String(u || "").toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "").replace(/\?.*$/, "");
+const todayISO = () => new Date().toISOString().slice(0, 10);
+function addBiz(d, n) { const x = new Date(d); let k = 0; while (k < n) { x.setDate(x.getDate() + 1); const w = x.getDay(); if (w !== 0 && w !== 6) k++; } return x.toISOString().slice(0, 10); }
+function fmt(iso) { if (!iso) return ""; return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "short", day: "numeric", month: "short" }); }
+function fmtLong(iso) { if (!iso) return ""; return new Date(iso + "T12:00:00").toLocaleDateString("fr-FR", { weekday: "long", day: "numeric", month: "long" }); }
+const frDate = (d = new Date()) => new Date(d).toLocaleDateString("fr-FR");
+function toast(msg, ms = 3600) { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast._t); toast._t = setTimeout(() => (t.hidden = true), ms); }
+function guessCiv(first) { return FEM.has(slug(String(first || "").split(/[\s-]/)[0])) ? "Mme" : "M."; }
+function lastMonday() { const d = new Date(); d.setHours(0, 0, 0, 0); const w = (d.getDay() + 6) % 7; d.setDate(d.getDate() - w); return d; }
+const current = () => S.rows.find((r) => r.id === S.sel);
+const curList = () => S.lists.find((l) => l.id === S.cur);
+const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); }; };
+
+/* ---------- Appels serveur ---------- */
+async function api(action, params = {}) {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) { showLogin(); throw new Error("Session expirée : reconnectez-vous."); }
+  const r = await fetch(`${CONFIG.supabaseUrl}/functions/v1/api`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${session.access_token}`, apikey: CONFIG.supabaseKey, "Content-Type": "application/json" },
+    body: JSON.stringify({ action, params }),
+  });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) {
+    const e = new Error(j?.error?.message || `Erreur serveur (${r.status}).`);
+    e.code = j?.error?.code; e.status = r.status;
+    if (e.code === "CONFIG") showCfg(e.message);
+    throw e;
+  }
+  return j;
+}
+function showCfg(msg) { const w = $("#cfgwarn"); w.textContent = msg + " Voir le guide d'installation, étape « Enregistrer les clés secrètes »."; w.hidden = false; }
+async function db(q) { const { data, error } = await q; if (error) { toast("Erreur de sauvegarde : " + error.message, 6000); throw error; } return data; }
+const saveRow = async (r, patch) => { Object.assign(r, patch); await db(sb.from("prospects").update(patch).eq("id", r.id)); };
+
+/* ---------- Connexion ---------- */
+function showLogin() { $("#app").hidden = true; $("#whoami").hidden = true; $("#login").hidden = false; }
+$("#login-form").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("#lg-msg").textContent = ""; $("#lg-go").classList.add("busy");
+  const { error } = await sb.auth.signInWithPassword({ email: $("#lg-email").value.trim(), password: $("#lg-pass").value });
+  $("#lg-go").classList.remove("busy");
+  if (error) { $("#lg-msg").textContent = "Email ou mot de passe incorrect."; return; }
+  boot();
+});
+$("#logout").addEventListener("click", async () => { await sb.auth.signOut(); location.reload(); });
+document.querySelectorAll("#whoami [data-who]").forEach((b) => b.addEventListener("click", async () => {
+  const { data: { user } } = await sb.auth.getUser();
+  await db(sb.from("profiles").upsert({ user_id: user.id, display_name: b.dataset.who }));
+  boot();
+}));
+
+async function boot() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (!session) return showLogin();
+  const prof = await db(sb.from("profiles").select("display_name").eq("user_id", session.user.id).maybeSingle());
+  if (!prof) { $("#login").hidden = true; $("#whoami").hidden = false; return; }
+  S.me = prof.display_name;
+  $("#login").hidden = true; $("#whoami").hidden = true; $("#app").hidden = false;
+  $("#me-name").textContent = S.me;
+  renderCrit();
+  await Promise.all([loadLists(), loadNetwork(), loadMeta()]);
+  refreshCredits();
+  api("ping").then((p) => { if (!p.lusha || !p.pipedrive) showCfg(`Clés manquantes côté serveur : ${[!p.lusha && "Lusha", !p.pipedrive && "Pipedrive"].filter(Boolean).join(" et ")}.`); }).catch(() => {});
+  if (S.lists[0]) openList(S.lists[0].id);
+}
+
+/* ---------- Crédits ---------- */
+function findNumber(obj, keys) {
+  if (!obj || typeof obj !== "object") return null;
+  for (const [k, v] of Object.entries(obj)) if (keys.includes(k) && typeof v === "number") return v;
+  for (const v of Object.values(obj)) { const f = findNumber(v, keys); if (f != null) return f; }
+  return null;
+}
+async function refreshCredits() {
+  try {
+    const u = await api("lusha.usage");
+    const n = findNumber(u, ["remaining", "remainingCredits", "creditsLeft", "balance", "left"]);
+    S.credits = n; $("#credits").textContent = n == null ? "—" : n.toLocaleString("fr-FR");
+  } catch { $("#credits").textContent = "—"; }
+}
+
+/* ---------- Filtres Lusha (secteurs, effectifs) ---------- */
+async function loadMeta() {
+  const cached = await db(sb.from("settings").select("value,updated_at").eq("key", "lusha_filters").maybeSingle());
+  let meta = cached && Date.now() - new Date(cached.updated_at) < 30 * 864e5 ? cached.value : null;
+  if (!meta) {
+    try { meta = await api("lusha.filters"); await db(sb.from("settings").upsert({ key: "lusha_filters", value: meta, updated_at: new Date().toISOString() })); }
+    catch (e) { meta = { industries: [], sizes: [] }; }
+  }
+  const arr = (x) => (Array.isArray(x) ? x : Array.isArray(x?.data) ? x.data : Array.isArray(x?.results) ? x.results : []);
+  S.meta.industries = arr(meta.industries).map((i) => ({ id: i.id ?? i.mainIndustryId ?? i.value, label: i.label ?? i.name ?? i.mainIndustry ?? i.value ?? String(i) })).filter((i) => i.id != null);
+  S.meta.sizes = arr(meta.sizes).map((s) => (typeof s === "object" ? { min: s.min ?? s.from ?? null, max: s.max ?? s.to ?? null } : null)).filter((s) => s && (s.min != null || s.max != null));
+  if (!S.meta.sizes.length) S.meta.sizes = [{ min: 11, max: 50 }, { min: 51, max: 200 }, { min: 201, max: 500 }, { min: 501, max: 1000 }, { min: 1001, max: 5000 }, { min: 5001, max: null }];
+  if (!S.crit.size.size) S.meta.sizes.forEach((s, i) => { if ((s.min ?? 0) >= 50 && (s.max ?? 1e9) <= 1000) S.crit.size.add(i); });
+  renderCrit();
+}
+const sizeLabel = (s) => s.max == null ? `${s.min} et plus` : `${s.min ?? 1} – ${s.max}`;
+
+/* ---------- Colonne critères ---------- */
+function renderCrit() {
+  document.querySelectorAll("#mode button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.m === S.mode));
+  $("#grp-box").hidden = S.mode !== "grp"; $("#crit-box").hidden = S.mode === "grp";
+  $("#zone").innerHTML = ZONES.map((z) => `<option ${z === S.zone ? "selected" : ""}>${esc(z)}</option>`).join("");
+  $("#c-fn").innerHTML = Object.entries(FAMS).map(([f, map]) => {
+    const keys = Object.keys(map), all = keys.every((v) => S.crit.fn.has(v));
+    return `<div class="fam"><div class="fam-h"><span>${f}</span><button data-fam="${esc(f)}">${all ? "Tout retirer" : "Tout sélectionner"}</button></div>
+      <div class="chips">${keys.map((v) => `<button class="chip" aria-pressed="${S.crit.fn.has(v)}" data-k="fn" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div></div>`;
+  }).join("");
+  if (S.meta.industries.length) $("#c-sec").innerHTML = S.meta.industries.map((i) => `<button class="chip" aria-pressed="${S.crit.ind.has(String(i.id))}" data-k="ind" data-v="${esc(i.id)}">${esc(i.label)}</button>`).join("");
+  else $("#c-sec").innerHTML = `<span class="hint">Secteurs indisponibles tant que la clé Lusha n'est pas enregistrée.</span>`;
+  $("#c-size").innerHTML = S.meta.sizes.map((s, i) => `<button class="chip" aria-pressed="${S.crit.size.has(i)}" data-k="size" data-v="${i}">${esc(sizeLabel(s))}</button>`).join("");
+  $("#g-sel").innerHTML = S.groupSel.map((n, i) => `<button class="chip" aria-pressed="true" data-gdel="${i}">${esc(n)}<span class="x">×</span></button>`).join("");
+  renderNet(); renderSaved();
+}
+function renderSaved() {
+  if (!S.lists.length) { $("#saved").innerHTML = `<span class="hint">Aucune liste pour l'instant.</span>`; return; }
+  $("#saved").innerHTML = S.lists.map((l) => `<button data-list="${l.id}" aria-current="${l.id === S.cur}"><span>${esc(l.name)}${l.recurring ? ` <span class="rec" title="Relancée chaque lundi">↻ lun.</span>` : ""}</span><small>${l.count ?? ""}</small></button>`).join("");
+}
+
+async function zoneFilter(zone) {
+  if (zone === "Monde") return null;
+  if (zone === "Europe") return { continent: "Europe" };
+  if (zone === "France entière") return { country: "France" };
+  if (S.locCache[zone]) return S.locCache[zone];
+  try {
+    const res = await api("lusha.locations", { text: zone });
+    const list = Array.isArray(res) ? res : res?.data ?? res?.results ?? [];
+    const hit = list.find((x) => /france/i.test(x.country ?? "") && x.state) ?? list.find((x) => x.state);
+    if (hit) { const loc = { country: hit.country ?? "France", state: hit.state }; S.locCache[zone] = loc; return loc; }
+  } catch { /* repli ci-dessous */ }
+  toast(`Région « ${zone} » introuvable dans Lusha : recherche sur toute la France.`, 5000);
+  return { country: "France" };
+}
+function jobTitles() {
+  const t = [];
+  for (const map of Object.values(FAMS)) for (const [k, v] of Object.entries(map)) if (S.crit.fn.has(k)) t.push(...v);
+  $("#c-extra").value.split(",").map((x) => x.trim()).filter(Boolean).forEach((x) => t.push(x));
+  return [...new Set(t)];
+}
+async function buildFilters() {
+  const titles = jobTitles();
+  if (!titles.length) throw new Error("Sélectionnez au moins une fonction.");
+  const contacts = { include: { jobTitles: titles } };
+  const loc = await zoneFilter(S.zone);
+  if (loc) contacts.include.locations = [loc];
+  const companies = { include: {} };
+  if (S.mode === "grp") {
+    if (!S.groupSel.length) throw new Error("Ajoutez au moins une société.");
+    companies.include.names = S.groupSel;
+  } else {
+    if (S.crit.ind.size) companies.include.mainIndustriesIds = [...S.crit.ind].map(Number);
+    if (S.crit.size.size) companies.include.sizes = [...S.crit.size].map((i) => S.meta.sizes[i]).map((s) => { const o = {}; if (s.min != null) o.min = s.min; if (s.max != null) o.max = s.max; return o; });
+  }
+  const f = { contacts };
+  if (Object.keys(companies.include).length) f.companies = companies;
+  return f;
+}
+
+/* ---------- Listes ---------- */
+async function loadLists() {
+  const data = await db(sb.from("lists").select("*, prospects(count)").order("created_at", { ascending: false }));
+  S.lists = data.map((l) => ({ ...l, count: l.prospects?.[0]?.count ?? 0 }));
+  renderSaved();
+}
+async function openList(id) {
+  S.cur = id; S.filter = "all";
+  const l = curList();
+  S.rows = await db(sb.from("prospects").select("*").eq("list_id", id).order("created_at", { ascending: true }));
+  S.sel = S.rows[0]?.id ?? null;
+  renderAll();
+  if (l.recurring && (!l.last_run_at || new Date(l.last_run_at) < lastMonday())) {
+    toast("Nouvelle semaine : je relance la recherche pour trouver les nouveaux profils…");
+    await runSearch(l, 0, true);
+  }
+  checkPipedrive();
+}
+async function runSearch(list, page, weekly = false) {
+  $("#more").classList.add("busy"); $("#rerun").classList.add("busy");
+  try {
+    const res = await api("lusha.search", { filters: list.criteria.filters, page, size: 50 });
+    const contacts = res.contacts ?? res.data ?? [];
+    const known = new Set(S.rows.map((r) => r.lusha_contact_id));
+    if (weekly) await db(sb.from("prospects").update({ is_new: false }).eq("list_id", list.id).eq("is_new", true));
+    const fresh = contacts.filter((c) => !known.has(String(c.contactId ?? c.id))).map((c) => toRow(c, list.id, res.requestId, weekly));
+    if (fresh.length) {
+      const ins = await db(sb.from("prospects").upsert(fresh, { onConflict: "list_id,lusha_contact_id", ignoreDuplicates: true }).select("*"));
+      S.rows.push(...ins);
+    }
+    // Les prospects déjà connus reçoivent le nouvel identifiant de recherche (utile pour la révélation)
+    const ids = contacts.map((c) => String(c.contactId ?? c.id)).filter((id) => known.has(id));
+    if (ids.length) await db(sb.from("prospects").update({ lusha_request_id: res.requestId }).eq("list_id", list.id).in("lusha_contact_id", ids));
+    S.rows.forEach((r) => { if (ids.includes(r.lusha_contact_id)) r.lusha_request_id = res.requestId; if (weekly && !fresh.find((f) => f.lusha_contact_id === r.lusha_contact_id)) r.is_new = false; });
+    const total = res.totalResults ?? res.total ?? res.pagination?.total ?? null;
+    const patch = { last_run_at: new Date().toISOString(), total, next_page: weekly ? list.next_page : page + 1 };
+    await db(sb.from("lists").update(patch).eq("id", list.id)); Object.assign(list, patch);
+    list.count = S.rows.length;
+    if (!S.sel && S.rows[0]) S.sel = S.rows[0].id;
+    renderAll();
+    toast(weekly ? `${fresh.length} nouveau${fresh.length > 1 ? "x" : ""} profil${fresh.length > 1 ? "s" : ""} cette semaine · 0 crédit` : `${fresh.length} prospect${fresh.length > 1 ? "s" : ""} ajouté${fresh.length > 1 ? "s" : ""} · 0 crédit consommé`);
+    checkPipedrive();
+  } catch (e) { toast(e.message, 6000); }
+  finally { $("#more").classList.remove("busy"); $("#rerun").classList.remove("busy"); }
+}
+function toRow(c, listId, requestId, isNew) {
+  let first = c.firstName, last = c.lastName;
+  if (!first && c.name) { const parts = String(c.name).trim().split(/\s+/); first = parts.shift(); last = parts.join(" "); }
+  const loc = c.location ?? {};
+  return {
+    list_id: listId, lusha_contact_id: String(c.contactId ?? c.id), lusha_request_id: requestId,
+    first_name: first ?? "", last_name: last ?? "", civ: guessCiv(first),
+    job_title: typeof c.jobTitle === "object" ? c.jobTitle?.title : c.jobTitle ?? "",
+    company: c.companyName ?? c.company?.name ?? "", company_domain: c.fqdn ?? c.company?.domain ?? "", company_id: String(c.companyId ?? c.company?.id ?? ""),
+    city: loc.city ?? c.city ?? "", linkedin_url: c.socialLinks?.linkedin ?? c.linkedinUrl ?? null,
+    referent: S.me, is_new: !!isNew,
+  };
+}
+$("#more").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, l.next_page); });
+$("#rerun").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, 0, true); });
+$("#dellist").addEventListener("click", () => {
+  const l = curList(); if (!l) return;
+  modal(`<header><h3>Supprimer « ${esc(l.name)} » ?</h3><p>La liste et ses ${S.rows.length} prospects sont supprimés de l'outil. Rien n'est supprimé dans Pipedrive.</p></header>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="del-go">Supprimer</button></footer>`);
+  $("#del-go").onclick = async () => { await db(sb.from("lists").delete().eq("id", l.id)); closeModal(); S.cur = null; S.rows = []; S.sel = null; await loadLists(); if (S.lists[0]) openList(S.lists[0].id); else renderAll(); };
+});
+
+$("#run").addEventListener("click", async () => {
+  const btn = $("#run");
+  try {
+    btn.classList.add("busy");
+    const filters = await buildFilters();
+    const name = $("#c-name").value.trim() || (S.mode === "grp" ? S.groupSel.join(", ") : [...S.crit.fn].join(", ")) + " · " + S.zone;
+    const [l] = await db(sb.from("lists").insert({ name, mode: S.mode === "grp" ? "group" : "criteria", criteria: { filters, fn: [...S.crit.fn], group: S.groupSel }, zone: S.zone, recurring: $("#c-rec").checked }).select("*"));
+    l.count = 0; S.lists.unshift(l); S.cur = l.id; S.rows = []; S.sel = null; S.filter = "all";
+    renderAll();
+    await runSearch(l, 0);
+  } catch (e) { toast(e.message, 5000); }
+  finally { btn.classList.remove("busy"); }
+});
+
+/* ---------- Vérification Pipedrive (gratuite) ---------- */
+let checking = false;
+async function checkPipedrive() {
+  if (checking) return; checking = true;
+  try {
+    const stale = S.rows.filter((r) => !r.sent_at && (!r.pd_checked_at || Date.now() - new Date(r.pd_checked_at) > 864e5));
+    for (let i = 0; i < stale.length; i += 10) {
+      const batch = stale.slice(i, i + 10);
+      const res = await api("pd.check", { items: batch.map((r) => ({ key: r.id, first: r.first_name, last: r.last_name, company: r.company })) });
+      const now = new Date().toISOString();
+      for (const r of batch) { const pd = res[r.id]; if (!pd || pd.kind === "error") continue; r.pd = pd; r.pd_checked_at = now; sb.from("prospects").update({ pd, pd_checked_at: now }).eq("id", r.id).then(() => {}); }
+      renderList(); if (batch.some((r) => r.id === S.sel)) renderDetail();
+    }
+  } catch (e) { if (e.code !== "CONFIG") toast("Vérification Pipedrive impossible : " + e.message, 5000); }
+  finally { checking = false; }
+}
+
+/* ---------- Réseau LinkedIn ---------- */
+async function loadNetwork() {
+  const imps = await db(sb.from("network_imports").select("*"));
+  S.network = Object.fromEntries(imps.map((i) => [i.owner, i]));
+  const all = []; let from = 0;
+  for (;;) { const page = await db(sb.from("connections").select("owner,first_name,last_name,url,company,position").range(from, from + 999)); all.push(...page); if (page.length < 1000) break; from += 1000; }
+  S.conns = all.map((c) => ({ ...c, nName: normTxt(`${c.first_name} ${c.last_name}`), nCo: normTxt(c.company), nUrl: normUrl(c.url) }));
+  renderNet();
+}
+function renderNet() {
+  $("#netbox").innerHTML = Object.keys(TEAM).map((k) => { const n = S.network[k];
+    return `<div class="netrow"><span>${k}</span><small>${n ? `${n.count.toLocaleString("fr-FR")} relations · ${new Date(n.imported_at).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" })}` : "non importé"}</small></div>`; }).join("")
+    + `<button class="btn small" id="net-imp">Importer mes relations LinkedIn</button>`;
+}
+function first(r) {
+  const u = normUrl(r.linkedin_url), n = normTxt(`${r.first_name} ${r.last_name}`), co = normTxt(r.company);
+  const hits = S.conns.filter((c) => (u && c.nUrl === u) || (c.nName === n && co && c.nCo === co));
+  return hits.length ? [...new Set(hits.map((c) => c.owner))] : null;
+}
+function relays(r) {
+  const me = normTxt(`${r.first_name} ${r.last_name}`), co = normTxt(r.company);
+  if (!co) return [];
+  const seen = new Set();
+  return S.conns.filter((c) => c.nCo === co && c.nName !== me).filter((c) => { const k = c.nUrl + c.owner; if (seen.has(k)) return false; seen.add(k); return true; });
+}
+function relayLabel(r) {
+  const rl = relays(r), owners = [...new Set(rl.map((c) => c.owner))];
+  return `${rl.length} relation${rl.length > 1 ? "s" : ""} dans la société · ${owners.length > 1 ? "de " + owners.join(" + ") : "relation" + (rl.length > 1 ? "s" : "") + " de " + owners[0]}`;
+}
+function parseCSV(text) {
+  const rows = []; let row = [], f = "", q = false;
+  for (let i = 0; i < text.length; i++) { const ch = text[i];
+    if (q) { if (ch === '"') { if (text[i + 1] === '"') { f += '"'; i++; } else q = false; } else f += ch; }
+    else if (ch === '"') q = true; else if (ch === ",") { row.push(f); f = ""; }
+    else if (ch === "\n" || ch === "\r") { if (ch === "\r" && text[i + 1] === "\n") i++; row.push(f); rows.push(row); row = []; f = ""; } else f += ch; }
+  if (f || row.length) { row.push(f); rows.push(row); }
+  const h = rows.findIndex((r) => r.some((c) => /^(first name|prénom)$/i.test(c.trim())));
+  if (h < 0) return null;
+  const H = rows[h].map((c) => c.trim().toLowerCase()), ix = (n) => H.findIndex((c) => n.includes(c));
+  const iF = ix(["first name", "prénom"]), iL = ix(["last name", "nom"]), iU = ix(["url", "profile url"]), iC = ix(["company", "entreprise"]), iP = ix(["position", "poste"]), iD = ix(["connected on", "date de connexion"]);
+  return rows.slice(h + 1).filter((r) => r[iF] || r[iL]).map((r) => ({ first_name: (r[iF] || "").trim(), last_name: (r[iL] || "").trim(), url: (r[iU] || "").trim(), company: (r[iC] || "").trim(), position: (r[iP] || "").trim(), connected_on: iD >= 0 ? (r[iD] || "").trim() : null }));
+}
+function openImport() {
+  modal(`<header><h3>Importer mes relations LinkedIn</h3><p>Fichier officiel fourni par LinkedIn. Aucune connexion à votre compte, aucun risque pour celui-ci.</p></header>
+  <div class="body">
+    <ol class="steps">
+      <li>Sur LinkedIn (ordinateur) : <b>Vous → Préférences et confidentialité → Confidentialité des données → Obtenir une copie de vos données</b>.</li>
+      <li>Cochez uniquement <b>Relations</b>, puis <b>Demander l'archive</b>.</li>
+      <li>Vous recevez un email de LinkedIn, en général sous 10 à 30 minutes. Téléchargez l'archive et ouvrez-la.</li>
+      <li>Déposez ci-dessous le fichier <b>Connections.csv</b>.</li>
+    </ol>
+    <div class="field"><label for="imp-who">Réseau de</label><select id="imp-who">${Object.keys(TEAM).map((k) => `<option ${k === S.me ? "selected" : ""}>${k}</option>`).join("")}</select></div>
+    <div class="filebox"><input type="file" id="imp-file" accept=".csv,text/csv"><span class="hint" id="imp-msg">Le nouvel import remplace le précédent pour cette personne.</span></div>
+  </div>
+  <footer><button class="btn" data-close>Fermer</button></footer>`);
+  $("#imp-file").onchange = (e) => {
+    const file = e.target.files[0]; if (!file) return;
+    const rd = new FileReader();
+    rd.onload = async () => {
+      const who = $("#imp-who").value, list = parseCSV(String(rd.result));
+      if (!list) { $("#imp-msg").textContent = "Ce fichier ne ressemble pas à Connections.csv : colonnes « First Name » et « Last Name » introuvables."; return; }
+      $("#imp-msg").innerHTML = `<span class="spinner"></span> Import de ${list.length.toLocaleString("fr-FR")} relations…`;
+      try {
+        await db(sb.from("connections").delete().eq("owner", who));
+        for (let i = 0; i < list.length; i += 500) await db(sb.from("connections").insert(list.slice(i, i + 500).map((c) => ({ ...c, owner: who }))));
+        await db(sb.from("network_imports").upsert({ owner: who, file_name: file.name, count: list.length, imported_at: new Date().toISOString() }));
+        closeModal(); await loadNetwork(); renderAll();
+        toast(`${list.length.toLocaleString("fr-FR")} relations importées pour ${who}.`);
+      } catch (err) { $("#imp-msg").textContent = "L'import a échoué : " + err.message; }
+    };
+    rd.readAsText(file);
+  };
+}
+
+/* ---------- Liste ---------- */
+function pdCell(r) {
+  if (r.sent_at) return `<span class="pdstate pd-done">✓ Envoyé</span>`;
+  const p = r.pd;
+  if (!p) return `<span class="pdstate pd-new">…</span>`;
+  if (p.kind === "person") return `<span class="pdstate pd-known">● Déjà en fiche${p.owner ? " · " + esc(p.owner) : ""}</span>`;
+  if (p.kind === "person_elsewhere") return `<span class="pdstate pd-org" title="Même nom dans Pipedrive">Homonyme${p.orgName ? " chez " + esc(p.orgName) : ""}</span>`;
+  if (p.kind === "org") return `<span class="pdstate pd-org">Société connue</span>`;
+  return `<span class="pdstate pd-new">Nouveau</span>`;
+}
+function degBadge(r) {
+  const f = first(r);
+  let h = f ? `<span class="deg" title="Relation LinkedIn de 1er degré"><i>in</i>1er · ${f.join(" + ")}</span>` : relays(r).length ? `<span class="relay-chip"><i style="font-style:normal">in</i> ${esc(relayLabel(r))}</span>` : "";
+  if (r.intro) h += `<span class="intro-chip">Intro via ${esc(r.intro.first + " " + r.intro.last)} · ${esc(r.intro.status)}</span>`;
+  return h;
+}
+function rowHTML(r) {
+  const s = r.outcome ? OUTCOMES[r.outcome] : null, badges = degBadge(r);
+  return `<tr data-id="${r.id}" aria-selected="${r.id === S.sel}" class="${r.dnc ? "dnc" : ""}">
+    <td class="who"><b>${esc((r.civ ? r.civ + " " : "") + r.first_name + " " + r.last_name)}</b><span>${esc(r.job_title)}</span>${badges || r.is_new ? `<div>${badges}${r.is_new ? `<span class="newtag">Nouveau</span>` : ""}</div>` : ""}</td>
+    <td class="co"><b>${esc(r.company)}</b><span>${esc([r.company_domain, r.city].filter(Boolean).join(" · "))}</span></td>
+    <td>${pdCell(r)}</td>
+    <td>${r.dnc ? `<span class="pill dncpill">Ne plus contacter</span>` : s ? `<span class="pill ${s.cls}">${s.label}</span>` : `<span class="pill s-todo">À appeler</span>`}
+      <div class="coords"><span class="${r.show_phone ? "on" : ""}">Tél.${r.show_phone && r.phones.length > 1 ? " ×" + r.phones.length : ""}</span><span class="${r.show_email ? "on" : ""}">Email${r.show_email && r.emails.length > 1 ? " ×" + r.emails.length : ""}</span>${r.notes ? `<span>✎ notes</span>` : ""}</div></td>
+    <td class="mono" style="font-size:12.5px">${r.relance && !r.dnc ? fmt(r.relance) : "—"}</td></tr>`;
+}
+const FILTERS = {
+  all: () => true, todo: (r) => !r.outcome && !r.dnc, new: (r) => r.is_new, net: (r) => !!first(r) || relays(r).length > 0,
+  out: (r) => !r.sent_at && r.pd?.kind !== "person", follow: (r) => r.relance && !r.dnc, dnc: (r) => !!r.dnc,
+};
+function renderList() {
+  const L = curList();
+  $("#listfoot").hidden = !L;
+  if (!L) { $("#lt").textContent = "Aucune liste ouverte"; $("#ls").textContent = "Lancez une recherche à gauche pour créer votre première liste."; $("#tabs").innerHTML = ""; $("#rows").innerHTML = ""; return; }
+  $("#lt").textContent = L.name;
+  const done = S.rows.filter((r) => r.outcome).length, sent = S.rows.filter((r) => r.sent_at).length;
+  $("#ls").textContent = `${L.zone ? L.zone + " · " : ""}${S.rows.length} prospects${L.total ? ` sur ${Number(L.total).toLocaleString("fr-FR")} trouvés` : ""} · ${done} appelés · ${sent} envoyés dans Pipedrive${L.recurring ? " · relancée chaque lundi" : ""}`;
+  const tabs = [["all", "Tous"], ["todo", "À appeler"], ["new", "Nouveaux"], ["net", "Mon réseau"], ["out", "Hors Pipedrive"], ["follow", "Relances"], ["dnc", "Ne plus contacter"]]
+    .map(([k, l]) => [k, l, S.rows.filter(FILTERS[k]).length]).filter(([k, , n]) => k === "all" || n || S.filter === k);
+  $("#tabs").innerHTML = tabs.map(([k, l, n]) => `<button class="tab" role="tab" aria-selected="${S.filter === k}" data-f="${k}">${l}<small>${n}</small></button>`).join("");
+  const rs = S.rows.filter(FILTERS[S.filter]).slice().sort((a, b) => (!!a.dnc - !!b.dnc) || (!!b.is_new - !!a.is_new));
+  $("#rows").innerHTML = rs.map(rowHTML).join("") || `<tr><td colspan="5" class="empty">Aucun prospect dans cette vue.</td></tr>`;
+  const more = L.total == null || S.rows.length < L.total;
+  $("#more").hidden = !more; $("#morehint").textContent = more ? "" : "Tous les résultats sont chargés.";
+}
+
+/* ---------- Fiche ---------- */
+const pdUrl = (id) => `https://${CONFIG.pipedriveDomain}.pipedrive.com/person/${id}`;
+function liHead(r) {
+  const f = first(r), rl = relays(r);
+  let h = "";
+  if (f) h = `<div class="lihead"><i>in</i><div><b>Relation de 1er degré</b><span>Dans le réseau LinkedIn de ${esc(f.join(" et de "))}</span></div>${r.linkedin_url ? `<a href="${esc(r.linkedin_url.startsWith("http") ? r.linkedin_url : "https://" + r.linkedin_url)}" target="_blank" rel="noopener">Écrire sur LinkedIn ↗</a>` : ""}</div>`;
+  else if (rl.length) h = `<div class="lihead relay"><i>in</i><div><b>${esc(relayLabel(r))}</b><span>${esc(rl.map((c) => `${c.first_name} ${c.last_name} (${c.position || "poste inconnu"}, relation de ${c.owner})`).join(" · "))}</span><span>Intermédiaires possibles pour une introduction · détail plus bas</span></div></div>`;
+  if (r.intro) h += `<div class="pdbanner intro"><b>Introduction via ${esc(r.intro.first + " " + r.intro.last)} · ${esc(r.intro.status)}</b><span>${esc(r.intro.position || "")}${r.intro.company ? " chez " + esc(r.intro.company) : ""} · relation de ${esc(r.intro.owner)}</span></div>`;
+  return h;
+}
+function banners(r) {
+  let h = "";
+  if (r.dnc) h += `<div class="pdbanner dnc"><b>Ne plus contacter</b><span>${esc(r.dnc.reason)} · signalé le ${esc(r.dnc.date)} par ${esc(r.dnc.by)}${r.dnc.pd ? " (indiqué dans Pipedrive)" : ""}.</span><span>La fiche est conservée. Les appels et la révélation de coordonnées sont bloqués.</span><button class="btn small" id="dnc-lift">Lever l'indication</button></div>`;
+  const pid = r.pd_person_id ?? r.pd?.personId;
+  if (r.sent_at) h += `<div class="pdbanner done"><b>✓ Fiche envoyée dans Pipedrive le ${frDate(r.sent_at)}</b>${pid ? `<a class="pdlink" href="${pdUrl(pid)}" target="_blank" rel="noopener">Ouvrir dans Pipedrive ↗</a>` : ""}</div>`;
+  else if (r.pd?.kind === "person") h += `<div class="pdbanner known"><b>Déjà dans Pipedrive${r.pd.owner ? " · fiche de " + esc(r.pd.owner) : ""}</b><span>${esc(r.pd.personName)}${r.pd.orgName ? " · " + esc(r.pd.orgName) : ""}</span><div class="row"><button class="btn small" id="cmp">Comparer avec la fiche</button><a class="pdlink" href="${pdUrl(r.pd.personId)}" target="_blank" rel="noopener">Ouvrir dans Pipedrive ↗</a></div></div>`;
+  else if (r.pd?.kind === "person_elsewhere") h += `<div class="pdbanner org"><b>Même nom dans Pipedrive${r.pd.orgName ? " chez " + esc(r.pd.orgName) : ""}</b><span>Homonyme, ou la même personne qui a changé de société. Vérifiez avant l'envoi.</span><a class="pdlink" href="${pdUrl(r.pd.personId)}" target="_blank" rel="noopener">Ouvrir cette fiche ↗</a></div>`;
+  else if (r.pd?.kind === "org") h += `<div class="pdbanner org"><b>${esc(r.pd.org?.name || r.company)} est déjà dans Pipedrive</b><span>${r.pd.org?.owner ? "Propriétaire " + esc(r.pd.org.owner) + ". " : ""}${esc(r.first_name)} ${esc(r.last_name)} n'y figure pas encore.</span></div>`;
+  return h;
+}
+function netHTML(r) {
+  const f = first(r), rl = relays(r);
+  const list = rl.length ? `<ul class="relays">${rl.map((c) => `<li><b>${esc(c.first_name + " " + c.last_name)}</b>
+      <span>${esc(c.position || "")}${c.company ? " chez " + esc(c.company) : ""} · relation de ${esc(c.owner)}</span>
+      ${c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener">Voir le profil ↗</a>` : ""}
+      ${r.intro && normUrl(r.intro.url) === c.nUrl ? "" : `<button class="btn small" data-pick="${esc(c.nUrl)}|${esc(c.owner)}|${esc(c.nName)}">Choisir comme intermédiaire</button>`}</li>`).join("")}</ul>` : "";
+  return `<section class="prep" aria-label="Réseau LinkedIn"><h3>Réseau LinkedIn</h3>
+    ${f ? `<p class="hook" style="margin:0"><b>Relation de 1er degré</b> de ${esc(f.join(" et de "))}. Un message LinkedIn direct est possible avant l'appel.</p>` : ""}
+    ${rl.length ? `<p class="hint" style="margin:0">Vos relations qui travaillent chez ${esc(r.company)}. Elles ne sont pas forcément connectées au prospect sur LinkedIn, mais sont de bons intermédiaires pour une introduction.</p>${list}` : f ? "" : `<p class="hint" style="margin:0">${S.conns.length ? `Aucune de vos relations ne travaille chez ${esc(r.company)}.` : "Importez vos relations LinkedIn (colonne de gauche) pour voir vos liens avec ce prospect."}</p>`}
+    ${introHTML(r, f)}</section>`;
+}
+function introHTML(r, f) {
+  const li = r.linkedin_url ? (r.linkedin_url.startsWith("http") ? r.linkedin_url : "https://" + r.linkedin_url) : `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(r.first_name + " " + r.last_name + " " + r.company)}`;
+  if (r.intro) return `<div class="introbox"><b style="font-size:13px">Intermédiaire choisi : ${esc(r.intro.first + " " + r.intro.last)}</b>
+      <span class="hint">${esc(r.intro.position || "")}${r.intro.company ? " chez " + esc(r.intro.company) : ""} · relation de ${esc(r.intro.owner)}</span>
+      <div class="row"><label class="hint" for="intro-st">Statut</label><select id="intro-st">${STATUS.map((x) => `<option ${x === r.intro.status ? "selected" : ""}>${x}</option>`).join("")}</select>
+      ${r.intro.url ? `<a class="libtn" href="${esc(r.intro.url.startsWith("http") ? r.intro.url : "https://" + r.intro.url)}" target="_blank" rel="noopener"><i>in</i>Écrire à ${esc(r.intro.first)} ↗</a>` : ""}</div>
+      <button class="linkbtn" id="intro-rm">Retirer cet intermédiaire</button></div>`;
+  if (f) return `<a class="libtn" href="${esc(li)}" target="_blank" rel="noopener"><i>in</i>Ouvrir ${r.linkedin_url ? "le profil" : "la recherche"} sur LinkedIn ↗</a>`;
+  return `<div class="introbox"><b style="font-size:13px">Se faire introduire par une relation commune</b><ol>
+      <li><a class="libtn" href="${esc(li)}" target="_blank" rel="noopener"><i>in</i>Ouvrir ${r.linkedin_url ? "le profil" : "la recherche"} sur LinkedIn ↗</a>
+        <span class="hint" style="display:block;margin-top:4px">Sur le profil, cliquez sur « relations en commun » et repérez la personne la mieux placée pour vous introduire.${r.linkedin_url ? "" : " (L'adresse exacte du profil est connue après révélation des coordonnées.)"}</span></li>
+      <li><label for="intro-in"><b>Facultatif</b> : notez ici la personne que vous allez solliciter, pour garder le suivi de la demande.</label>
+        <div class="row" style="margin-top:4px"><input type="text" id="intro-in" list="conn-list" placeholder="Nom d'une de vos relations" style="flex:1;min-width:0"><button class="btn small" id="intro-add">Enregistrer</button></div>
+        <datalist id="conn-list">${S.conns.slice(0, 5000).map((c) => `<option value="${esc(c.first_name + " " + c.last_name)}">${esc((c.company || "") + " · relation de " + c.owner)}</option>`).join("")}</datalist>
+        <span class="hint" id="intro-msg" style="display:block;margin-top:4px">Une fois enregistrée, elle apparaît sous le nom du prospect dans la liste, avec un statut, et elle est mentionnée dans la note Pipedrive.</span></li></ol></div>`;
+}
+function renderDetail() {
+  const r = current(), D = $("#detail");
+  if (!r) { D.innerHTML = `<p class="empty">Sélectionnez un prospect dans la liste.</p>`; return; }
+  const o = r.outcome ? OUTCOMES[r.outcome] : null, lock = !!r.dnc;
+  const ci = r.company_info || {};
+  const canSend = (r.outcome && !(OUTCOMES[r.outcome].manual && !r.relance)) || (!r.outcome && introReady(r));
+  D.innerHTML = `
+  <div class="d-head">
+    <div class="row"><select id="d-civ" aria-label="Civilité"><option ${r.civ === "M." ? "selected" : ""}>M.</option><option ${r.civ === "Mme" ? "selected" : ""}>Mme</option></select>
+      <h2>${esc(r.first_name + " " + r.last_name)}</h2></div>
+    <div class="role">${esc(r.job_title)} · <b>${esc(r.company)}</b></div>
+    ${r.linkedin_url ? `<a href="${esc(r.linkedin_url.startsWith("http") ? r.linkedin_url : "https://" + r.linkedin_url)}" target="_blank" rel="noopener">Profil LinkedIn ↗</a>` : ""}
+  </div>
+  ${liHead(r)}
+  ${banners(r)}
+  <div class="block">
+    <div class="sect-label">Coordonnées</div>
+    <div class="reveal">
+      <div class="revealbox ${r.show_phone ? "done" : ""}"><span class="lbl">Téléphones${r.show_phone ? ` · ${r.phones.length} trouvé${r.phones.length > 1 ? "s" : ""}` : ""}</span>
+        ${r.show_phone ? (r.phones.length ? `<div class="nums">${r.phones.map((p, i) => `<div class="num ${r.called_idx === i ? "called" : ""} ${p.bad ? "bad" : ""}">
+            <span class="type">${esc(p.type)}${p.dnc ? " · liste rouge" : ""}</span><span class="val">${esc(p.num)}</span><button class="btn small" data-copy="${esc(p.num)}">Copier</button>
+            <div class="acts"><a class="pdlink" href="tel:${esc(p.num.replace(/\s+/g, ""))}">Appeler</a><label><input type="radio" name="called" data-pc="${i}" ${r.called_idx === i ? "checked" : ""}>Numéro appelé</label>
+              <label><input type="checkbox" data-ps="${i}" ${p.send && !p.bad ? "checked" : ""} ${p.bad ? "disabled" : ""}>Dans Pipedrive</label>
+              <button data-pb="${i}">${p.bad ? "Rétablir" : "Faux numéro"}</button></div></div>`).join("")}</div>` : `<span class="hint">Lusha n'a trouvé aucun numéro pour ce contact.</span>`)
+        : `<div class="row"><button class="btn small" id="rv-phone" ${lock ? "disabled" : ""}>Voir les téléphones</button><span class="cost">5 crédits · tous les numéros trouvés</span></div>`}</div>
+      <div class="revealbox ${r.show_email ? "done" : ""}"><span class="lbl">Emails${r.show_email ? ` · ${r.emails.length} trouvé${r.emails.length > 1 ? "s" : ""}` : ""}</span>
+        ${r.show_email ? (r.emails.length ? `<div class="nums">${r.emails.map((m, i) => `<div class="num"><span class="type">${esc(m.type)}</span><span class="val">${esc(m.addr)}</span><button class="btn small" data-copy="${esc(m.addr)}">Copier</button>
+            <div class="acts"><label><input type="checkbox" data-es="${i}" ${m.send ? "checked" : ""}>Dans Pipedrive</label></div></div>`).join("")}</div>` : `<span class="hint">Lusha n'a trouvé aucun email pour ce contact.</span>`)
+        : `<div class="row"><button class="btn small" id="rv-email" ${lock ? "disabled" : ""}>Voir les emails</button><span class="cost">1 crédit</span></div>`}</div>
+    </div>
+  </div>
+  <div class="block">
+    <div class="row" style="justify-content:space-between"><label class="sect-label" for="d-notes">Notes d'appel</label><span class="saved-ind" id="notes-ind"></span></div>
+    <textarea id="d-notes" ${lock ? "disabled" : ""} placeholder="Notez ici pendant l'appel : contexte, besoins, interlocuteurs cités, prochaine étape…">${esc(r.notes)}</textarea>
+    <span class="hint">Enregistrées au fil de la frappe. Elles seront jointes à l'activité créée dans Pipedrive.</span>
+  </div>
+  <div class="block">
+    <div class="sect-label">Résultat de l'appel</div>
+    <div class="outcomes">${Object.entries(OUTCOMES).map(([k, v]) => `<button class="outcome" data-o="${k}" aria-pressed="${r.outcome === k}" ${lock ? "disabled" : ""}><b>${v.label}</b><small>${v.sub}</small></button>`).join("")}</div>
+    ${o && !lock ? `<div class="relance">${o.none ? "Aucune relance ne sera planifiée." : o.manual
+      ? `<label for="d-date"><b>${r.outcome === "int" ? "Action suivante" : "Rappel"} le</b></label><input type="date" id="d-date" value="${r.relance || ""}">`
+      : `Relance d'appel le <b>${fmt(r.relance)}</b> <span class="hint">(jours ouvrés)</span>`}</div>` : ""}
+    ${(r.outcome === "vm" || r.outcome === "nr") && !lock ? `<div class="row"><button class="btn" id="mail">Préparer l'email de suivi</button><span class="hint">${r.show_email ? "" : "Révélez d'abord l'email (1 crédit)."}</span></div>` : ""}
+    <div class="row"><label for="d-ref" class="hint">Référent</label>
+      <select id="d-ref">${Object.keys(TEAM).map((k) => `<option ${r.referent === k ? "selected" : ""}>${k}</option>`).join("")}</select></div>
+  </div>
+  ${netHTML(r)}
+  ${ci.address || ci.website || ci.industry ? `<div class="block"><div class="sect-label">Société</div><dl class="kv">${ci.address ? `<dt>Siège</dt><dd>${esc(ci.address)}</dd>` : ""}${ci.website ? `<dt>Site</dt><dd>${esc(ci.website)}</dd>` : ""}${ci.industry ? `<dt>Secteur</dt><dd>${esc(ci.industry)}</dd>` : ""}</dl></div>` : ""}
+  <div class="block">
+    ${lock ? `<button class="btn pd" id="dnc-pd" ${r.dnc.pd ? "disabled" : ""}>Signaler « Ne plus contacter » dans Pipedrive</button>
+      <span class="hint">${r.dnc.pd ? "Déjà indiqué dans Pipedrive." : "Ajoute une note (et l'étiquette si elle existe) sur la fiche Pipedrive, sans rien supprimer."}</span>`
+    : `<button class="btn pd" id="to-pd" ${canSend ? "" : "disabled"}>${r.sent_at || r.pd?.kind === "person" ? "Mettre à jour dans Pipedrive" : "Envoyer vers Pipedrive"}</button>
+      <span class="hint">${!r.outcome && !introReady(r) ? "Indiquez d'abord le résultat de l'appel, ou une demande d'introduction envoyée." : r.outcome && OUTCOMES[r.outcome].manual && !r.relance ? "Choisissez la date de l'action suivante." : !r.outcome ? "Pas encore d'appel : la fiche sera créée avec la demande d'introduction. Vous verrez un récapitulatif avant l'envoi." : "Vous verrez un récapitulatif avant l'envoi."}</span>
+      <button class="linkbtn" id="dnc-set">Marquer « Ne plus contacter »</button>`}
+  </div>`;
+}
+function renderAll() { renderCrit(); renderList(); renderDetail(); }
+
+/* ---------- Fenêtres ---------- */
+function modal(html) {
+  $("#modal-root").innerHTML = `<div class="scrim" id="scrim"><div class="modal" role="dialog" aria-modal="true">${html}</div></div>`;
+  $("#scrim").addEventListener("click", (e) => { if (e.target.id === "scrim" || e.target.closest("[data-close]")) closeModal(); });
+}
+function closeModal() { $("#modal-root").innerHTML = ""; }
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+
+/* ---------- Révélation Lusha ---------- */
+async function reveal(r, what) {
+  try {
+    toast("Révélation en cours…");
+    const res = await api("lusha.reveal", { requestId: r.lusha_request_id, contactId: r.lusha_contact_id, what, firstName: r.first_name, lastName: r.last_name, company: r.company, linkedin: r.linkedin_url });
+    applyReveal(r, res, what);
+  } catch (e) {
+    if (e.code === "PLAN_NO_SPLIT") {
+      modal(`<header><h3>Révéler email et téléphone ensemble ?</h3><p>${esc(e.message)}</p></header>
+      <div class="body"><p style="margin:0">Pour ce contact, cela coûtera <b>jusqu'à 6 crédits</b> (5 pour le téléphone, 1 pour l'email) au lieu de ${what === "phones" ? 5 : 1}.</p></div>
+      <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="rv-both">Révéler les deux</button></footer>`);
+      $("#rv-both").onclick = async () => { closeModal(); try { const res = await api("lusha.reveal", { requestId: r.lusha_request_id, contactId: r.lusha_contact_id, what: "both", firstName: r.first_name, lastName: r.last_name, company: r.company, linkedin: r.linkedin_url }); applyReveal(r, res, "both"); } catch (err) { toast(err.message, 6000); } };
+      return;
+    }
+    toast(e.code === "LUSHA_NO_CREDITS" ? "Crédits Lusha épuisés." : e.message, 6000);
+  }
+}
+const TYPE_FR = { mobile: "Portable", direct: "Ligne directe", work: "Standard", phone: "Téléphone", private: "Personnel", personal: "Personnel", unknown: "Autre", "": "Autre" };
+async function applyReveal(r, res, what) {
+  const patch = {};
+  const phones = (res.phones || []).map((p) => { const t = TYPE_FR[p.type] ?? p.type; return { num: p.num, type: t, send: t !== "Standard", bad: false, dnc: !!p.dnc }; });
+  const emails = (res.emails || []).map((m) => { const t = /work|pro/.test(m.type) ? "Professionnel" : /priv|pers/.test(m.type) ? "Personnel" : "Autre"; return { addr: m.addr, type: t, send: t !== "Personnel" }; });
+  if (what !== "emails") { patch.phones = phones; patch.show_phone = true; }
+  if (what !== "phones" || emails.length && what === "both") { patch.emails = emails; patch.show_email = true; }
+  if (what === "both") { patch.phones = phones; patch.show_phone = true; patch.emails = emails; patch.show_email = true; }
+  if (res.linkedin && !r.linkedin_url) patch.linkedin_url = res.linkedin;
+  if (res.company) patch.company_info = { ...(r.company_info || {}), ...Object.fromEntries(Object.entries(res.company).filter(([, v]) => v)) };
+  await saveRow(r, patch);
+  renderList(); renderDetail(); refreshCredits();
+  const n = what === "emails" ? emails.length : phones.length;
+  toast(n ? `${n} ${what === "emails" ? "email" : "numéro"}${n > 1 ? "s" : ""} trouvé${n > 1 ? "s" : ""}` : "Lusha n'a rien trouvé pour ce contact.");
+}
+
+/* ---------- Pipedrive : envoi ---------- */
+const introReady = (r) => !!(r.intro && r.intro.status !== "À solliciter");
+const sendPhones = (r) => (r.show_phone ? r.phones.filter((p) => p.send && !p.bad) : []);
+const sendEmails = (r) => (r.show_email ? r.emails.filter((m) => m.send) : []);
+function openPD() {
+  const r = current();
+  if (!r.sent_at && (r.pd?.kind === "person" || r.pd?.kind === "person_elsewhere")) return openDup(r);
+  showRecap(r, r.sent_at ? "update" : "create");
+}
+function cmpTable(r) {
+  const rows = [
+    ["Nom", r.pd.personName, `${r.first_name} ${r.last_name}`],
+    ["Organisation", r.pd.orgName || "—", r.company],
+    ["Téléphones", (r.pd.phones || []).join(", ") || "—", sendPhones(r).map((p) => p.num).join(", ") || "—"],
+    ["Emails", (r.pd.emails || []).join(", ") || "—", sendEmails(r).map((m) => m.addr).join(", ") || "—"],
+    ["Propriétaire", r.pd.owner || "—", r.referent],
+  ];
+  return `<div style="overflow-x:auto"><table class="cmp" style="min-width:0"><thead><tr><th>Champ</th><th>Fiche Pipedrive</th><th>Données Lusha</th></tr></thead><tbody>
+    ${rows.map(([k, a, b]) => `<tr><td>${k}</td><td>${esc(a)}</td><td class="${normTxt(a) !== normTxt(b) && b !== "—" ? "diff" : ""}">${esc(b)}</td></tr>`).join("")}</tbody></table></div>`;
+}
+function openCompare(r) {
+  modal(`<header><h3>${esc(r.first_name + " " + r.last_name)} dans Pipedrive</h3><p>Fiche existante comparée aux données Lusha. Les lignes surlignées diffèrent.</p></header>
+  <div class="body">${cmpTable(r)}<a class="pdlink" href="${pdUrl(r.pd.personId)}" target="_blank" rel="noopener">Ouvrir la fiche dans Pipedrive ↗</a></div><footer><button class="btn" data-close>Fermer</button></footer>`);
+}
+function openDup(r) {
+  const elsewhere = r.pd.kind === "person_elsewhere";
+  modal(`<header><h3>${elsewhere ? "Même nom dans Pipedrive" : "Fiche existante dans Pipedrive"}</h3><p>${esc(r.pd.personName)} a déjà une fiche${r.pd.orgName ? " chez " + esc(r.pd.orgName) : ""}${r.pd.owner ? " (propriétaire : " + esc(r.pd.owner) + ")" : ""}. Choisissez quoi faire.</p></header>
+  <div class="body">${cmpTable(r)}
+    <div class="choice">
+      <label><input type="radio" name="dupc" value="update" ${elsewhere ? "" : "checked"}><span><b>Mettre à jour la fiche existante</b><small>${elsewhere ? `C'est la même personne : elle est rattachée à ${esc(r.company)}, son historique est conservé.` : "Les nouveaux numéros et emails sont ajoutés, rien n'est effacé. L'historique est conservé."}</small></span></label>
+      <label><input type="radio" name="dupc" value="create" ${elsewhere ? "checked" : ""}><span><b>Créer une nouvelle fiche</b><small>À choisir si c'est une autre personne.</small></span></label>
+    </div>
+  </div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="dup-next">Continuer</button></footer>`);
+  $("#dup-next").onclick = () => showRecap(r, document.querySelector("input[name=dupc]:checked").value);
+}
+const kv = (arr) => `<dl class="kv">${arr.map(([k, v]) => `<dt>${k}</dt><dd>${v ? esc(v) : '<span class="muted">non renseigné</span>'}</dd>`).join("")}</dl>`;
+function personCard(r) {
+  return `<div class="pdcard"><h4>Personne</h4>${kv([["Civilité", r.civ], ["Prénom", r.first_name], ["Nom", r.last_name], ["Fonction", r.job_title], ["Téléphones", sendPhones(r).map((p) => `${p.num} (${p.type})`).join(" · ")], ["Emails", sendEmails(r).map((m) => `${m.addr} (${m.type})`).join(" · ")], ["Profil LinkedIn", r.linkedin_url], ["Propriétaire", r.referent]])}</div>`;
+}
+function orgCard(r) {
+  const ci = r.company_info || {};
+  return `<div class="pdcard"><h4>Organisation</h4>${kv([["Nom", r.company], ["Siège social", ci.address], ["Site internet", ci.website || r.company_domain], ["Secteur", ci.industry]])}${r.pd?.org || r.pd?.orgId ? `<p class="hint" style="margin:0">Organisation existante : rattachement à la fiche.</p>` : ""}</div>`;
+}
+function showRecap(r, mode) {
+  if (!r.outcome) return showIntroRecap(r, mode);
+  const o = OUTCOMES[r.outcome];
+  const subject = `${o.manual ? (r.outcome === "int" ? "Action suivante" : "Rappel") : "Relance"} · ${o.label.toLowerCase()}`;
+  const act = o.none ? `<p class="muted" style="margin:0">Aucune activité (pas intéressé). La note est ajoutée à la fiche.</p>` : kv([["Type", "Appel"], ["Sujet", subject], ["Échéance", fmt(r.relance)], ["Assignée à", r.referent]]);
+  const head = `${frDate()} · ${o.label}${r.show_phone && r.phones[r.called_idx] ? ` · appelé au ${r.phones[r.called_idx].num}` : ""} · ${r.referent}${r.intro ? ` · introduction via ${r.intro.first} ${r.intro.last} (${r.intro.status.toLowerCase()})` : ""}`;
+  modal(`<header><h3>${mode === "update" ? "Mettre à jour dans Pipedrive" : "Créer dans Pipedrive"}</h3><p>Vérifiez les informations. Rien n'est envoyé avant votre confirmation.</p></header>
+  <div class="body"><div class="pdgrid">${personCard(r)}${orgCard(r)}<div class="pdcard"><h4>Activité</h4>${act}</div></div>
+  <div class="field"><label for="rc-notes">Note jointe ${o.none ? "à la fiche de la personne" : "à l'activité"}</label>
+    <p class="notebox">${esc(head)}</p>
+    <textarea id="rc-notes" placeholder="Aucune note prise pendant l'appel">${esc(r.notes)}</textarea>
+    <span class="hint">Vous pouvez encore compléter la note avant l'envoi.</span></div></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn pd" id="pd-go">Confirmer l'envoi</button></footer>`);
+  $("#pd-go").onclick = () => doSend(r, mode, o.none ? null : { subject: `${subject} · ${r.first_name} ${r.last_name}`, due_date: r.relance }, head);
+}
+function showIntroRecap(r, mode) {
+  const i = r.intro;
+  const head = `${frDate()} · Demande d'introduction via ${i.first} ${i.last} (${[i.position, i.company].filter(Boolean).join(", ")}, relation de ${i.owner}) · ${i.status.toLowerCase()} · ${r.referent}`;
+  modal(`<header><h3>${mode === "update" ? "Mettre à jour dans Pipedrive" : "Créer dans Pipedrive"}</h3><p>Aucun appel pour l'instant : la fiche est créée avec la demande d'introduction. Rien n'est envoyé avant votre confirmation.</p></header>
+  <div class="body"><div class="pdgrid">${personCard(r)}${orgCard(r)}
+    <div class="pdcard"><h4>Activité</h4>
+      <label class="check"><input type="checkbox" id="rc-act"><span>Planifier une relance de ${esc(i.first)} ${esc(i.last)} pour l'introduction</span></label>
+      <div class="row"><label class="hint" for="rc-date">le</label><input type="date" id="rc-date" value="${addBiz(new Date(), 5)}"></div>
+      <p class="hint" style="margin:0">Décoché : aucune activité n'est créée, seule la note est ajoutée.</p></div></div>
+  <div class="field"><label for="rc-notes">Note ajoutée à la fiche de la personne</label><p class="notebox">${esc(head)}</p>
+    <textarea id="rc-notes" placeholder="Ajoutez un commentaire si besoin">${esc(r.notes)}</textarea></div></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn pd" id="pd-go">Confirmer l'envoi</button></footer>`);
+  $("#pd-go").onclick = () => {
+    const act = $("#rc-act").checked ? { subject: `Relancer ${i.first} ${i.last} · introduction à ${r.first_name} ${r.last_name}`, due_date: $("#rc-date").value } : null;
+    doSend(r, mode, act, head, act ? { relance: act.due_date } : {});
+  };
+}
+async function doSend(r, mode, activity, head, extra = {}) {
+  const btn = $("#pd-go"); btn.classList.add("busy"); btn.innerHTML = `<span class="spinner"></span> Envoi…`;
+  const notes = $("#rc-notes")?.value ?? r.notes;
+  if (notes !== r.notes) await saveRow(r, { notes });
+  const personId = mode === "update" ? (r.pd_person_id ?? r.pd?.personId) : null;
+  const orgId = r.pd_org_id ?? (mode === "update" ? r.pd?.orgId : null) ?? r.pd?.org?.id ?? null;
+  const ci = r.company_info || {};
+  try {
+    const res = await api("pd.send", {
+      mode, personId, orgId, owner: r.referent, activity,
+      note: [head, notes].filter(Boolean).join("\n\n"),
+      prospect: { firstName: r.first_name, lastName: r.last_name, civ: r.civ, jobTitle: r.job_title, company: r.company, linkedin: r.linkedin_url, website: ci.website || r.company_domain, industry: ci.industry, address: ci.address,
+        phones: sendPhones(r).map((p) => ({ num: p.num, type: p.type === "Portable" ? "mobile" : "work" })), emails: sendEmails(r).map((m) => ({ addr: m.addr, type: m.type === "Personnel" ? "personnel" : "work" })) },
+    });
+    await saveRow(r, { sent_at: new Date().toISOString(), pd_person_id: res.personId, pd_org_id: res.orgId, pd: { ...(r.pd || {}), kind: "person", personId: res.personId, owner: r.referent }, ...extra });
+    closeModal(); renderList(); renderDetail();
+    const miss = res.missingFields && Object.entries(res.missingFields).filter(([, v]) => v).map(([k]) => k === "civilite" ? "Civilité" : "Profil Linkedin");
+    toast(`${r.first_name} ${r.last_name} enregistré dans Pipedrive${activity ? ` · relance le ${fmt(activity.due_date)}` : ""}.${miss?.length ? ` Champ introuvable dans Pipedrive : ${miss.join(", ")}.` : ""}`, 6000);
+  } catch (e) {
+    btn.classList.remove("busy"); btn.textContent = "Réessayer";
+    toast("Envoi impossible : " + e.message, 8000);
+  }
+}
+
+/* ---------- Email de suivi ---------- */
+function mailTemplate(r) {
+  const me = TEAM[r.referent] || r.referent;
+  const hello = r.civ === "Mme" ? "Bonjour Madame," : "Bonjour Monsieur,";
+  const open = r.outcome === "vm" ? "Je viens d'essayer de vous joindre et vous ai laissé un message vocal." : "J'ai essayé de vous joindre aujourd'hui, sans succès.";
+  const next = r.relance ? ` Je me permettrai de vous rappeler ${fmtLong(r.relance)} si nous ne nous sommes pas parlé d'ici là.` : "";
+  return {
+    subject: `${r.company} · directeurs financiers de transition`,
+    body: `${hello}\n\n${open}\n\nJe suis ${me}, associé de Lutèce Executive. Nous mettons à disposition des directeurs financiers de transition pour les ETI et PME, opérationnels en quelques jours : remplacement d'un DAF, clôture ou audit sous tension, restructuration, structuration du pilotage financier.\n\nSeriez-vous disponible pour un échange de 15 minutes dans les prochains jours ?${next}\n\nBien cordialement,\n\n${me}\nAssocié · Lutèce Executive\n[votre numéro]`,
+  };
+}
+function openMail(r) {
+  const m = mailTemplate(r), to = sendEmails(r)[0]?.addr || r.emails[0]?.addr || "";
+  modal(`<header><h3>Email de suivi</h3><p>Modèle ${r.outcome === "vm" ? "après message vocal" : "après appel sans réponse"}. Modifiez-le librement.</p></header>
+  <div class="body mailfields">
+    <div class="field"><label>À</label><span class="mono">${to ? esc(to) : '<span class="muted">email non révélé</span>'}</span></div>
+    <div class="field"><label for="m-sub">Objet</label><input type="text" id="m-sub" value="${esc(m.subject)}"></div>
+    <div class="field"><label for="m-body">Message</label><textarea id="m-body">${esc(m.body)}</textarea></div>
+    <label class="check"><input type="checkbox" id="m-log" checked><span>Mentionner l'envoi de cet email dans mes notes (donc dans Pipedrive)</span></label>
+  </div>
+  <footer><button class="btn" data-close>Fermer</button><button class="btn" id="m-copy">Copier le message</button>
+    <a class="btn primary" id="m-open" href="#" style="text-decoration:none">Ouvrir dans ma messagerie</a></footer>`);
+  const upd = () => { $("#m-open").href = `mailto:${to}?subject=${encodeURIComponent($("#m-sub").value)}&body=${encodeURIComponent($("#m-body").value)}`; };
+  upd(); $("#m-sub").oninput = upd; $("#m-body").oninput = upd;
+  const log = async () => { if ($("#m-log").checked && !/Email de suivi envoyé/.test(r.notes)) { await saveRow(r, { notes: (r.notes ? r.notes + "\n" : "") + `Email de suivi envoyé le ${frDate()} : « ${$("#m-sub").value} »` }); renderList(); renderDetail(); } };
+  $("#m-copy").onclick = () => { navigator.clipboard?.writeText(`Objet : ${$("#m-sub").value}\n\n${$("#m-body").value}`).then(() => toast("Message copié"), () => toast("Copie impossible, sélectionnez le texte")); log(); };
+  $("#m-open").addEventListener("click", log);
+}
+
+/* ---------- Ne plus contacter ---------- */
+function openDnc(r) {
+  modal(`<header><h3>Marquer « Ne plus contacter »</h3><p>${esc(r.first_name + " " + r.last_name)} reste dans vos listes et dans Pipedrive, mais ne pourra plus être appelé depuis l'outil.</p></header>
+  <div class="body">
+    <div class="field"><label for="dn-r">Motif</label><select id="dn-r"><option>Demande de la personne</option><option>Opposition au titre du RGPD</option><option>Client ou partenaire existant</option><option>Autre</option></select></div>
+    <div class="field"><label for="dn-n">Précision (facultatif)</label><input type="text" id="dn-n" placeholder="Ex. demandé lors de l'appel du ${frDate()}"></div>
+    <label class="check"><input type="checkbox" id="dn-pd" checked><span>Signaler aussi dans Pipedrive (note sur la fiche, et étiquette « Ne plus contacter » si elle existe ; rien n'est supprimé)</span></label>
+  </div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="dn-go">Confirmer</button></footer>`);
+  $("#dn-go").onclick = async () => {
+    const reason = $("#dn-r").value + ($("#dn-n").value.trim() ? ` · ${$("#dn-n").value.trim()}` : "");
+    const toPd = $("#dn-pd").checked;
+    await saveRow(r, { dnc: { reason, date: new Date().toLocaleDateString("fr-FR", { day: "numeric", month: "long", year: "numeric" }), by: S.me, pd: false } });
+    closeModal(); renderList(); renderDetail();
+    if (toPd) dncToPipedrive(r); else toast(`${r.first_name} ${r.last_name} marqué « Ne plus contacter ».`);
+  };
+}
+async function dncToPipedrive(r) {
+  try {
+    let pid = r.pd_person_id ?? (r.pd?.kind === "person" ? r.pd.personId : null);
+    if (!pid) {
+      const res = await api("pd.send", { mode: "create", owner: r.referent, note: `Ne plus contacter · ${r.dnc.reason}`, prospect: { firstName: r.first_name, lastName: r.last_name, civ: r.civ, jobTitle: r.job_title, company: r.company, linkedin: r.linkedin_url, phones: [], emails: [] } });
+      pid = res.personId; await saveRow(r, { pd_person_id: res.personId, pd_org_id: res.orgId, sent_at: new Date().toISOString() });
+    }
+    const d = await api("pd.dnc", { personId: pid, reason: r.dnc.reason, by: S.me });
+    await saveRow(r, { dnc: { ...r.dnc, pd: true } });
+    renderList(); renderDetail();
+    toast(`Indiqué dans Pipedrive${d.labelSet ? " (note et étiquette)" : " (note ajoutée ; créez l'étiquette « Ne plus contacter » dans Pipedrive pour qu'elle soit aussi posée)"}.`, 6000);
+  } catch (e) { toast("Signalement Pipedrive impossible : " + e.message, 6000); }
+}
+
+/* ---------- Société / groupe : autocomplétion Lusha ---------- */
+const suggest = debounce(async (text) => {
+  if (text.length < 2) { $("#g-sug").hidden = true; return; }
+  try {
+    const res = await api("lusha.companyNames", { text });
+    const list = (Array.isArray(res) ? res : res?.data ?? res?.results ?? []).map((x) => (typeof x === "string" ? x : x.name ?? x.value ?? x.label)).filter(Boolean).slice(0, 12);
+    $("#g-sug").innerHTML = list.map((n) => `<button data-gadd="${esc(n)}">${esc(n)}</button>`).join("") || `<span class="hint" style="padding:7px 10px">Aucune société trouvée.</span>`;
+    $("#g-sug").hidden = false;
+  } catch (e) { toast(e.message, 5000); }
+}, 350);
+$("#g-q").addEventListener("input", (e) => suggest(e.target.value.trim()));
+
+/* ---------- Événements ---------- */
+const saveNotes = debounce(async (r, v) => { await saveRow(r, { notes: v }); const ind = $("#notes-ind"); if (ind) { ind.textContent = "Enregistré"; setTimeout(() => (ind.textContent = ""), 1500); } }, 700);
+document.addEventListener("click", async (e) => {
+  const t = e.target.closest("button,tr[data-id]");
+  if (!t) return;
+  if (t.closest("#mode")) { S.mode = t.dataset.m; renderCrit(); return; }
+  if (t.dataset.fam) { const keys = Object.keys(FAMS[t.dataset.fam]); const all = keys.every((v) => S.crit.fn.has(v)); keys.forEach((v) => (all ? S.crit.fn.delete(v) : S.crit.fn.add(v))); renderCrit(); return; }
+  if (t.matches(".chip[data-k]")) { const set = S.crit[t.dataset.k]; const v = t.dataset.k === "size" ? Number(t.dataset.v) : t.dataset.v; set.has(v) ? set.delete(v) : set.add(v); renderCrit(); return; }
+  if (t.dataset.gadd) { if (!S.groupSel.includes(t.dataset.gadd)) S.groupSel.push(t.dataset.gadd); $("#g-q").value = ""; $("#g-sug").hidden = true; renderCrit(); return; }
+  if (t.dataset.gdel !== undefined) { S.groupSel.splice(Number(t.dataset.gdel), 1); renderCrit(); return; }
+  if (t.dataset.list) { openList(t.dataset.list); return; }
+  if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
+  if (t.id === "net-imp") { openImport(); return; }
+  if (t.matches("tr[data-id]")) { S.sel = t.dataset.id; renderList(); renderDetail(); if (innerWidth < 1100) $("#detail").scrollIntoView({ behavior: "smooth" }); return; }
+  if (t.dataset.copy) { navigator.clipboard?.writeText(t.dataset.copy).then(() => toast("Copié"), () => toast("Copie impossible, sélectionnez le texte")); return; }
+  const r = current(); if (!r) return;
+  if (t.id === "cmp") return openCompare(r);
+  if (t.id === "rv-phone") return reveal(r, "phones");
+  if (t.id === "rv-email") return reveal(r, "emails");
+  if (t.dataset.pb !== undefined) { const phones = r.phones.map((p, i) => i === Number(t.dataset.pb) ? { ...p, bad: !p.bad, send: p.bad ? p.send : false } : p); await saveRow(r, { phones }); renderList(); renderDetail(); return; }
+  if (t.matches(".outcome")) { const k = t.dataset.o, o = OUTCOMES[k]; await saveRow(r, { outcome: k, relance: o.days ? addBiz(new Date(), o.days) : o.none ? null : (r.relance && r.relance >= todayISO() ? r.relance : null) }); renderList(); renderDetail(); return; }
+  if (t.id === "mail") return openMail(r);
+  if (t.id === "to-pd") return openPD();
+  if (t.id === "dnc-set") return openDnc(r);
+  if (t.id === "dnc-lift") { await saveRow(r, { dnc: null }); renderList(); renderDetail(); toast("Indication levée dans l'outil (la note Pipedrive reste)."); return; }
+  if (t.id === "dnc-pd") return dncToPipedrive(r);
+  if (t.dataset.pick) { const [u, o, n] = t.dataset.pick.split("|"); const c = S.conns.find((x) => x.nUrl === u && x.owner === o && x.nName === n); if (c) setIntro(r, c); return; }
+  if (t.id === "intro-add") { const v = normTxt($("#intro-in").value); const c = S.conns.find((x) => x.nName === v); if (!c) { $("#intro-msg").textContent = "Cette personne n'est pas dans vos relations importées. Vérifiez l'orthographe ou mettez à jour votre import."; return; } setIntro(r, c); return; }
+  if (t.id === "intro-rm") { await saveRow(r, { intro: null }); renderList(); renderDetail(); return; }
+});
+async function setIntro(r, c) { await saveRow(r, { intro: { first: c.first_name, last: c.last_name, position: c.position, company: c.company, owner: c.owner, url: c.url, status: "À solliciter" } }); renderList(); renderDetail(); toast(`Intermédiaire choisi : ${c.first_name} ${c.last_name}`); }
+document.addEventListener("change", async (e) => {
+  if (e.target.id === "zone") { S.zone = e.target.value; return; }
+  const r = current(); if (!r) return;
+  const el = e.target;
+  if (el.id === "intro-st") { await saveRow(r, { intro: { ...r.intro, status: el.value } }); renderList(); renderDetail(); return; }
+  if (el.id === "d-civ") { await saveRow(r, { civ: el.value }); renderList(); }
+  if (el.id === "d-ref") await saveRow(r, { referent: el.value });
+  if (el.dataset.pc !== undefined) { await saveRow(r, { called_idx: Number(el.dataset.pc) }); renderDetail(); }
+  if (el.dataset.ps !== undefined) await saveRow(r, { phones: r.phones.map((p, i) => i === Number(el.dataset.ps) ? { ...p, send: el.checked } : p) });
+  if (el.dataset.es !== undefined) await saveRow(r, { emails: r.emails.map((m, i) => i === Number(el.dataset.es) ? { ...m, send: el.checked } : m) });
+  if (el.id === "d-date") { await saveRow(r, { relance: el.value || null }); renderList(); renderDetail(); }
+});
+document.addEventListener("input", (e) => {
+  const r = current(); if (!r) return;
+  if (e.target.id === "d-notes") { const had = !!r.notes; r.notes = e.target.value; saveNotes(r, r.notes); if (had !== !!r.notes) renderList(); }
+});
+
+sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_OUT") showLogin(); });
+boot();
+
+</script>
+</body>
+</html>
