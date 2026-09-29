@@ -434,7 +434,7 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
 <header class="top">
   <div class="brand"><b>Prospection Lutèce</b><span>Recherche → appel → Pipedrive</span></div>
   <div class="credits" title="Crédits Lusha restants">Crédits Lusha <b id="credits">…</b></div>
-  <div class="userpick"><span id="me-name"></span><button class="btn small ghost" id="logout">Se déconnecter</button></div>
+  <div class="userpick"><span id="me-name"></span><button class="btn small ghost" id="diag">Diagnostic</button><button class="btn small ghost" id="logout">Se déconnecter</button></div>
 </header>
 <div class="cfgwarn" id="cfgwarn" hidden></div>
 
@@ -516,7 +516,9 @@ const CONFIG = {
   supabaseUrl: "https://akxvwaepsiucxxtvthsz.supabase.co",
   supabaseKey: "sb_publishable_pNBP6RF84CvPQaqZigwrdg_pQ4q3q87",
   pipedriveDomain: "luteceexecutive-3efd79",
+  functionName: "api",
 };
+const FN = CONFIG.functionName;
 const sb = supabase.createClient(CONFIG.supabaseUrl, CONFIG.supabaseKey);
 
 /* ---------- Référentiels ---------- */
@@ -584,7 +586,7 @@ const debounce = (fn, ms) => { let t; return (...a) => { clearTimeout(t); t = se
 async function api(action, params = {}) {
   const { data: { session } } = await sb.auth.getSession();
   if (!session) { showLogin(); throw new Error("Session expirée : reconnectez-vous."); }
-  const r = await fetch(`${CONFIG.supabaseUrl}/functions/v1/api`, {
+  const r = await fetch(`${CONFIG.supabaseUrl}/functions/v1/${FN}`, {
     method: "POST",
     headers: { Authorization: `Bearer ${session.access_token}`, apikey: CONFIG.supabaseKey, "Content-Type": "application/json" },
     body: JSON.stringify({ action, params }),
@@ -630,7 +632,8 @@ async function boot() {
   renderCrit();
   await Promise.all([loadLists(), loadNetwork(), loadMeta()]);
   refreshCredits();
-  api("ping").then((p) => { if (!p.lusha || !p.pipedrive) showCfg(`Clés manquantes côté serveur : ${[!p.lusha && "Lusha", !p.pipedrive && "Pipedrive"].filter(Boolean).join(" et ")}.`); }).catch(() => {});
+  api("ping").then((p) => { if (!p.lusha || !p.pipedrive) showCfg(`Clés manquantes côté serveur : ${[!p.lusha && "Lusha", !p.pipedrive && "Pipedrive"].filter(Boolean).join(" et ")}.`); })
+    .catch((e) => showCfg(`Impossible de joindre la fonction serveur « ${FN} » : ${e.message}`));
   if (S.lists[0]) openList(S.lists[0].id);
 }
 
@@ -650,16 +653,26 @@ async function refreshCredits() {
 }
 
 /* ---------- Filtres Lusha (secteurs, effectifs) ---------- */
-async function loadMeta() {
-  const cached = await db(sb.from("settings").select("value,updated_at").eq("key", "lusha_filters").maybeSingle());
+function findList(x) {
+  if (Array.isArray(x)) return x;
+  if (x && typeof x === "object") for (const v of Object.values(x)) { const l = findList(v); if (l.length) return l; }
+  return [];
+}
+async function loadMeta(force = false) {
+  const cached = force ? null : await db(sb.from("settings").select("value,updated_at").eq("key", "lusha_filters_v2").maybeSingle());
   let meta = cached && Date.now() - new Date(cached.updated_at) < 30 * 864e5 ? cached.value : null;
+  S.metaError = null;
   if (!meta) {
-    try { meta = await api("lusha.filters"); await db(sb.from("settings").upsert({ key: "lusha_filters", value: meta, updated_at: new Date().toISOString() })); }
-    catch (e) { meta = { industries: [], sizes: [] }; }
+    try { meta = await api("lusha.filters"); }
+    catch (e) { meta = { industries: [], sizes: [] }; S.metaError = e.message; }
   }
-  const arr = (x) => (Array.isArray(x) ? x : Array.isArray(x?.data) ? x.data : Array.isArray(x?.results) ? x.results : []);
-  S.meta.industries = arr(meta.industries).map((i) => ({ id: i.id ?? i.mainIndustryId ?? i.value, label: i.label ?? i.name ?? i.mainIndustry ?? i.value ?? String(i) })).filter((i) => i.id != null);
-  S.meta.sizes = arr(meta.sizes).map((s) => (typeof s === "object" ? { min: s.min ?? s.from ?? null, max: s.max ?? s.to ?? null } : null)).filter((s) => s && (s.min != null || s.max != null));
+  S.meta.raw = meta;
+  S.meta.industries = findList(meta.industries).map((i) => typeof i === "object"
+    ? { id: i.id ?? i.mainIndustryId ?? i.value ?? i.key, label: i.label ?? i.name ?? i.mainIndustry ?? i.text ?? i.value }
+    : null).filter((i) => i && i.id != null && i.label);
+  S.meta.sizes = findList(meta.sizes).map((s) => (typeof s === "object" ? { min: s.min ?? s.from ?? null, max: s.max ?? s.to ?? null } : null)).filter((s) => s && (s.min != null || s.max != null));
+  if (!S.meta.industries.length && !S.metaError) S.metaError = meta.errors?.industries || "Réponse de Lusha inattendue pour la liste des secteurs.";
+  if (S.meta.industries.length && !cached) await db(sb.from("settings").upsert({ key: "lusha_filters_v2", value: meta, updated_at: new Date().toISOString() }));
   if (!S.meta.sizes.length) S.meta.sizes = [{ min: 11, max: 50 }, { min: 51, max: 200 }, { min: 201, max: 500 }, { min: 501, max: 1000 }, { min: 1001, max: 5000 }, { min: 5001, max: null }];
   if (!S.crit.size.size) S.meta.sizes.forEach((s, i) => { if ((s.min ?? 0) >= 50 && (s.max ?? 1e9) <= 1000) S.crit.size.add(i); });
   renderCrit();
@@ -677,7 +690,7 @@ function renderCrit() {
       <div class="chips">${keys.map((v) => `<button class="chip" aria-pressed="${S.crit.fn.has(v)}" data-k="fn" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div></div>`;
   }).join("");
   if (S.meta.industries.length) $("#c-sec").innerHTML = S.meta.industries.map((i) => `<button class="chip" aria-pressed="${S.crit.ind.has(String(i.id))}" data-k="ind" data-v="${esc(i.id)}">${esc(i.label)}</button>`).join("");
-  else $("#c-sec").innerHTML = `<span class="hint">Secteurs indisponibles tant que la clé Lusha n'est pas enregistrée.</span>`;
+  else $("#c-sec").innerHTML = `<span class="hint">Secteurs indisponibles : ${esc(S.metaError || "chargement…")}</span> <button class="linkbtn" id="meta-retry">Réessayer</button> · <button class="linkbtn" id="diag">Diagnostic</button>`;
   $("#c-size").innerHTML = S.meta.sizes.map((s, i) => `<button class="chip" aria-pressed="${S.crit.size.has(i)}" data-k="size" data-v="${i}">${esc(sizeLabel(s))}</button>`).join("");
   $("#g-sel").innerHTML = S.groupSel.map((n, i) => `<button class="chip" aria-pressed="true" data-gdel="${i}">${esc(n)}<span class="x">×</span></button>`).join("");
   renderNet(); renderSaved();
@@ -1262,6 +1275,19 @@ const suggest = debounce(async (text) => {
 }, 350);
 $("#g-q").addEventListener("input", (e) => suggest(e.target.value.trim()));
 
+/* ---------- Diagnostic ---------- */
+async function openDiag() {
+  modal(`<header><h3>Diagnostic</h3><p>Faites une capture de cette fenêtre et envoyez-la dans la conversation.</p></header><div class="body"><pre id="diag-out" class="notebox" style="white-space:pre-wrap;font-size:12px">Tests en cours…</pre></div><footer><button class="btn" data-close>Fermer</button></footer>`);
+  const out = []; const line = (t) => { out.push(t); $("#diag-out").textContent = out.join("\n"); };
+  line(`Adresse Supabase : ${CONFIG.supabaseUrl}`); line(`Fonction appelée : ${FN}`); line(`Connecté en tant que : ${S.me}`);
+  try { const p = await api("ping"); line(`Fonction serveur : OK · clé Lusha ${p.lusha ? "présente" : "ABSENTE"} · Pipedrive ${p.pipedrive ? "présent" : "ABSENT"}`); }
+  catch (e) { line(`Fonction serveur : ÉCHEC (${e.status ?? "?"}) ${e.code ?? ""} ${e.message}`); return; }
+  try { const f = await api("lusha.filters"); line(`Lusha filtres : secteurs ${findList(f.industries).length}, effectifs ${findList(f.sizes).length}`); if (f.errors && Object.keys(f.errors).length) line(`Erreurs Lusha : ${JSON.stringify(f.errors)}`); line(`Extrait secteurs : ${JSON.stringify(f.industries).slice(0, 300)}`); }
+  catch (e) { line(`Lusha filtres : ÉCHEC ${e.code ?? ""} ${e.message}`); }
+  try { const u = await api("lusha.usage"); line(`Lusha crédits (brut) : ${JSON.stringify(u).slice(0, 300)}`); } catch (e) { line(`Lusha crédits : ÉCHEC ${e.message}`); }
+  try { const u = await api("pd.users"); line(`Pipedrive utilisateurs : ${u.map((x) => x.name).join(", ")}`); } catch (e) { line(`Pipedrive : ÉCHEC ${e.code ?? ""} ${e.message}`); }
+}
+
 /* ---------- Événements ---------- */
 const saveNotes = debounce(async (r, v) => { await saveRow(r, { notes: v }); const ind = $("#notes-ind"); if (ind) { ind.textContent = "Enregistré"; setTimeout(() => (ind.textContent = ""), 1500); } }, 700);
 document.addEventListener("click", async (e) => {
@@ -1275,6 +1301,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.list) { openList(t.dataset.list); return; }
   if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
   if (t.id === "net-imp") { openImport(); return; }
+  if (t.id === "diag") { openDiag(); return; }
+  if (t.id === "meta-retry") { $("#c-sec").innerHTML = `<span class="hint">Chargement…</span>`; loadMeta(true); return; }
   if (t.matches("tr[data-id]")) { S.sel = t.dataset.id; renderList(); renderDetail(); if (innerWidth < 1100) $("#detail").scrollIntoView({ behavior: "smooth" }); return; }
   if (t.dataset.copy) { navigator.clipboard?.writeText(t.dataset.copy).then(() => toast("Copié"), () => toast("Copie impossible, sélectionnez le texte")); return; }
   const r = current(); if (!r) return;
