@@ -487,6 +487,11 @@ tbody td:first-child,thead th:first-child{width:118px}
 
 .subs-btn{flex-basis:100%;border-color:var(--orange);color:var(--orange-ink);font-weight:700}
 
+.d-head a.lisq{display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;flex:none;border-radius:5px;background:#0A66C2;color:#fff;font:700 14px/1 Arial,sans-serif;text-decoration:none;margin-left:2px}
+.d-head a.lisq:hover{text-decoration:none;background:#004182}
+.lisq.search{opacity:.55}
+.lisq.search:hover{opacity:1}
+
 </style>
 </head>
 <body>
@@ -1317,6 +1322,11 @@ function introHTML(r, f) {
         <datalist id="conn-list">${S.conns.slice(0, 5000).map((c) => `<option value="${esc(c.first_name + " " + c.last_name)}">${esc((c.company || "") + " · relation de " + c.owner)}</option>`).join("")}</datalist>
         <span class="hint" id="intro-msg" style="display:block;margin-top:4px">Une fois enregistrée, elle apparaît sous le nom du prospect dans la liste, avec un statut, et elle est mentionnée dans la note Pipedrive.</span></li></ol></div>`;
 }
+function liSquare(r) {
+  const u = r.linkedin_url ? (r.linkedin_url.startsWith("http") ? r.linkedin_url : "https://" + r.linkedin_url) : `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(r.first_name + " " + r.last_name + " " + r.company)}`;
+  const t = r.linkedin_url ? "Ouvrir le profil LinkedIn" : "Rechercher sur LinkedIn (profil exact connu après révélation)";
+  return `<a class="lisq${r.linkedin_url ? "" : " search"}" href="${esc(u)}" target="_blank" rel="noopener" title="${t}" aria-label="${t}">in</a>`;
+}
 function renderDetail() {
   const r = current(), D = $("#detail");
   if (!r) { D.innerHTML = `<p class="empty">Sélectionnez un prospect dans la liste.</p>`; return; }
@@ -1326,9 +1336,8 @@ function renderDetail() {
   D.innerHTML = `
   <div class="d-head">
     <div class="row"><select id="d-civ" aria-label="Civilité"><option ${r.civ === "M." ? "selected" : ""}>M.</option><option ${r.civ === "Mme" ? "selected" : ""}>Mme</option></select>
-      <h2>${esc(r.first_name + " " + r.last_name)}</h2></div>
+      <h2>${esc(r.first_name + " " + r.last_name)}</h2>${liSquare(r)}</div>
     <div class="role">${esc(r.job_title)} · <b>${esc(r.company)}</b></div>
-    ${r.linkedin_url ? `<a href="${esc(r.linkedin_url.startsWith("http") ? r.linkedin_url : "https://" + r.linkedin_url)}" target="_blank" rel="noopener">Profil LinkedIn ↗</a>` : ""}
   </div>
   ${liHead(r)}
   ${banners(r)}
