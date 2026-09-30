@@ -464,6 +464,11 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
 
     <div id="crit-box" style="display:flex;flex-direction:column;gap:14px">
       <div class="field"><label>Secteurs <span class="hint">(aucun = tous)</span></label><div class="chips" id="c-sec"><span class="hint">Chargement…</span></div></div>
+      <div class="field"><label for="c-subq">Sous-secteurs, plus précis <span class="hint">(facultatif)</span></label>
+        <input type="text" id="c-subq" placeholder="Ex. luxe, joaillerie, cosmétique, vin…" autocomplete="off">
+        <div class="suggest" id="c-subsug" hidden></div>
+        <div class="chips" id="c-subsel"></div>
+        <span class="hint" id="c-subhint">Si vous choisissez des sous-secteurs, ils remplacent les secteurs cochés au-dessus.</span></div>
       <div class="field"><label>Effectif</label><div class="chips" id="c-size"><span class="hint">Chargement…</span></div></div>
     </div>
 
@@ -559,7 +564,7 @@ const STATUS = ["À solliciter", "Demande envoyée", "Introduction faite", "Refu
 /* ---------- État ---------- */
 const S = {
   me: null, lists: [], cur: null, rows: [], sel: null, filter: "all", mode: "crit", zone: "France entière",
-  crit: { fn: new Set(["DAF", "Directeur financier"]), ind: new Set(), size: new Set() },
+  crit: { fn: new Set(["DAF", "Directeur financier"]), ind: new Set(), size: new Set(), sub: [] },
   meta: { industries: [], sizes: [] }, locCache: {}, groupSel: [],
   network: {}, conns: [], credits: null,
 };
@@ -689,6 +694,15 @@ async function loadMeta(force = false) {
   S.meta.industries = findList(meta.industries).map((i) => typeof i === "object"
     ? { id: i.main_industry_id ?? i.mainIndustryId ?? i.id ?? i.key, label: i.main_industry ?? i.mainIndustry ?? i.label ?? i.name ?? i.text ?? i.value }
     : null).filter((i) => i && i.id != null && i.label).map((i) => ({ ...i, label: INDUSTRY_FR[i.label] ?? i.label })).sort((a, b) => a.label.localeCompare(b.label, "fr"));
+  S.meta.subs = [];
+  for (const i of findList(meta.industries)) {
+    if (!i || typeof i !== "object") continue;
+    const parent = INDUSTRY_FR[i.main_industry ?? i.mainIndustry ?? i.label] ?? (i.main_industry ?? i.mainIndustry ?? i.label);
+    for (const sI of i.sub_industries ?? i.subIndustries ?? []) {
+      const id = sI.id ?? sI.sub_industry_id, label = sI.value ?? sI.label ?? sI.name ?? sI.sub_industry;
+      if (id != null && label && !/^other$/i.test(label)) S.meta.subs.push({ id, label, parent });
+    }
+  }
   S.meta.sizes = findList(meta.sizes).map(parseSize).filter(Boolean);
   if (!S.meta.industries.length && !S.metaError) S.metaError = meta.errors?.industries || "Réponse de Lusha inattendue pour la liste des secteurs.";
   if (S.meta.industries.length && !cached) await db(sb.from("settings").upsert({ key: "lusha_filters_v2", value: meta, updated_at: new Date().toISOString() }));
@@ -697,6 +711,34 @@ async function loadMeta(force = false) {
   renderCrit();
 }
 const sizeLabel = (s) => s.max == null ? `${s.min} et plus` : `${s.min ?? 1} – ${s.max}`;
+
+/* ---------- Sous-secteurs : recherche en français ou en anglais ---------- */
+const SUB_SYNONYMS = {
+  luxe: ["luxury", "jewel", "fashion", "apparel", "cosmetic", "perfume", "fragrance", "watch", "leather", "accessor"],
+  joaillerie: ["jewel"], bijou: ["jewel"], horlogerie: ["watch", "jewel"], mode: ["fashion", "apparel", "clothing", "textile"],
+  habillement: ["apparel", "clothing"], textile: ["textile"], cosmetique: ["cosmetic", "beauty", "personal care"], beaute: ["beauty", "cosmetic"],
+  parfum: ["perfume", "fragrance", "cosmetic"], maroquinerie: ["leather", "accessor"], vin: ["wine", "winer", "beverage"], spiritueux: ["spirit", "alcohol", "beverage", "distill"],
+  alimentaire: ["food"], agroalimentaire: ["food"], boisson: ["beverage"], hotel: ["hotel"], restaurant: ["restaurant"], immobilier: ["real estate"],
+  banque: ["bank"], assurance: ["insurance"], pharmacie: ["pharma"], sante: ["health", "hospital", "medical"], chimie: ["chemical"],
+  automobile: ["automotive"], aeronautique: ["aerospace", "aviation"], transport: ["transport", "logistic", "trucking"], logistique: ["logistic"],
+  btp: ["construction", "building", "civil"], construction: ["construction"], energie: ["energy", "oil", "utilit", "renewable"],
+  distribution: ["retail", "wholesale"], commerce: ["retail", "wholesale"], logiciel: ["software"], informatique: ["it ", "software", "computer"],
+  conseil: ["consult"], juridique: ["legal", "law"], comptabilite: ["account"], edition: ["publish"], media: ["media", "broadcast"],
+  industrie: ["manufactur", "industrial", "machinery"], metallurgie: ["metal"], plasturgie: ["plastic"], emballage: ["packag"],
+};
+function subMatches(q) {
+  const n = slug(q).replace(/-/g, " ");
+  if (n.length < 2) return [];
+  const terms = [n, ...Object.entries(SUB_SYNONYMS).filter(([k]) => k.startsWith(n) || n.startsWith(k)).flatMap(([, v]) => v)];
+  const chosen = new Set(S.crit.sub.map((x) => String(x.id)));
+  return S.meta.subs.filter((x) => !chosen.has(String(x.id)) && terms.some((t) => x.label.toLowerCase().includes(t) || slug(x.parent).includes(slug(t)))).slice(0, 25);
+}
+$("#c-subq").addEventListener("input", (e) => {
+  const list = subMatches(e.target.value.trim());
+  $("#c-subsug").innerHTML = list.map((x) => `<button data-subadd="${esc(x.id)}">${esc(x.label)} <span class="hint">· ${esc(x.parent)}</span></button>`).join("")
+    || (e.target.value.trim().length >= 2 ? `<span class="hint" style="padding:7px 10px">Aucun sous-secteur trouvé. Essayez un autre mot, en français ou en anglais.</span>` : "");
+  $("#c-subsug").hidden = !$("#c-subsug").innerHTML;
+});
 
 /* ---------- Colonne critères ---------- */
 function renderCrit() {
@@ -710,6 +752,8 @@ function renderCrit() {
   }).join("");
   if (S.meta.industries.length) $("#c-sec").innerHTML = S.meta.industries.map((i) => `<button class="chip" aria-pressed="${S.crit.ind.has(String(i.id))}" data-k="ind" data-v="${esc(i.id)}">${esc(i.label)}</button>`).join("");
   else $("#c-sec").innerHTML = `<span class="hint">Secteurs indisponibles : ${esc(S.metaError || "chargement…")}</span> <button class="linkbtn" id="meta-retry">Réessayer</button> · <button class="linkbtn" id="diag">Diagnostic</button>`;
+  $("#c-subsel").innerHTML = S.crit.sub.map((x, i) => `<button class="chip" aria-pressed="true" data-subdel="${i}" title="${esc(x.parent)}">${esc(x.label)}<span class="x">×</span></button>`).join("");
+  $("#c-sec").classList.toggle("busy", S.crit.sub.length > 0);
   $("#c-size").innerHTML = S.meta.sizes.map((s, i) => `<button class="chip" aria-pressed="${S.crit.size.has(i)}" data-k="size" data-v="${i}">${esc(sizeLabel(s))}</button>`).join("");
   $("#g-sel").innerHTML = S.groupSel.map((n, i) => `<button class="chip" aria-pressed="true" data-gdel="${i}">${esc(n)}<span class="x">×</span></button>`).join("");
   renderNet(); renderSaved();
@@ -750,7 +794,8 @@ async function buildFilters() {
     if (!S.groupSel.length) throw new Error("Ajoutez au moins une société.");
     companies.include.names = S.groupSel;
   } else {
-    if (S.crit.ind.size) companies.include.mainIndustriesIds = [...S.crit.ind].map(Number);
+    if (S.crit.sub.length) companies.include.subIndustriesIds = S.crit.sub.map((x) => Number(x.id));
+    else if (S.crit.ind.size) companies.include.mainIndustriesIds = [...S.crit.ind].map(Number);
     if (S.crit.size.size) companies.include.sizes = [...S.crit.size].map((i) => S.meta.sizes[i]).map((s) => { const o = {}; if (s.min != null) o.min = s.min; if (s.max != null) o.max = s.max; return o; });
   }
   const f = { contacts };
@@ -1316,6 +1361,8 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.fam) { const keys = Object.keys(FAMS[t.dataset.fam]); const all = keys.every((v) => S.crit.fn.has(v)); keys.forEach((v) => (all ? S.crit.fn.delete(v) : S.crit.fn.add(v))); renderCrit(); return; }
   if (t.matches(".chip[data-k]")) { const set = S.crit[t.dataset.k]; const v = t.dataset.k === "size" ? Number(t.dataset.v) : t.dataset.v; set.has(v) ? set.delete(v) : set.add(v); renderCrit(); return; }
   if (t.dataset.gadd) { if (!S.groupSel.includes(t.dataset.gadd)) S.groupSel.push(t.dataset.gadd); $("#g-q").value = ""; $("#g-sug").hidden = true; renderCrit(); return; }
+  if (t.dataset.subadd) { const x = S.meta.subs.find((y) => String(y.id) === t.dataset.subadd); if (x) S.crit.sub.push(x); $("#c-subq").value = ""; $("#c-subsug").hidden = true; renderCrit(); return; }
+  if (t.dataset.subdel !== undefined) { S.crit.sub.splice(Number(t.dataset.subdel), 1); renderCrit(); return; }
   if (t.dataset.gdel !== undefined) { S.groupSel.splice(Number(t.dataset.gdel), 1); renderCrit(); return; }
   if (t.dataset.list) { openList(t.dataset.list); return; }
   if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
