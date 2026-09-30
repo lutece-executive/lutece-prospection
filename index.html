@@ -67,7 +67,7 @@ header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 
 .userpick{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
 select,input[type=date],input[type=text]{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
 
-.app{display:grid;grid-template-columns:300px minmax(0,1fr) 380px;gap:0;min-height:calc(100vh - 100px)}
+.app{display:grid;grid-template-columns:clamp(250px,19vw,300px) minmax(0,1fr) clamp(320px,25vw,390px);gap:0;min-height:calc(100vh - 100px)}
 aside.criteria{background:var(--surface);border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px}
 .sect-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
 .field{display:flex;flex-direction:column;gap:5px}
@@ -274,7 +274,7 @@ tr.grp small{font-family:var(--mono);color:var(--ink-3);font-weight:500;margin-l
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--hot:#F59E6B;--hot-soft:#3A2418}}
 :root[data-theme="dark"]{--hot:#F59E6B;--hot-soft:#3A2418}
 .mode{grid-template-columns:repeat(3,1fr)}
-table{min-width:720px}
+table{min-width:0;width:100%}
 .coords{margin-top:4px}
 .who b{white-space:normal}
 .sig{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
@@ -466,6 +466,25 @@ details.more{margin-top:3px}
 details.more summary{cursor:pointer;color:var(--accent);font-size:12px;font-weight:600}
 details.more[open]{white-space:normal;color:var(--ink-2);font-size:12px;line-height:1.45}
 
+/* ===== Largeur adaptative ===== */
+.side-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+#side-toggle{padding:4px 9px}
+body.side-collapsed .app{grid-template-columns:48px minmax(0,1fr) clamp(320px,27vw,420px)}
+body.side-collapsed aside.criteria{padding:12px 6px;align-items:center}
+body.side-collapsed aside.criteria > *:not(.side-head){display:none!important}
+body.side-collapsed .side-head .sect-label{display:none}
+body.side-collapsed #side-toggle{writing-mode:horizontal-tb;padding:6px 10px}
+body.side-collapsed .listspage{grid-column:2 / -1}
+.relance-d{font-size:11.5px;font-weight:600;color:var(--accent);margin-top:4px;white-space:nowrap}
+tbody td:first-child,thead th:first-child{width:118px}
+.siglbl{max-width:none}
+@media (max-width:1500px){
+  th,td{padding:9px 9px}
+  .who b,.co b{font-size:13.5px}
+  .pdstate{font-size:11.5px}
+}
+.side-head .sect-label,#side-toggle{white-space:nowrap}
+
 </style>
 </head>
 <body>
@@ -502,7 +521,7 @@ details.more[open]{white-space:normal;color:var(--ink-2);font-size:12px;line-hei
 
 <div class="app">
   <aside class="criteria" aria-label="Critères de recherche">
-    <div class="sect-label">Nouvelle recherche</div>
+    <div class="side-head"><div class="sect-label">Nouvelle recherche</div><button class="btn small" id="side-toggle" title="Replier le panneau de recherche">« Replier</button></div>
     <div class="mode" id="mode">
       <button data-m="crit" aria-pressed="true">Par critères</button>
       <button data-m="grp" aria-pressed="false">Société / groupe</button>
@@ -570,7 +589,7 @@ details.more[open]{white-space:normal;color:var(--ink-2);font-size:12px;line-hei
     </div>
     <div class="tablewrap">
       <table>
-        <thead><tr><th>Priorité</th><th>Prospect</th><th>Société</th><th>Pipedrive</th><th>Statut</th><th>Relance</th></tr></thead>
+        <thead><tr><th>Priorité</th><th>Prospect</th><th>Société</th><th>Pipedrive</th><th>Statut</th></tr></thead>
         <tbody id="rows"></tbody>
       </table>
     </div>
@@ -1221,8 +1240,8 @@ function rowHTML(r) {
     <td class="co"><b>${esc(r.company)}</b><span>${esc([r.company_domain, r.city].filter(Boolean).join(" · "))}</span></td>
     <td>${pdCell(r)}</td>
     <td>${r.dnc ? `<span class="pill dncpill">Ne plus contacter</span>` : s ? `<span class="pill ${s.cls}">${s.label}</span>` : `<span class="pill s-todo">À appeler</span>`}
-      <div class="coords"><span class="${r.show_phone ? "on" : ""}">Tél.${r.show_phone && r.phones.length > 1 ? " ×" + r.phones.length : ""}</span><span class="${r.show_email ? "on" : ""}">Email${r.show_email && r.emails.length > 1 ? " ×" + r.emails.length : ""}</span>${r.notes ? `<span>✎ notes</span>` : ""}</div></td>
-    <td class="mono" style="font-size:12.5px">${r.relance && !r.dnc ? fmt(r.relance) : "—"}</td></tr>`;
+      ${r.relance && !r.dnc ? `<div class="relance-d">Relance ${fmt(r.relance)}</div>` : ""}
+      <div class="coords"><span class="${r.show_phone ? "on" : ""}">Tél.${r.show_phone && r.phones.length > 1 ? " ×" + r.phones.length : ""}</span><span class="${r.show_email ? "on" : ""}">Email${r.show_email && r.emails.length > 1 ? " ×" + r.emails.length : ""}</span>${r.notes ? `<span>✎</span>` : ""}</div></td></tr>`;
 }
 const FILTERS = {
   all: () => true, hot: (r) => prioOf(r) === 3 && !r.dnc, todo: (r) => !r.outcome && !r.dnc, new: (r) => r.is_new, net: (r) => !!first(r) || relays(r).length > 0,
@@ -1240,7 +1259,7 @@ function renderList() {
     .map(([k, l]) => [k, l, S.rows.filter(FILTERS[k]).length]).filter(([k, , n]) => k === "all" || n || S.filter === k);
   $("#tabs").innerHTML = tabs.map(([k, l, n]) => `<button class="tab" role="tab" aria-selected="${S.filter === k}" data-f="${k}">${l}<small>${n}</small></button>`).join("");
   const rs = S.rows.filter(FILTERS[S.filter]).slice().sort((a, b) => (!!a.dnc - !!b.dnc) || (prioOf(b) - prioOf(a)) || (!!b.is_new - !!a.is_new));
-  $("#rows").innerHTML = rs.map(rowHTML).join("") || `<tr><td colspan="6" class="empty">Aucun prospect dans cette vue.</td></tr>`;
+  $("#rows").innerHTML = rs.map(rowHTML).join("") || `<tr><td colspan="5" class="empty">Aucun prospect dans cette vue.</td></tr>`;
   const more = L.total == null || S.rows.length < L.total;
   const size = L.criteria?.pageSize || PAGE_SIZE, lc = L.criteria?.lastCost;
   $("#more").hidden = !more; $("#more").textContent = `Charger ${size} prospects de plus`;
@@ -1907,6 +1926,16 @@ document.addEventListener("input", (e) => {
   const r = current(); if (!r) return;
   if (e.target.id === "d-notes") { const had = !!r.notes; r.notes = e.target.value; saveNotes(r, r.notes); if (had !== !!r.notes) renderList(); }
 });
+
+/* ---------- Panneau de recherche repliable (mémorisé dans ce navigateur) ---------- */
+function setSide(collapsed) {
+  document.body.classList.toggle("side-collapsed", collapsed);
+  $("#side-toggle").textContent = collapsed ? "»" : "« Replier";
+  $("#side-toggle").title = collapsed ? "Afficher la recherche" : "Replier le panneau de recherche";
+  try { localStorage.setItem("lutece.side", collapsed ? "1" : "0"); } catch { /* sans importance */ }
+}
+$("#side-toggle").addEventListener("click", () => setSide(!document.body.classList.contains("side-collapsed")));
+try { if (localStorage.getItem("lutece.side") === "1") setSide(true); } catch { /* sans importance */ }
 
 sb.auth.onAuthStateChange((ev) => { if (ev === "SIGNED_OUT") showLogin(); });
 boot();
