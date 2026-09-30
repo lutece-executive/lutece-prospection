@@ -67,7 +67,7 @@ header.top{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:12px 
 .userpick{display:flex;align-items:center;gap:6px;font-size:13px;color:var(--ink-2)}
 select,input[type=date],input[type=text]{background:var(--surface);border:1px solid var(--line);border-radius:7px;padding:6px 8px;min-width:0}
 
-.app{display:grid;grid-template-columns:260px minmax(0,1fr) 380px;gap:0;min-height:calc(100vh - 100px)}
+.app{display:grid;grid-template-columns:300px minmax(0,1fr) 380px;gap:0;min-height:calc(100vh - 100px)}
 aside.criteria{background:var(--surface);border-right:1px solid var(--line);padding:16px;display:flex;flex-direction:column;gap:14px}
 .sect-label{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
 .field{display:flex;flex-direction:column;gap:5px}
@@ -427,6 +427,35 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
 .saved .top{display:flex;justify-content:space-between;width:100%;gap:8px}
 @media (max-width:1100px){.listspage{grid-column:1 / -1}}
 
+/* ===== Panneau de recherche : cartes ===== */
+aside.criteria{gap:12px;background:var(--bg)}
+.cstack{display:flex;flex-direction:column;gap:12px}
+.cgroup{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:0 12px 12px;display:flex;flex-direction:column;gap:9px;border-top:3px solid var(--navy-2)}
+.cgroup>header{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:0 -12px;padding:8px 12px;background:var(--accent-soft);border-radius:0}
+.cgroup .ct{font-size:11.5px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--navy)}
+:root[data-theme="dark"] .cgroup .ct{color:#DCE6F5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .cgroup .ct{color:#DCE6F5}}
+.cgroup>header em{font-style:normal;font-size:11px;font-weight:700;background:var(--orange);color:#fff;border-radius:999px;padding:1px 8px;white-space:nowrap}
+.cgroup>header em:empty{display:none}
+.cgroup select,.cgroup input[type=text]{width:100%}
+.cgroup.launch{border-top-color:var(--orange)}
+.cgroup.launch #run{width:100%}
+.fams{display:flex;flex-direction:column;gap:10px}
+.fam{gap:6px}
+.fam-h{flex-wrap:nowrap;white-space:nowrap;border-bottom:1px dashed var(--line);padding-bottom:3px}
+.fam-h span{color:var(--orange-ink);font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase}
+.fam-h button{font-size:11.5px;font-weight:600;color:var(--navy-2)!important}
+.chip{transition:border-color .12s,background .12s}
+.chip:hover{border-color:var(--orange)}
+.chipgrid{display:grid;gap:6px}
+.chipgrid.two{grid-template-columns:1fr 1fr}
+.chipgrid.three{grid-template-columns:1fr 1fr 1fr}
+.chipgrid .chip{border-radius:8px;text-align:center;padding:6px 6px;line-height:1.25;font-size:12px;min-height:34px;display:flex;align-items:center;justify-content:center}
+.chipgrid .hint{grid-column:1 / -1}
+#c-sec.busy{opacity:.4}
+.lp-table td:first-child,.lp-table th:first-child{width:28px}
+#lp-del:not([disabled]){border-color:var(--bad);color:var(--bad)}
+
 </style>
 </head>
 <body>
@@ -469,36 +498,52 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
       <button data-m="grp" aria-pressed="false">Société / groupe</button>
     </div>
 
-    <div id="grp-box" hidden style="display:flex;flex-direction:column;gap:10px">
-      <div class="field"><label for="g-q">Sociétés à cibler</label>
-        <input type="text" id="g-q" placeholder="Tapez un nom : LVMH, Louis Vuitton…" autocomplete="off">
-        <div class="suggest" id="g-sug" hidden></div></div>
-      <div class="chips" id="g-sel"></div>
-      <p class="hint" style="margin:0">Ajoutez la société mère puis chacune des filiales ou maisons à inclure. L'identification automatique des filiales arrivera avec le second lot.</p>
-    </div>
+    <section class="cgroup">
+      <header><span class="ct">Fonctions</span><em id="cnt-fn"></em></header>
+      <div id="c-fn" class="fams"></div>
+      <div class="field"><label for="c-extra">Autres intitulés <span class="hint">facultatif</span></label>
+        <input type="text" id="c-extra" placeholder="Ex. Head of Finance, DAF groupe"></div>
+    </section>
 
-    <div class="field"><label for="zone">Zone géographique</label>
+    <section class="cgroup">
+      <header><span class="ct">Zone géographique</span></header>
       <select id="zone"></select>
-      <span class="hint">Localisation du poste de la personne.</span></div>
+      <span class="hint">Lieu où la personne est en poste.</span>
+    </section>
 
-    <div class="field"><label>Fonctions</label><div id="c-fn" style="display:flex;flex-direction:column;gap:10px"></div></div>
-    <div class="field"><label for="c-extra">Autres intitulés (facultatif)</label>
-      <input type="text" id="c-extra" placeholder="Ex. Directeur financier groupe, Head of Finance"></div>
+    <section class="cgroup" id="grp-box" hidden>
+      <header><span class="ct">Sociétés à cibler</span><em id="cnt-grp"></em></header>
+      <input type="text" id="g-q" placeholder="Tapez un nom : LVMH, Louis Vuitton…" autocomplete="off">
+      <div class="suggest" id="g-sug" hidden></div>
+      <div class="chips" id="g-sel"></div>
+      <span class="hint">Ajoutez la société mère, puis chaque filiale ou maison à inclure.</span>
+    </section>
 
-    <div id="crit-box" style="display:flex;flex-direction:column;gap:14px">
-      <div class="field"><label>Secteurs <span class="hint">(aucun = tous)</span></label><div class="chips" id="c-sec"><span class="hint">Chargement…</span></div></div>
-      <div class="field"><label for="c-subq">Sous-secteurs, plus précis <span class="hint">(facultatif)</span></label>
+    <div id="crit-box" class="cstack">
+      <section class="cgroup">
+        <header><span class="ct">Secteurs</span><em id="cnt-sec"></em></header>
+        <div class="chipgrid two" id="c-sec"><span class="hint">Chargement…</span></div>
+        <span class="hint">Aucun secteur coché = tous les secteurs.</span>
+      </section>
+      <section class="cgroup">
+        <header><span class="ct">Sous-secteurs</span><em id="cnt-sub"></em></header>
         <input type="text" id="c-subq" placeholder="Ex. luxe, joaillerie, cosmétique, vin…" autocomplete="off">
         <div class="suggest" id="c-subsug" hidden></div>
         <div class="chips" id="c-subsel"></div>
-        <span class="hint" id="c-subhint">Si vous choisissez des sous-secteurs, ils remplacent les secteurs cochés au-dessus.</span></div>
-      <div class="field"><label>Effectif</label><div class="chips" id="c-size"><span class="hint">Chargement…</span></div></div>
+        <span class="hint" id="c-subhint">Plus précis : s'ils sont choisis, ils remplacent les secteurs.</span>
+      </section>
+      <section class="cgroup">
+        <header><span class="ct">Effectif</span><em id="cnt-size"></em></header>
+        <div class="chipgrid two" id="c-size"><span class="hint">Chargement…</span></div>
+      </section>
     </div>
 
-    <div class="field"><label for="c-name">Nom de la liste</label>
-      <input type="text" id="c-name" placeholder="Facultatif : nom automatique sinon"></div>
-    <button class="btn primary" id="run">Lancer la recherche</button>
-    <p class="hint" style="margin:0">La recherche affiche noms, fonctions et sociétés, et vérifie qui est déjà dans Pipedrive. Lusha peut facturer la recherche selon le nombre de résultats : le coût réel s'affiche après chaque recherche.</p>
+    <section class="cgroup launch">
+      <div class="field"><label for="c-name">Nom de la liste <span class="hint">facultatif</span></label>
+        <input type="text" id="c-name" placeholder="Nom automatique sinon"></div>
+      <button class="btn primary" id="run">Lancer la recherche</button>
+      <span class="hint">Environ 1 crédit Lusha pour 25 prospects. Le coût réel s'affiche après la recherche.</span>
+    </section>
 
     <div class="sect-label" style="margin-top:8px">Réseau LinkedIn</div>
     <div class="netbox" id="netbox"></div>
@@ -539,10 +584,11 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
       <select id="lp-fam"><option value="">Toutes les fonctions</option><option>Finance</option><option>Direction générale</option><option>Ressources humaines</option></select>
       <select id="lp-zone"><option value="">Toutes les zones</option></select>
       <select id="lp-sec"><option value="">Tous les secteurs</option></select>
+      <button class="btn" id="lp-del" disabled>Supprimer la sélection</button>
     </div>
     <div class="tablewrap">
       <table class="lp-table">
-        <thead><tr><th>Liste</th><th>Fonctions</th><th>Secteurs / sociétés</th><th>Zone</th><th>Effectif</th><th>Prospects</th><th>Dernière mise à jour</th><th></th></tr></thead>
+        <thead><tr><th><input type="checkbox" id="lp-all" aria-label="Tout sélectionner"></th><th>Liste</th><th>Fonctions</th><th>Secteurs / sociétés</th><th>Zone</th><th>Effectif</th><th>Prospects</th><th>Dernière mise à jour</th><th></th></tr></thead>
         <tbody id="lp-rows"></tbody>
       </table>
     </div>
@@ -605,7 +651,7 @@ const STATUS = ["À solliciter", "Demande envoyée", "Introduction faite", "Refu
 
 /* ---------- État ---------- */
 const S = {
-  me: null, view: "prospects", lists: [], cur: null, rows: [], sel: null, filter: "all", mode: "crit", zone: "France entière",
+  me: null, view: "prospects", lpSel: new Set(), lists: [], cur: null, rows: [], sel: null, filter: "all", mode: "crit", zone: "France entière",
   crit: { fn: new Set(["DAF", "Directeur financier"]), ind: new Set(), size: new Set(), sub: [] },
   meta: { industries: [], sizes: [] }, locCache: {}, groupSel: [],
   network: {}, conns: [], credits: null,
@@ -794,11 +840,17 @@ function renderCrit() {
   $("#zone").innerHTML = ZONES.map((z) => `<option ${z === S.zone ? "selected" : ""}>${esc(z)}</option>`).join("");
   $("#c-fn").innerHTML = Object.entries(FAMS).map(([f, map]) => {
     const keys = Object.keys(map), all = keys.every((v) => S.crit.fn.has(v));
-    return `<div class="fam"><div class="fam-h"><span>${f}</span><button data-fam="${esc(f)}">${all ? "Tout retirer" : "Tout sélectionner"}</button></div>
+    return `<div class="fam"><div class="fam-h"><span>${f}</span><button data-fam="${esc(f)}">${all ? "Aucun" : "Tous"}</button></div>
       <div class="chips">${keys.map((v) => `<button class="chip" aria-pressed="${S.crit.fn.has(v)}" data-k="fn" data-v="${esc(v)}">${esc(v)}</button>`).join("")}</div></div>`;
   }).join("");
   if (S.meta.industries.length) $("#c-sec").innerHTML = S.meta.industries.map((i) => `<button class="chip" aria-pressed="${S.crit.ind.has(String(i.id))}" data-k="ind" data-v="${esc(i.id)}">${esc(i.label)}</button>`).join("");
   else $("#c-sec").innerHTML = `<span class="hint">Secteurs indisponibles : ${esc(S.metaError || "chargement…")}</span> <button class="linkbtn" id="meta-retry">Réessayer</button> · <button class="linkbtn" id="diag">Diagnostic</button>`;
+  const nSec = S.crit.sub.length ? 0 : S.crit.ind.size;
+  $("#cnt-fn").textContent = S.crit.fn.size ? `${S.crit.fn.size} choisie${S.crit.fn.size > 1 ? "s" : ""}` : "";
+  $("#cnt-sec").textContent = nSec ? `${nSec} choisi${nSec > 1 ? "s" : ""}` : "";
+  $("#cnt-sub").textContent = S.crit.sub.length ? `${S.crit.sub.length} choisi${S.crit.sub.length > 1 ? "s" : ""}` : "";
+  $("#cnt-size").textContent = S.crit.size.size ? `${S.crit.size.size} tranche${S.crit.size.size > 1 ? "s" : ""}` : "";
+  $("#cnt-grp").textContent = S.groupSel.length ? `${S.groupSel.length} société${S.groupSel.length > 1 ? "s" : ""}` : "";
   $("#c-subsel").innerHTML = S.crit.sub.map((x, i) => `<button class="chip" aria-pressed="true" data-subdel="${i}" title="${esc(x.parent)}">${esc(x.label)}<span class="x">×</span></button>`).join("");
   $("#c-sec").classList.toggle("busy", S.crit.sub.length > 0);
   $("#c-size").innerHTML = S.meta.sizes.map((s, i) => `<button class="chip" aria-pressed="${S.crit.size.has(i)}" data-k="size" data-v="${i}">${esc(sizeLabel(s))}</button>`).join("");
@@ -840,15 +892,32 @@ function renderListsPage() {
   const q = slug($("#lp-q").value), fam = $("#lp-fam").value, zone = $("#lp-zone").value, sec = $("#lp-sec").value;
   const rows = all.filter(({ l, d }) => (!q || slug(l.name + " " + d.sectorTxt + " " + d.zone + " " + d.fns.join(" ")).includes(q)) && (!fam || d.fams.includes(fam)) && (!zone || d.zone === zone) && (!sec || (d.sectors.length ? d.sectors : ["Tous secteurs"]).includes(sec)));
   $("#lp-rows").innerHTML = rows.map(({ l, d }) => { const lc = l.criteria?.lastCost;
-    return `<tr><td><b>${esc(l.name)}</b><span class="sub">Créée le ${fmtDay(l.created_at)}</span></td>
+    return `<tr><td><input type="checkbox" data-lp-sel="${l.id}" ${S.lpSel.has(l.id) ? "checked" : ""} aria-label="Sélectionner"></td><td><b>${esc(l.name)}</b><span class="sub">Créée le ${fmtDay(l.created_at)}</span></td>
       <td>${esc(d.fns.join(", ") || "—")}<div class="sub">${esc(d.fams.join(", "))}</div></td>
       <td>${esc(d.sectorTxt)}${d.group ? `<div class="sub">recherche par société</div>` : ""}</td>
       <td>${esc(d.zone)}</td><td>${esc(d.sizeTxt)}</td>
       <td class="mono">${l.count ?? 0}${l.total ? `<div class="sub">sur ${Number(l.total).toLocaleString("fr-FR")}</div>` : ""}</td>
       <td>${fmtDay(l.last_run_at)}${lc != null ? `<div class="sub">dernier coût : ${lc} crédit${lc > 1 ? "s" : ""}</div>` : ""}</td>
-      <td><div class="acts"><button class="btn small primary" data-lp-open="${l.id}">Ouvrir</button><button class="btn small" data-lp-update="${l.id}">Mettre à jour${lc != null ? ` (≈ ${lc} cr.)` : ""}</button><button class="btn small" data-lp-ren="${l.id}">Renommer</button></div></td></tr>`; }).join("")
-    || `<tr><td colspan="8" class="empty">${S.lists.length ? "Aucune liste ne correspond à ces filtres." : "Aucune liste : lancez une recherche depuis l'onglet Prospects."}</td></tr>`;
+      <td><div class="acts"><button class="btn small primary" data-lp-open="${l.id}">Ouvrir</button><button class="btn small" data-lp-update="${l.id}">Mettre à jour${lc != null ? ` (≈ ${lc} cr.)` : ""}</button><button class="btn small" data-lp-ren="${l.id}">Renommer</button><button class="btn small" data-lp-del="${l.id}">Supprimer</button></div></td></tr>`; }).join("")
+    || `<tr><td colspan="9" class="empty">${S.lists.length ? "Aucune liste ne correspond à ces filtres." : "Aucune liste : lancez une recherche depuis l'onglet Prospects."}</td></tr>`;
 }
+function syncLpSel() { const b = $("#lp-del"); b.disabled = !S.lpSel.size; b.textContent = S.lpSel.size ? `Supprimer la sélection (${S.lpSel.size})` : "Supprimer la sélection"; }
+function confirmDelete(ids) {
+  const ls = S.lists.filter((l) => ids.includes(l.id)), n = ls.reduce((a, l) => a + (l.count || 0), 0);
+  modal(`<header><h3>Supprimer ${ls.length > 1 ? ls.length + " listes" : "« " + esc(ls[0]?.name) + " »"} ?</h3><p>${ls.length > 1 ? "Ces listes et leurs" : "La liste et ses"} ${n} prospects sont supprimés de l'outil, avec leurs notes. Rien n'est supprimé dans Pipedrive, et les crédits déjà utilisés ne sont pas perdus pour les fiches envoyées.</p></header>
+  ${ls.length > 1 ? `<div class="body"><ul style="margin:0;padding-left:18px">${ls.map((l) => `<li>${esc(l.name)}</li>`).join("")}</ul></div>` : ""}
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="del-go">Supprimer</button></footer>`);
+  $("#del-go").onclick = async () => {
+    await db(sb.from("lists").delete().in("id", ids));
+    closeModal(); ids.forEach((id) => S.lpSel.delete(id));
+    if (ids.includes(S.cur)) { S.cur = null; S.rows = []; S.sel = null; }
+    await loadLists(); syncLpSel(); renderList(); renderDetail(); if (S.view === "lists") renderListsPage();
+    toast(`${ids.length} liste${ids.length > 1 ? "s" : ""} supprimée${ids.length > 1 ? "s" : ""}.`);
+  };
+}
+$("#lp-del").addEventListener("click", () => { if (S.lpSel.size) confirmDelete([...S.lpSel]); });
+$("#lp-all").addEventListener("change", (e) => { document.querySelectorAll("[data-lp-sel]").forEach((c) => { c.checked = e.target.checked; e.target.checked ? S.lpSel.add(c.dataset.lpSel) : S.lpSel.delete(c.dataset.lpSel); }); syncLpSel(); });
+document.addEventListener("change", (e) => { if (e.target.dataset?.lpSel) { e.target.checked ? S.lpSel.add(e.target.dataset.lpSel) : S.lpSel.delete(e.target.dataset.lpSel); syncLpSel(); } });
 function setView(v) {
   S.view = v;
   document.querySelectorAll("#topnav button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === v));
@@ -1007,12 +1076,7 @@ function toRow(c, listId, requestId, isNew) {
 $("#more").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, l.next_page); });
 $("#rerun").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, 0, true); });
 $("#renlist").addEventListener("click", () => { const l = curList(); if (l) openRename(l); });
-$("#dellist").addEventListener("click", () => {
-  const l = curList(); if (!l) return;
-  modal(`<header><h3>Supprimer « ${esc(l.name)} » ?</h3><p>La liste et ses ${S.rows.length} prospects sont supprimés de l'outil. Rien n'est supprimé dans Pipedrive.</p></header>
-  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="del-go">Supprimer</button></footer>`);
-  $("#del-go").onclick = async () => { await db(sb.from("lists").delete().eq("id", l.id)); closeModal(); S.cur = null; S.rows = []; S.sel = null; await loadLists(); if (S.lists[0]) openList(S.lists[0].id); else renderAll(); };
-});
+$("#dellist").addEventListener("click", () => { const l = curList(); if (l) confirmDelete([l.id]); });
 
 $("#run").addEventListener("click", async () => {
   const btn = $("#run");
@@ -1518,6 +1582,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.list) { setView("prospects"); openList(t.dataset.list); return; }
   if (t.dataset.view) { setView(t.dataset.view); return; }
   if (t.dataset.lpOpen) { setView("prospects"); openList(t.dataset.lpOpen); return; }
+  if (t.dataset.lpDel) { confirmDelete([t.dataset.lpDel]); return; }
   if (t.dataset.lpRen) { const l = S.lists.find((x) => x.id === t.dataset.lpRen); if (l) openRename(l); return; }
   if (t.dataset.lpUpdate) { setView("prospects"); await openList(t.dataset.lpUpdate); const l = curList(); if (l) await runSearch(l, 0, true); return; }
   if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
