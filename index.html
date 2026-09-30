@@ -476,7 +476,7 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
       <input type="text" id="c-name" placeholder="Ex. DAF industrie IDF"></div>
     <label class="check"><input type="checkbox" id="c-rec"><span>Relancer chaque lundi et signaler les nouveaux profils</span></label>
     <button class="btn primary" id="run">Lancer la recherche</button>
-    <p class="hint" style="margin:0">La recherche affiche noms, fonctions et sociétés, et vérifie qui est déjà dans Pipedrive. Elle ne consomme aucun crédit Lusha.</p>
+    <p class="hint" style="margin:0">La recherche affiche noms, fonctions et sociétés, et vérifie qui est déjà dans Pipedrive. Lusha peut facturer la recherche selon le nombre de résultats : le coût réel s'affiche après chaque recherche.</p>
 
     <div class="sect-label" style="margin-top:8px">Réseau LinkedIn</div>
     <div class="netbox" id="netbox"></div>
@@ -497,7 +497,7 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
       </table>
     </div>
     <div class="row" id="listfoot" hidden>
-      <button class="btn" id="more">Charger 50 prospects de plus</button>
+      <button class="btn" id="more">Charger 25 prospects de plus</button>
       <button class="btn" id="rerun">Relancer la recherche</button>
       <span class="hint" id="morehint"></span>
       <button class="linkbtn" id="dellist" style="margin-left:auto">Supprimer cette liste</button>
@@ -649,12 +649,17 @@ function findNumber(obj, keys) {
   for (const v of Object.values(obj)) { const f = findNumber(v, keys); if (f != null) return f; }
   return null;
 }
-async function refreshCredits() {
+// Le compteur Lusha est limité à 5 lectures par minute : on espace les lectures.
+let lastCreditRead = 0;
+async function refreshCredits(force = false) {
+  if (!force && Date.now() - lastCreditRead < 20000) return S.credits;
+  lastCreditRead = Date.now();
   try {
     const u = await api("lusha.usage");
     const n = findNumber(u, ["remaining", "remainingCredits", "creditsLeft", "balance", "left"]);
-    S.credits = n; $("#credits").textContent = n == null ? "—" : n.toLocaleString("fr-FR");
-  } catch { $("#credits").textContent = "—"; }
+    if (n != null) { S.credits = n; $("#credits").textContent = n.toLocaleString("fr-FR"); }
+    return n;
+  } catch { return null; }
 }
 
 /* ---------- Filtres Lusha (secteurs, effectifs) ---------- */
@@ -783,7 +788,7 @@ const REGION_CITIES = {
   "Corse": ["Ajaccio", "Bastia"],
 };
 async function lookupRegion(zone) {
-  const key = "zone:" + zone;
+  const key = "zone2:" + zone;
   const cached = await db(sb.from("settings").select("value").eq("key", key).maybeSingle());
   if (cached?.value?.length) return cached.value;
   const cities = REGION_CITIES[zone] ?? [];
@@ -795,7 +800,7 @@ async function lookupRegion(zone) {
       const want = slug(batch[j]);
       const list = findList(r).filter((x) => x && typeof x === "object" && /france|monaco/i.test(locField(x, ["country", "country_name"])));
       const hit = list.find((x) => slug(locField(x, ["city", "city_name"])) === want) ?? list.find((x) => slug(locField(x, ["city", "city_name"])).startsWith(want));
-      if (hit) found.push({ country: locField(hit, ["country", "country_name"]), city: locField(hit, ["city", "city_name"]) });
+      if (hit) found.push(Object.fromEntries(Object.entries(hit).filter(([, v]) => v != null && typeof v !== "object")));
     });
   }
   if (found.length) await db(sb.from("settings").upsert({ key, value: found, updated_at: new Date().toISOString() }));
@@ -850,16 +855,15 @@ async function openList(id) {
   S.rows = await db(sb.from("prospects").select("*").eq("list_id", id).order("created_at", { ascending: true }));
   S.sel = S.rows[0]?.id ?? null;
   renderAll();
-  if (l.recurring && (!l.last_run_at || new Date(l.last_run_at) < lastMonday())) {
-    toast("Nouvelle semaine : je relance la recherche pour trouver les nouveaux profils…");
-    await runSearch(l, 0, true);
-  }
   checkPipedrive();
 }
+const PAGE_SIZE = 25;
 async function runSearch(list, page, weekly = false) {
   $("#more").classList.add("busy"); $("#rerun").classList.add("busy");
   try {
-    const res = await api("lusha.search", { filters: list.criteria.filters, page, size: 50 });
+    const before = await refreshCredits(true);
+    const size = list.criteria.pageSize || PAGE_SIZE;
+    const res = await api("lusha.search", { filters: list.criteria.filters, page, size });
     const contacts = res.contacts ?? res.data ?? [];
     const known = new Set(S.rows.map((r) => r.lusha_contact_id));
     if (weekly) await db(sb.from("prospects").update({ is_new: false }).eq("list_id", list.id).eq("is_new", true));
@@ -878,7 +882,15 @@ async function runSearch(list, page, weekly = false) {
     list.count = S.rows.length;
     if (!S.sel && S.rows[0]) S.sel = S.rows[0].id;
     renderAll();
-    toast(weekly ? `${fresh.length} nouveau${fresh.length > 1 ? "x" : ""} profil${fresh.length > 1 ? "s" : ""} cette semaine · 0 crédit` : `${fresh.length} prospect${fresh.length > 1 ? "s" : ""} ajouté${fresh.length > 1 ? "s" : ""} · 0 crédit consommé`);
+    // Mesure du coût réel de la recherche (lecture du compteur Lusha avant et après)
+    await new Promise((r) => setTimeout(r, 1500));
+    lastCreditRead = 0;
+    const after = await refreshCredits(true);
+    const cost = res.billing?.creditsCharged ?? (before != null && after != null ? Math.max(0, before - after) : null);
+    if (cost != null) { list.criteria = { ...list.criteria, pageSize: size, lastCost: cost, lastCount: contacts.length }; await db(sb.from("lists").update({ criteria: list.criteria }).eq("id", list.id)); }
+    renderList();
+    const costTxt = cost == null ? "coût non mesuré" : `${cost} crédit${cost > 1 ? "s" : ""} consommé${cost > 1 ? "s" : ""}`;
+    toast(`${fresh.length} ${weekly ? "nouveau" + (fresh.length > 1 ? "x" : "") + " profil" : "prospect"}${fresh.length > 1 ? "s" : ""} ${weekly ? "cette semaine" : "ajouté" + (fresh.length > 1 ? "s" : "")} · ${costTxt}`, 6000);
     checkPipedrive();
   } catch (e) { toast(e.message, 6000); }
   finally { $("#more").classList.remove("busy"); $("#rerun").classList.remove("busy"); }
@@ -898,6 +910,7 @@ function toRow(c, listId, requestId, isNew) {
 }
 $("#more").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, l.next_page); });
 $("#rerun").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, 0, true); });
+document.addEventListener("click", (e) => { if (e.target.id === "rerun-week") { const l = curList(); if (l) runSearch(l, 0, true); } });
 $("#dellist").addEventListener("click", () => {
   const l = curList(); if (!l) return;
   modal(`<header><h3>Supprimer « ${esc(l.name)} » ?</h3><p>La liste et ses ${S.rows.length} prospects sont supprimés de l'outil. Rien n'est supprimé dans Pipedrive.</p></header>
@@ -1053,7 +1066,11 @@ function renderList() {
   const rs = S.rows.filter(FILTERS[S.filter]).slice().sort((a, b) => (!!a.dnc - !!b.dnc) || (!!b.is_new - !!a.is_new));
   $("#rows").innerHTML = rs.map(rowHTML).join("") || `<tr><td colspan="5" class="empty">Aucun prospect dans cette vue.</td></tr>`;
   const more = L.total == null || S.rows.length < L.total;
-  $("#more").hidden = !more; $("#morehint").textContent = more ? "" : "Tous les résultats sont chargés.";
+  const size = L.criteria?.pageSize || PAGE_SIZE, lc = L.criteria?.lastCost;
+  $("#more").hidden = !more; $("#more").textContent = `Charger ${size} prospects de plus`;
+  $("#morehint").textContent = more ? (lc != null ? `Dernière recherche : ${lc} crédit${lc > 1 ? "s" : ""} pour ${L.criteria.lastCount ?? size} résultats.` : "") : "Tous les résultats sont chargés.";
+  const due = L.recurring && (!L.last_run_at || new Date(L.last_run_at) < lastMonday());
+  $("#ls").innerHTML = esc($("#ls").textContent) + (due ? ` · <b>nouvelle semaine</b> <button class="btn small" id="rerun-week">Chercher les nouveaux profils${lc != null ? ` (≈ ${lc} crédit${lc > 1 ? "s" : ""})` : ""}</button>` : "");
 }
 
 /* ---------- Fiche ---------- */
