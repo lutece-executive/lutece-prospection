@@ -456,6 +456,11 @@ aside.criteria{gap:12px;background:var(--bg)}
 .lp-table td:first-child,.lp-table th:first-child{width:28px}
 #lp-del:not([disabled]){border-color:var(--bad);color:var(--bad)}
 
+.dirs{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px}
+.dirs li{background:var(--surface);border-radius:7px;padding:7px 10px;display:flex;flex-direction:column;gap:1px;border-left:3px solid var(--navy-2)}
+.dirs li b{font-size:13.5px}
+.dirs li span{font-size:12px;color:var(--ink-3)}
+
 </style>
 </head>
 <body>
@@ -1493,7 +1498,7 @@ function mailTemplate(r) {
   const sigLine = MAILSIG[topSignal(r)?.type] ? `\n\n${MAILSIG[topSignal(r).type]}` : "";
   const next = r.relance ? ` Je me permettrai de vous rappeler ${fmtLong(r.relance)} si nous ne nous sommes pas parlé d'ici là.` : "";
   return {
-    subject: `${r.company} · directeurs financiers de transition`,
+    subject: `${nice(r.company)} · directeurs financiers de transition`,
     body: `${hello}\n\n${open}\n\nJe suis ${me}, associé de Lutèce Executive. Nous mettons à disposition des directeurs financiers de transition pour les ETI et PME, opérationnels en quelques jours : remplacement d'un DAF, clôture ou audit sous tension, restructuration, structuration du pilotage financier.${sigLine}\n\nSeriez-vous disponible pour un échange de 15 minutes dans les prochains jours ?${next}\n\nBien cordialement,\n\n${me}\nAssocié · Lutèce Executive\n[votre numéro]`,
   };
 }
@@ -1639,21 +1644,21 @@ function computeSignals(en) {
 const scoreOf = (sig) => Math.min(3, (sig || []).reduce((a, s) => a + s.w, 0));
 const prioOf = (r) => { const en = r.company_info?.enrich; if (!en || en.status !== "ok") return -1; const s = scoreOf(en.signals); return s >= 3 ? 3 : s; };
 const HOOK = {
-  rj: (r) => `Dans le contexte actuel de ${r.company}, nos DAF de transition ont l'habitude de piloter la trésorerie et le plan de continuation aux côtés de l'administrateur. Êtes-vous suffisamment renforcés côté finance ?`,
+  rj: (r) => `Dans le contexte actuel de ${nice(r.company)}, nos DAF de transition ont l'habitude de piloter la trésorerie et le plan de continuation aux côtés de l'administrateur. Êtes-vous suffisamment renforcés côté finance ?`,
   plan: (r) => `Vous êtes en phase d'exécution du plan de continuation. Un DAF de transition peut sécuriser le suivi des échéances et le reporting aux partenaires. Est-ce un sujet pour vous ?`,
-  press_diff: (r) => `J'ai lu que ${r.company} traversait une période plus tendue. Dans ces phases, un directeur financier de transition aide à reprendre la main sur la trésorerie. Comment abordez-vous ce sujet côté finance ?`,
+  press_diff: (r) => `J'ai lu que ${nice(r.company)} traversait une période plus tendue. Dans ces phases, un directeur financier de transition aide à reprendre la main sur la trésorerie. Comment abordez-vous ce sujet côté finance ?`,
   daf_left: (r) => `J'ai appris le départ de votre directeur financier. Le temps de recruter son successeur, nous pouvons installer un DAF de transition en quelques jours pour sécuriser la clôture et la trésorerie. Comment gérez-vous cette période ?`,
-  dir: (r) => `J'ai vu un changement récent à la direction de ${r.company}. Ces périodes s'accompagnent souvent de chantiers sur la fonction finance, où un renfort de transition fait gagner du temps. Est-ce un sujet pour vous ?`,
-  lbo: (r) => `J'ai vu l'évolution récente de l'actionnariat de ${r.company}. Ces opérations s'accompagnent souvent d'un reporting plus exigeant et de délais serrés. Est-ce un sujet pour votre équipe financière ?`,
+  dir: (r) => `J'ai vu un changement récent à la direction de ${nice(r.company)}. Ces périodes s'accompagnent souvent de chantiers sur la fonction finance, où un renfort de transition fait gagner du temps. Est-ce un sujet pour vous ?`,
+  lbo: (r) => `J'ai vu l'évolution récente de l'actionnariat de ${nice(r.company)}. Ces opérations s'accompagnent souvent d'un reporting plus exigeant et de délais serrés. Est-ce un sujet pour votre équipe financière ?`,
   funds: (r) => `Félicitations pour votre levée de fonds. La phase qui suit demande souvent de structurer vite la fonction finance. Comment l'abordez-vous ?`,
-  daf_new: (r) => `J'ai vu l'arrivée d'un nouveau directeur financier chez ${r.company}. Les premiers mois, beaucoup de DAF s'appuient sur un renfort ponctuel pour un chantier précis : clôture, ERP, reporting. Avez-vous un projet de ce type ?`,
+  daf_new: (r) => `J'ai vu l'arrivée d'un nouveau directeur financier chez ${nice(r.company)}. Les premiers mois, beaucoup de DAF s'appuient sur un renfort ponctuel pour un chantier précis : clôture, ERP, reporting. Avez-vous un projet de ce type ?`,
   drop: (r) => `Votre chiffre d'affaires a reculé sur le dernier exercice. Dans ces phases, un DAF de transition aide souvent à reprendre la main sur la trésorerie et les coûts. Est-ce un sujet d'actualité ?`,
-  loss: (r) => `Le dernier exercice de ${r.company} s'est clos en perte. Un renfort financier de transition peut aider à redresser les marges et à sécuriser la trésorerie. Est-ce un chantier en cours chez vous ?`,
+  loss: (r) => `Le dernier exercice de ${nice(r.company)} s'est clos en perte. Un renfort financier de transition peut aider à redresser les marges et à sécuriser la trésorerie. Est-ce un chantier en cours chez vous ?`,
   late: (r) => `Je vois que vos derniers comptes ne sont pas encore publiés. Votre équipe aurait-elle besoin d'un renfort ponctuel pour la clôture ?`,
   growth: (r) => `Votre croissance a été forte sur le dernier exercice. La fonction finance suit-elle le rythme ?`,
-  devel: (r) => `J'ai vu que ${r.company} était en plein développement. La fonction finance doit souvent se structurer vite dans ces phases. Comment l'abordez-vous ?`,
-  cap: (r) => `J'ai vu une évolution récente du capital de ${r.company}. Ces opérations créent souvent des besoins ponctuels côté finance. Est-ce le cas chez vous ?`,
-  none: (r) => `Nous accompagnons des ETI comme ${r.company} avec des directeurs financiers de transition. Avez-vous en ce moment un sujet sur lequel un renfort ponctuel vous serait utile ?`,
+  devel: (r) => `J'ai vu que ${nice(r.company)} était en plein développement. La fonction finance doit souvent se structurer vite dans ces phases. Comment l'abordez-vous ?`,
+  cap: (r) => `J'ai vu une évolution récente du capital de ${nice(r.company)}. Ces opérations créent souvent des besoins ponctuels côté finance. Est-ce le cas chez vous ?`,
+  none: (r) => `Nous accompagnons des ETI comme ${nice(r.company)} avec des directeurs financiers de transition. Avez-vous en ce moment un sujet sur lequel un renfort ponctuel vous serait utile ?`,
 };
 const MAILSIG = {
   rj: "Dans les contextes de restructuration, nos DAF de transition ont l'habitude de travailler aux côtés des administrateurs et des partenaires financiers.",
@@ -1669,6 +1674,7 @@ const MAILSIG = {
   growth: "Avec une croissance comme la vôtre, la fonction finance doit souvent se structurer rapidement.",
   devel: "Dans les phases de développement, la fonction finance doit souvent se structurer rapidement.",
 };
+const nice = (t) => { const x = String(t || "").trim(); if (!x || x !== x.toUpperCase()) return x; return x.toLowerCase().replace(/(^|[\s\-'’(])([a-zà-ÿ])/g, (m, a, b) => a + b.toUpperCase()).replace(/\b(Sas|Sa|Sarl|Sasu|Snc)\b/g, (m) => m.toUpperCase()); };
 const topSignal = (r) => (r.company_info?.enrich?.signals || []).find((s) => s.w > 0);
 const hookFor = (r) => (HOOK[topSignal(r)?.type] || HOOK.none)(r);
 
@@ -1686,7 +1692,7 @@ async function enrichProspect(r, forced = null, quiet = false) {
       const siren = String(co.siren);
       const [bd, news] = await Promise.all([
         bodacc(siren).catch(() => null),
-        api("news.search", { q: `"${r.company}"` }).catch(() => []),
+        api("news.search", { q: `"${nice(r.company)}"` }).catch((e) => ({ items: [], errors: [e.message] })),
       ]);
       const fin = Object.entries(co.finances || {}).map(([year, v]) => ({ year, ca: v?.ca ?? null, res: v?.resultat_net ?? null })).sort((a, b) => a.year.localeCompare(b.year));
       en = {
@@ -1696,7 +1702,9 @@ async function enrichProspect(r, forced = null, quiet = false) {
         categorie: co.categorie_entreprise, etat: co.etat_administratif,
         dirigeants: (co.dirigeants || []).slice(0, 5).map((d) => ({ nom: d.denomination || [d.prenoms, d.nom].filter(Boolean).join(" "), qualite: d.qualite || "" })),
         finances: fin.slice(-3), bodacc: bodaccEvents(bd).slice(0, 12), bodaccOk: !!bd,
-        news: (Array.isArray(news) ? news : []).filter((n) => n.title && ago(n.date, 12)).slice(0, 6),
+        news: (Array.isArray(news) ? news : news?.items || []).filter((n) => n.title && ago(n.date, 12)).slice(0, 6),
+        newsSource: Array.isArray(news) ? "Google Actualités" : news?.source || null,
+        newsError: Array.isArray(news) ? null : (news?.items?.length ? null : (news?.errors || []).join(" ; ") || null),
       };
       en.signals = computeSignals(en);
       en.priority = scoreOf(en.signals);
@@ -1730,6 +1738,15 @@ function prioCell(r) {
   const t = topSignal(r);
   return p ? `<div class="sig"><span class="prio p${p}"><i></i>${PRIO[p]}</span><span class="siglbl">${esc(t?.label || "")}${en.signals.filter((s) => s.w > 0).length > 1 ? ` +${en.signals.filter((s) => s.w > 0).length - 1}` : ""}</span></div>` : `<span class="prio p0">Aucun signal</span>`;
 }
+function dirigeantsHTML(en) {
+  const all = en.dirigeants || [];
+  const cac = all.filter((d) => /commissaire/i.test(d.qualite));
+  const main = all.filter((d) => !/commissaire/i.test(d.qualite));
+  if (!all.length) return "";
+  return `<h3>Dirigeants</h3>
+    ${main.length ? `<ul class="dirs">${main.map((d) => `<li><b>${esc(nice(d.nom))}</b><span>${esc(d.qualite || "Dirigeant")}</span></li>`).join("")}</ul>` : ""}
+    ${cac.length ? `<p class="hint" style="margin:0">Commissaire${cac.length > 1 ? "s" : ""} aux comptes : ${esc(cac.map((d) => nice(d.nom)).join(", "))}</p>` : ""}`;
+}
 function prepHTML(r) {
   const en = r.company_info?.enrich;
   const head = `<div class="row" style="justify-content:space-between"><h3>Préparer l'appel</h3>${en?.status && en.status !== "loading" ? `<button class="linkbtn" id="prep-refresh">Actualiser</button>` : ""}</div>`;
@@ -1755,10 +1772,10 @@ function prepHTML(r) {
       <div class="fig"><span>Effectif</span><b style="font-size:12px">${esc(en.effectif || "—")}</b></div>
     </div>
     ${!f.length ? `<p class="hint" style="margin:0">Comptes non publiés ou confidentiels.</p>` : ""}
-    ${en.dirigeants?.length ? `<h3>Dirigeants</h3><ul class="news">${en.dirigeants.map((d) => `<li><time>${esc(d.qualite.slice(0, 12))}</time><span>${esc(d.nom)}${d.qualite.length > 12 ? ` <small>· ${esc(d.qualite)}</small>` : ""}</span></li>`).join("")}</ul>` : ""}
+    ${dirigeantsHTML(en)}
     <h3>Actualités</h3>
-    ${en.news?.length ? `<ul class="news">${en.news.map((n) => `<li><time>${esc(new Date(n.date).toLocaleDateString("fr-FR", { month: "2-digit", year: "numeric" }))}</time><span><a class="pdlink" style="font-weight:500" href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)}</a> <small>· ${esc(n.source || "")}</small></span></li>`).join("")}</ul>` : `<p class="hint" style="margin:0">Aucune actualité récente trouvée.</p>`}
-    <p class="hint" style="margin:0">Analysé le ${frDate(en.at)} · Registre des entreprises, BODACC${en.bodaccOk ? "" : " (indisponible)"}, Google Actualités · gratuit</p>
+    ${en.news?.length ? `<ul class="news">${en.news.map((n) => `<li><time>${esc(new Date(n.date).toLocaleDateString("fr-FR", { month: "2-digit", year: "numeric" }))}</time><span><a class="pdlink" style="font-weight:500" href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)}</a> <small>· ${esc(n.source || "")}</small></span></li>`).join("")}</ul>` : `<p class="hint" style="margin:0">${en.newsError ? `Actualités indisponibles pour l'instant (${esc(en.newsError)}). Cliquez sur « Actualiser » plus tard.` : "Aucune actualité récente trouvée."}</p>`}
+    <p class="hint" style="margin:0">Analysé le ${frDate(en.at)} · Registre des entreprises, BODACC${en.bodaccOk ? "" : " (indisponible)"}, ${esc(en.newsSource || "actualités")} · gratuit</p>
   </section>`;
 }
 function openFix(r) {
@@ -1789,6 +1806,7 @@ async function openDiag() {
   catch (e) { line(`Lusha filtres : ÉCHEC ${e.code ?? ""} ${e.message}`); }
   for (const t of ["Paris", "Ile-de-France"]) { try { const l = await api("lusha.locations", { text: t }); line(`Lusha lieux « ${t} » (brut) : ${JSON.stringify(l).slice(0, 400)}`); } catch (e) { line(`Lusha lieux « ${t} » : ÉCHEC ${e.code ?? ""} ${e.message}`); } }
   const z = await lookupRegion("Île-de-France"); line(`Zone Île-de-France : ${z ? z.length + " villes reconnues par Lusha (" + z.slice(0, 6).map((x) => x.city).join(", ") + "…)" : "aucune ville reconnue"}`);
+  try { const n = await api("news.search", { q: "\"Marionnaud\"" }); line(`Actualités (test « Marionnaud ») : ${n.items?.length ?? (Array.isArray(n) ? n.length : 0)} article(s) via ${n.source || "—"}${n.errors?.length ? " · " + n.errors.join(" ; ") : ""}`); } catch (e) { line(`Actualités : ÉCHEC ${e.message}`); }
   try { const u = await api("lusha.usage"); line(`Lusha crédits (brut) : ${JSON.stringify(u).slice(0, 300)}`); } catch (e) { line(`Lusha crédits : ÉCHEC ${e.message}`); }
   try { const u = await api("pd.users"); line(`Pipedrive utilisateurs : ${u.map((x) => x.name).join(", ")}`); } catch (e) { line(`Pipedrive : ÉCHEC ${e.code ?? ""} ${e.message}`); }
 }
