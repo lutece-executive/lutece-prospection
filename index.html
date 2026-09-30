@@ -485,6 +485,8 @@ tbody td:first-child,thead th:first-child{width:118px}
 }
 .side-head .sect-label,#side-toggle{white-space:nowrap}
 
+.subs-btn{flex-basis:100%;border-color:var(--orange);color:var(--orange-ink);font-weight:700}
+
 </style>
 </head>
 <body>
@@ -884,7 +886,8 @@ function renderCrit() {
   $("#c-subsel").innerHTML = S.crit.sub.map((x, i) => `<button class="chip" aria-pressed="true" data-subdel="${i}" title="${esc(x.parent)}">${esc(x.label)}<span class="x">×</span></button>`).join("");
   $("#c-sec").classList.toggle("busy", S.crit.sub.length > 0);
   $("#c-size").innerHTML = S.meta.sizes.map((s, i) => `<button class="chip" aria-pressed="${S.crit.size.has(i)}" data-k="size" data-v="${i}">${esc(sizeLabel(s))}</button>`).join("");
-  $("#g-sel").innerHTML = S.groupSel.map((n, i) => `<button class="chip" aria-pressed="true" data-gdel="${i}">${esc(n)}<span class="x">×</span></button>`).join("");
+  $("#g-sel").innerHTML = S.groupSel.map((n, i) => `<button class="chip" aria-pressed="true" data-gdel="${i}">${esc(n)}<span class="x">×</span></button>`).join("")
+    + (S.groupSel.length ? `<button class="btn small subs-btn" data-subs="${esc(S.groupSel[0])}">Trouver les filiales et maisons de ${esc(S.groupSel[0])}</button>` : "");
   renderNet(); renderSaved();
 }
 function describeList(l) {
@@ -1575,6 +1578,68 @@ async function dncToPipedrive(r) {
   } catch (e) { toast("Signalement Pipedrive impossible : " + e.message, 6000); }
 }
 
+/* ---------- Filiales d'un groupe : Wikidata (gratuit) + vérification Lusha ---------- */
+async function wikidataSubsidiaries(name) {
+  const find = await fetch(`https://www.wikidata.org/w/api.php?action=wbsearchentities&search=${encodeURIComponent(name)}&language=fr&uselang=fr&type=item&limit=5&format=json&origin=*`).then((r) => r.json());
+  const cands = find.search || [];
+  const parent = cands.find((c) => /groupe|entreprise|société|company|conglomerate|holding|multinational/i.test(c.description || "")) || cands[0];
+  if (!parent) return { parent: null, subs: [] };
+  const sparql = `SELECT DISTINCT ?sub ?subLabel ?countryLabel WHERE {
+    VALUES ?p { wd:${parent.id} }
+    { ?p wdt:P355 ?sub } UNION { ?sub wdt:P749 ?p } UNION { ?sub wdt:P127 ?p }
+    OPTIONAL { ?sub wdt:P17 ?country }
+    SERVICE wikibase:label { bd:serviceParam wikibase:language "fr,en". }
+  } LIMIT 300`;
+  const res = await fetch(`https://query.wikidata.org/sparql?format=json&query=${encodeURIComponent(sparql)}`, { headers: { Accept: "application/sparql-results+json" } }).then((r) => r.json());
+  const map = new Map();
+  for (const b of res.results?.bindings || []) {
+    const label = b.subLabel?.value; if (!label || /^Q\d+$/.test(label)) continue;
+    const e = map.get(label) || { name: label, countries: new Set() };
+    if (b.countryLabel?.value) e.countries.add(b.countryLabel.value);
+    map.set(label, e);
+  }
+  return { parent: { id: parent.id, label: parent.label, description: parent.description }, subs: [...map.values()].map((e) => ({ name: e.name, country: [...e.countries].join(", ") })) };
+}
+async function lushaName(name) {
+  try {
+    const res = await api("lusha.companyNames", { text: name });
+    const list = (Array.isArray(res) ? res : res?.data ?? res?.results ?? []).map((x) => (typeof x === "string" ? x : x.name ?? x.value ?? x.label)).filter(Boolean);
+    const n = normTxt(name);
+    return list.find((x) => normTxt(x) === n) || list.find((x) => normTxt(x).startsWith(n) || n.startsWith(normTxt(x))) || null;
+  } catch { return null; }
+}
+async function openSubsidiaries(group) {
+  modal(`<header><h3>Filiales et maisons de ${esc(group)}</h3><p>Liste issue de Wikidata (base publique gratuite), puis vérifiée dans Lusha. Cochez celles à ajouter à votre recherche.</p></header>
+  <div class="body"><div id="subs-out"><p class="hint"><span class="spinner"></span> Recherche des filiales…</p></div></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="subs-add" disabled>Ajouter la sélection</button></footer>`);
+  let data;
+  try { data = await wikidataSubsidiaries(group); }
+  catch (e) { $("#subs-out").innerHTML = `<p class="hint">Wikidata ne répond pas pour l'instant (${esc(e.message)}). Ajoutez les filiales à la main dans le champ « Sociétés à cibler ».</p>`; return; }
+  if (!data.parent || !data.subs.length) { $("#subs-out").innerHTML = `<p class="hint">Aucune filiale connue de Wikidata pour « ${esc(group)} »${data.parent ? ` (${esc(data.parent.label)} · ${esc(data.parent.description || "")})` : ""}. Ajoutez-les à la main dans le champ « Sociétés à cibler ».</p>`; return; }
+  const frOnly = S.zone !== "Europe" && S.zone !== "Monde";
+  const subs = data.subs.sort((a, b) => a.name.localeCompare(b.name, "fr"));
+  const box = $("#subs-out");
+  box.innerHTML = `<p class="hint" style="margin:0">Groupe reconnu : <b>${esc(data.parent.label)}</b>${data.parent.description ? " · " + esc(data.parent.description) : ""} · ${subs.length} entités.</p>
+    <div class="row" style="margin:8px 0"><button class="linkbtn" id="subs-all">Tout cocher</button> · <button class="linkbtn" id="subs-none">Tout décocher</button>${frOnly ? ` · <button class="linkbtn" id="subs-fr">France uniquement</button>` : ""}<span class="hint" id="subs-prog" style="margin-left:auto"></span></div>
+    <div class="entities" style="max-height:360px">${subs.map((x, i) => `<label><input type="checkbox" data-si="${i}" ${frOnly && x.country && !/france/i.test(x.country) ? "" : "checked"}><span>${esc(x.name)}</span><small id="sl-${i}">${esc(x.country || "pays inconnu")}</small></label>`).join("")}</div>`;
+  const checks = () => [...box.querySelectorAll("[data-si]")];
+  $("#subs-all").onclick = () => checks().forEach((c) => (c.checked = true));
+  $("#subs-none").onclick = () => checks().forEach((c) => (c.checked = false));
+  if (frOnly) $("#subs-fr").onclick = () => checks().forEach((c) => (c.checked = /france/i.test(subs[+c.dataset.si].country || "")));
+    // Lusha limite le nombre d'appels par minute : une vérification toutes les 1,3 seconde.
+  const q = subs.map((x, i) => i); let done = 0;
+  const worker = async () => { while (q.length && document.getElementById("subs-out")) { const i = q.shift(); subs[i].lusha = await lushaName(subs[i].name); await new Promise((ok) => setTimeout(ok, 1300)); done++; const el = $("#sl-" + i);
+    if (el) el.innerHTML = `${esc(subs[i].country || "pays inconnu")} · ${subs[i].lusha ? `<span style="color:var(--pd)">✓ dans Lusha</span>` : `<span style="color:var(--ink-3)">absente de Lusha</span>`}`;
+    if ($("#subs-prog")) $("#subs-prog").textContent = `Vérification Lusha ${done}/${subs.length}`; } };
+  $("#subs-add").disabled = false;
+  $("#subs-add").onclick = () => {
+    const picked = checks().filter((c) => c.checked).map((c) => subs[+c.dataset.si]).map((x) => x.lusha || x.name);
+    picked.forEach((n) => { if (!S.groupSel.includes(n)) S.groupSel.push(n); });
+    closeModal(); renderCrit(); toast(`${picked.length} filiale${picked.length > 1 ? "s" : ""} ajoutée${picked.length > 1 ? "s" : ""} à la recherche.`);
+  };
+  await worker();
+}
+
 /* ---------- Société / groupe : autocomplétion Lusha ---------- */
 const suggest = debounce(async (text) => {
   if (text.length < 2) { $("#g-sug").hidden = true; return; }
@@ -1879,6 +1944,7 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.gadd) { if (!S.groupSel.includes(t.dataset.gadd)) S.groupSel.push(t.dataset.gadd); $("#g-q").value = ""; $("#g-sug").hidden = true; renderCrit(); return; }
   if (t.dataset.subadd) { const x = S.meta.subs.find((y) => String(y.id) === t.dataset.subadd); if (x) S.crit.sub.push(x); $("#c-subq").value = ""; $("#c-subsug").hidden = true; renderCrit(); return; }
   if (t.dataset.subdel !== undefined) { S.crit.sub.splice(Number(t.dataset.subdel), 1); renderCrit(); return; }
+  if (t.dataset.subs) { openSubsidiaries(t.dataset.subs); return; }
   if (t.dataset.gdel !== undefined) { S.groupSel.splice(Number(t.dataset.gdel), 1); renderCrit(); return; }
   if (t.dataset.list) { setView("prospects"); openList(t.dataset.list); return; }
   if (t.dataset.view) { setView(t.dataset.view); return; }
