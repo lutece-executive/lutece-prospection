@@ -405,6 +405,28 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
 .pdlink:hover{text-decoration:underline}
 #listfoot{margin-top:4px}
 
+/* ===== Navigation et page des listes ===== */
+.topnav{display:flex;gap:4px;background:rgba(255,255,255,.1);border-radius:8px;padding:3px}
+.topnav button{border:0;background:none;color:#DCE6F5;font-weight:600;font-size:13px;padding:6px 12px;border-radius:6px}
+.topnav button[aria-pressed="true"]{background:#fff;color:var(--navy)}
+.topnav small{font-family:var(--mono);opacity:.8}
+.listspage{grid-column:2 / -1;padding:16px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.listspage h1{margin:0;font-size:19px;color:var(--navy)}
+.listspage .listhead p{margin:2px 0 0;color:var(--ink-2);font-size:13px;max-width:70ch}
+.lp-filters{display:flex;gap:8px;flex-wrap:wrap}
+.lp-filters input{flex:1;min-width:180px}
+.lp-table{min-width:900px}
+.lp-table td{vertical-align:top;font-size:13px}
+.lp-table td b{display:block;font-size:14px}
+.lp-table .sub{color:var(--ink-3);font-size:12px}
+.lp-table .acts{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.lp-table tbody tr{cursor:default}
+.saved button{flex-direction:column;align-items:flex-start;gap:1px}
+.saved .meta{font-size:11.5px;color:var(--ink-3);font-weight:400;line-height:1.3}
+.saved button[aria-current="true"] .meta{color:#DCE6F5}
+.saved .top{display:flex;justify-content:space-between;width:100%;gap:8px}
+@media (max-width:1100px){.listspage{grid-column:1 / -1}}
+
 </style>
 </head>
 <body>
@@ -433,6 +455,7 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
 <div id="app" hidden>
 <header class="top">
   <div class="brand"><b>Prospection Lutèce</b><span>Recherche → appel → Pipedrive</span></div>
+  <nav class="topnav" id="topnav"><button data-view="prospects" aria-pressed="true">Prospects</button><button data-view="lists" aria-pressed="false">Mes listes <small id="nlists"></small></button></nav>
   <div class="credits" title="Crédits Lusha restants">Crédits Lusha <b id="credits">…</b></div>
   <div class="userpick"><span id="me-name"></span><button class="btn small ghost" id="diag">Diagnostic</button><button class="btn small ghost" id="logout">Se déconnecter</button></div>
 </header>
@@ -473,16 +496,16 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
     </div>
 
     <div class="field"><label for="c-name">Nom de la liste</label>
-      <input type="text" id="c-name" placeholder="Ex. DAF industrie IDF"></div>
-    <label class="check"><input type="checkbox" id="c-rec"><span>Relancer chaque lundi et signaler les nouveaux profils</span></label>
+      <input type="text" id="c-name" placeholder="Facultatif : nom automatique sinon"></div>
     <button class="btn primary" id="run">Lancer la recherche</button>
     <p class="hint" style="margin:0">La recherche affiche noms, fonctions et sociétés, et vérifie qui est déjà dans Pipedrive. Lusha peut facturer la recherche selon le nombre de résultats : le coût réel s'affiche après chaque recherche.</p>
 
     <div class="sect-label" style="margin-top:8px">Réseau LinkedIn</div>
     <div class="netbox" id="netbox"></div>
 
-    <div class="sect-label" style="margin-top:8px">Mes listes</div>
+    <div class="sect-label" style="margin-top:8px">Listes récentes</div>
     <div class="saved" id="saved"><span class="hint">Aucune liste pour l'instant.</span></div>
+    <button class="btn small" data-view="lists">Voir toutes mes listes</button>
   </aside>
 
   <main class="list">
@@ -498,13 +521,32 @@ input[type=email],input[type=password]{background:var(--surface);border:1px soli
     </div>
     <div class="row" id="listfoot" hidden>
       <button class="btn" id="more">Charger 25 prospects de plus</button>
-      <button class="btn" id="rerun">Relancer la recherche</button>
+      <button class="btn" id="rerun">Mettre à jour la liste</button>
       <span class="hint" id="morehint"></span>
-      <button class="linkbtn" id="dellist" style="margin-left:auto">Supprimer cette liste</button>
+      <button class="linkbtn" id="renlist" style="margin-left:auto">Renommer</button>
+      <button class="linkbtn" id="dellist">Supprimer cette liste</button>
     </div>
   </main>
 
   <aside class="detail" id="detail" aria-live="polite"><p class="empty">Sélectionnez un prospect dans la liste.</p></aside>
+
+  <section class="listspage" id="listspage" hidden>
+    <div class="listhead">
+      <div><h1>Mes listes</h1><p>Rien n'est mis à jour automatiquement. Cliquez sur « Mettre à jour » quand vous reprenez une liste : l'outil ajoute les nouveaux profils et les marque « Nouveau ».</p></div>
+    </div>
+    <div class="lp-filters">
+      <input type="text" id="lp-q" placeholder="Rechercher une liste…">
+      <select id="lp-fam"><option value="">Toutes les fonctions</option><option>Finance</option><option>Direction générale</option><option>Ressources humaines</option></select>
+      <select id="lp-zone"><option value="">Toutes les zones</option></select>
+      <select id="lp-sec"><option value="">Tous les secteurs</option></select>
+    </div>
+    <div class="tablewrap">
+      <table class="lp-table">
+        <thead><tr><th>Liste</th><th>Fonctions</th><th>Secteurs / sociétés</th><th>Zone</th><th>Effectif</th><th>Prospects</th><th>Dernière mise à jour</th><th></th></tr></thead>
+        <tbody id="lp-rows"></tbody>
+      </table>
+    </div>
+  </section>
 </div>
 </div>
 
@@ -563,7 +605,7 @@ const STATUS = ["À solliciter", "Demande envoyée", "Introduction faite", "Refu
 
 /* ---------- État ---------- */
 const S = {
-  me: null, lists: [], cur: null, rows: [], sel: null, filter: "all", mode: "crit", zone: "France entière",
+  me: null, view: "prospects", lists: [], cur: null, rows: [], sel: null, filter: "all", mode: "crit", zone: "France entière",
   crit: { fn: new Set(["DAF", "Directeur financier"]), ind: new Set(), size: new Set(), sub: [] },
   meta: { industries: [], sizes: [] }, locCache: {}, groupSel: [],
   network: {}, conns: [], credits: null,
@@ -763,9 +805,63 @@ function renderCrit() {
   $("#g-sel").innerHTML = S.groupSel.map((n, i) => `<button class="chip" aria-pressed="true" data-gdel="${i}">${esc(n)}<span class="x">×</span></button>`).join("");
   renderNet(); renderSaved();
 }
+function describeList(l) {
+  const c = l.criteria || {}, inc = c.filters?.companies?.include || {};
+  const keys = c.fn || [];
+  const fams = Object.entries(FAMS).filter(([, m]) => Object.keys(m).some((k) => keys.includes(k))).map(([f]) => f);
+  let sectors = [];
+  if (inc.names?.length) sectors = inc.names;
+  else if (inc.subIndustriesIds?.length) sectors = inc.subIndustriesIds.map((id) => S.meta.subs?.find((x) => Number(x.id) === Number(id))?.label ?? `#${id}`);
+  else if (inc.mainIndustriesIds?.length) sectors = inc.mainIndustriesIds.map((id) => S.meta.industries.find((x) => Number(x.id) === Number(id))?.label ?? `#${id}`);
+  const sizes = (inc.sizes || []).map(sizeLabel);
+  return { fns: keys, fams, sectors, sectorTxt: sectors.length ? sectors.join(", ") : "Tous secteurs", zone: l.zone || "—", sizes, sizeTxt: sizes.length ? sizes.join(", ") + " sal." : "Toutes tailles", group: !!inc.names?.length };
+}
+function autoName() {
+  const fns = [...S.crit.fn];
+  const fnTxt = fns.length > 3 ? Object.entries(FAMS).filter(([, m]) => Object.keys(m).some((k) => S.crit.fn.has(k))).map(([f]) => f).join(" + ") : fns.join(", ");
+  const sec = S.mode === "grp" ? S.groupSel.slice(0, 2).join(", ") + (S.groupSel.length > 2 ? ` +${S.groupSel.length - 2}` : "")
+    : S.crit.sub.length ? S.crit.sub.slice(0, 2).map((x) => x.label).join(", ") + (S.crit.sub.length > 2 ? ` +${S.crit.sub.length - 2}` : "")
+    : S.crit.ind.size ? [...S.crit.ind].slice(0, 2).map((id) => S.meta.industries.find((x) => String(x.id) === id)?.label).join(", ") + (S.crit.ind.size > 2 ? ` +${S.crit.ind.size - 2}` : "") : "Tous secteurs";
+  return `${fnTxt} · ${sec} · ${S.zone}`;
+}
+const fmtDay = (iso) => iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "jamais";
 function renderSaved() {
+  $("#nlists").textContent = S.lists.length ? `(${S.lists.length})` : "";
   if (!S.lists.length) { $("#saved").innerHTML = `<span class="hint">Aucune liste pour l'instant.</span>`; return; }
-  $("#saved").innerHTML = S.lists.map((l) => `<button data-list="${l.id}" aria-current="${l.id === S.cur}"><span>${esc(l.name)}${l.recurring ? ` <span class="rec" title="Relancée chaque lundi">↻ lun.</span>` : ""}</span><small>${l.count ?? ""}</small></button>`).join("");
+  $("#saved").innerHTML = S.lists.slice(0, 6).map((l) => { const d = describeList(l);
+    return `<button data-list="${l.id}" aria-current="${l.id === S.cur}"><span class="top"><span>${esc(l.name)}</span><small>${l.count ?? ""}</small></span><span class="meta">${esc(d.zone)} · ${esc(d.sectorTxt)} · ${esc(d.sizeTxt)}</span></button>`; }).join("");
+  if (S.view === "lists") renderListsPage();
+}
+function renderListsPage() {
+  const all = S.lists.map((l) => ({ l, d: describeList(l) }));
+  const zones = [...new Set(all.map((x) => x.d.zone))].sort(), secs = [...new Set(all.flatMap((x) => x.d.sectors.length ? x.d.sectors : ["Tous secteurs"]))].sort();
+  const keep = (id, opts, first) => { const el = $(id), v = el.value; el.innerHTML = `<option value="">${first}</option>` + opts.map((o) => `<option ${o === v ? "selected" : ""}>${esc(o)}</option>`).join(""); };
+  keep("#lp-zone", zones, "Toutes les zones"); keep("#lp-sec", secs, "Tous les secteurs");
+  const q = slug($("#lp-q").value), fam = $("#lp-fam").value, zone = $("#lp-zone").value, sec = $("#lp-sec").value;
+  const rows = all.filter(({ l, d }) => (!q || slug(l.name + " " + d.sectorTxt + " " + d.zone + " " + d.fns.join(" ")).includes(q)) && (!fam || d.fams.includes(fam)) && (!zone || d.zone === zone) && (!sec || (d.sectors.length ? d.sectors : ["Tous secteurs"]).includes(sec)));
+  $("#lp-rows").innerHTML = rows.map(({ l, d }) => { const lc = l.criteria?.lastCost;
+    return `<tr><td><b>${esc(l.name)}</b><span class="sub">Créée le ${fmtDay(l.created_at)}</span></td>
+      <td>${esc(d.fns.join(", ") || "—")}<div class="sub">${esc(d.fams.join(", "))}</div></td>
+      <td>${esc(d.sectorTxt)}${d.group ? `<div class="sub">recherche par société</div>` : ""}</td>
+      <td>${esc(d.zone)}</td><td>${esc(d.sizeTxt)}</td>
+      <td class="mono">${l.count ?? 0}${l.total ? `<div class="sub">sur ${Number(l.total).toLocaleString("fr-FR")}</div>` : ""}</td>
+      <td>${fmtDay(l.last_run_at)}${lc != null ? `<div class="sub">dernier coût : ${lc} crédit${lc > 1 ? "s" : ""}</div>` : ""}</td>
+      <td><div class="acts"><button class="btn small primary" data-lp-open="${l.id}">Ouvrir</button><button class="btn small" data-lp-update="${l.id}">Mettre à jour${lc != null ? ` (≈ ${lc} cr.)` : ""}</button><button class="btn small" data-lp-ren="${l.id}">Renommer</button></div></td></tr>`; }).join("")
+    || `<tr><td colspan="8" class="empty">${S.lists.length ? "Aucune liste ne correspond à ces filtres." : "Aucune liste : lancez une recherche depuis l'onglet Prospects."}</td></tr>`;
+}
+function setView(v) {
+  S.view = v;
+  document.querySelectorAll("#topnav button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === v));
+  $("#listspage").hidden = v !== "lists"; document.querySelector("main.list").hidden = v === "lists"; $("#detail").hidden = v === "lists";
+  if (v === "lists") renderListsPage();
+}
+["#lp-q", "#lp-fam", "#lp-zone", "#lp-sec"].forEach((id) => $(id).addEventListener(id === "#lp-q" ? "input" : "change", renderListsPage));
+function openRename(l) {
+  modal(`<header><h3>Renommer la liste</h3><p>${esc(describeList(l).zone)} · ${esc(describeList(l).sectorTxt)}</p></header>
+  <div class="body"><div class="field"><label for="rn-v">Nom</label><input type="text" id="rn-v" value="${esc(l.name)}"></div></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="rn-go">Enregistrer</button></footer>`);
+  $("#rn-v").focus(); $("#rn-v").select();
+  $("#rn-go").onclick = async () => { const v = $("#rn-v").value.trim(); if (!v) return; await db(sb.from("lists").update({ name: v }).eq("id", l.id)); l.name = v; closeModal(); renderSaved(); renderList(); };
 }
 
 const ZONE_VARIANTS = (z) => [...new Set([z, z.normalize("NFD").replace(/[\u0300-\u036f]/g, ""), z.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, " ")])];
@@ -890,7 +986,7 @@ async function runSearch(list, page, weekly = false) {
     if (cost != null) { list.criteria = { ...list.criteria, pageSize: size, lastCost: cost, lastCount: contacts.length }; await db(sb.from("lists").update({ criteria: list.criteria }).eq("id", list.id)); }
     renderList();
     const costTxt = cost == null ? "coût non mesuré" : `${cost} crédit${cost > 1 ? "s" : ""} consommé${cost > 1 ? "s" : ""}`;
-    toast(`${fresh.length} ${weekly ? "nouveau" + (fresh.length > 1 ? "x" : "") + " profil" : "prospect"}${fresh.length > 1 ? "s" : ""} ${weekly ? "cette semaine" : "ajouté" + (fresh.length > 1 ? "s" : "")} · ${costTxt}`, 6000);
+    toast(`${fresh.length} ${weekly ? "nouveau" + (fresh.length > 1 ? "x" : "") + " profil" : "prospect"}${fresh.length > 1 ? "s" : ""} ${weekly ? "depuis la dernière mise à jour" : "ajouté" + (fresh.length > 1 ? "s" : "")} · ${costTxt}`, 6000);
     checkPipedrive();
   } catch (e) { toast(e.message, 6000); }
   finally { $("#more").classList.remove("busy"); $("#rerun").classList.remove("busy"); }
@@ -910,7 +1006,7 @@ function toRow(c, listId, requestId, isNew) {
 }
 $("#more").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, l.next_page); });
 $("#rerun").addEventListener("click", () => { const l = curList(); if (l) runSearch(l, 0, true); });
-document.addEventListener("click", (e) => { if (e.target.id === "rerun-week") { const l = curList(); if (l) runSearch(l, 0, true); } });
+$("#renlist").addEventListener("click", () => { const l = curList(); if (l) openRename(l); });
 $("#dellist").addEventListener("click", () => {
   const l = curList(); if (!l) return;
   modal(`<header><h3>Supprimer « ${esc(l.name)} » ?</h3><p>La liste et ses ${S.rows.length} prospects sont supprimés de l'outil. Rien n'est supprimé dans Pipedrive.</p></header>
@@ -923,8 +1019,9 @@ $("#run").addEventListener("click", async () => {
   try {
     btn.classList.add("busy");
     const filters = await buildFilters();
-    const name = $("#c-name").value.trim() || (S.mode === "grp" ? S.groupSel.join(", ") : [...S.crit.fn].join(", ")) + " · " + S.zone;
-    const [l] = await db(sb.from("lists").insert({ name, mode: S.mode === "grp" ? "group" : "criteria", criteria: { filters, fn: [...S.crit.fn], group: S.groupSel }, zone: S.zone, recurring: $("#c-rec").checked }).select("*"));
+    const name = $("#c-name").value.trim() || autoName();
+    const [l] = await db(sb.from("lists").insert({ name, mode: S.mode === "grp" ? "group" : "criteria", criteria: { filters, fn: [...S.crit.fn], group: S.groupSel }, zone: S.zone, recurring: false }).select("*"));
+    $("#c-name").value = ""; setView("prospects");
     l.count = 0; S.lists.unshift(l); S.cur = l.id; S.rows = []; S.sel = null; S.filter = "all";
     renderAll();
     await runSearch(l, 0);
@@ -1059,7 +1156,8 @@ function renderList() {
   if (!L) { $("#lt").textContent = "Aucune liste ouverte"; $("#ls").textContent = "Lancez une recherche à gauche pour créer votre première liste."; $("#tabs").innerHTML = ""; $("#rows").innerHTML = ""; return; }
   $("#lt").textContent = L.name;
   const done = S.rows.filter((r) => r.outcome).length, sent = S.rows.filter((r) => r.sent_at).length;
-  $("#ls").textContent = `${L.zone ? L.zone + " · " : ""}${S.rows.length} prospects${L.total ? ` sur ${Number(L.total).toLocaleString("fr-FR")} trouvés` : ""} · ${done} appelés · ${sent} envoyés dans Pipedrive${L.recurring ? " · relancée chaque lundi" : ""}`;
+  const D = describeList(L);
+  $("#ls").textContent = `${D.zone} · ${D.sectorTxt} · ${D.sizeTxt} · ${S.rows.length} prospects${L.total ? ` sur ${Number(L.total).toLocaleString("fr-FR")} trouvés` : ""} · ${done} appelés · ${sent} envoyés dans Pipedrive · mise à jour : ${fmtDay(L.last_run_at)}`;
   const tabs = [["all", "Tous"], ["todo", "À appeler"], ["new", "Nouveaux"], ["net", "Mon réseau"], ["out", "Hors Pipedrive"], ["follow", "Relances"], ["dnc", "Ne plus contacter"]]
     .map(([k, l]) => [k, l, S.rows.filter(FILTERS[k]).length]).filter(([k, , n]) => k === "all" || n || S.filter === k);
   $("#tabs").innerHTML = tabs.map(([k, l, n]) => `<button class="tab" role="tab" aria-selected="${S.filter === k}" data-f="${k}">${l}<small>${n}</small></button>`).join("");
@@ -1069,8 +1167,7 @@ function renderList() {
   const size = L.criteria?.pageSize || PAGE_SIZE, lc = L.criteria?.lastCost;
   $("#more").hidden = !more; $("#more").textContent = `Charger ${size} prospects de plus`;
   $("#morehint").textContent = more ? (lc != null ? `Dernière recherche : ${lc} crédit${lc > 1 ? "s" : ""} pour ${L.criteria.lastCount ?? size} résultats.` : "") : "Tous les résultats sont chargés.";
-  const due = L.recurring && (!L.last_run_at || new Date(L.last_run_at) < lastMonday());
-  $("#ls").innerHTML = esc($("#ls").textContent) + (due ? ` · <b>nouvelle semaine</b> <button class="btn small" id="rerun-week">Chercher les nouveaux profils${lc != null ? ` (≈ ${lc} crédit${lc > 1 ? "s" : ""})` : ""}</button>` : "");
+  $("#rerun").textContent = `Mettre à jour la liste${lc != null ? ` (≈ ${lc} crédit${lc > 1 ? "s" : ""})` : ""}`;
 }
 
 /* ---------- Fiche ---------- */
@@ -1418,7 +1515,11 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.subadd) { const x = S.meta.subs.find((y) => String(y.id) === t.dataset.subadd); if (x) S.crit.sub.push(x); $("#c-subq").value = ""; $("#c-subsug").hidden = true; renderCrit(); return; }
   if (t.dataset.subdel !== undefined) { S.crit.sub.splice(Number(t.dataset.subdel), 1); renderCrit(); return; }
   if (t.dataset.gdel !== undefined) { S.groupSel.splice(Number(t.dataset.gdel), 1); renderCrit(); return; }
-  if (t.dataset.list) { openList(t.dataset.list); return; }
+  if (t.dataset.list) { setView("prospects"); openList(t.dataset.list); return; }
+  if (t.dataset.view) { setView(t.dataset.view); return; }
+  if (t.dataset.lpOpen) { setView("prospects"); openList(t.dataset.lpOpen); return; }
+  if (t.dataset.lpRen) { const l = S.lists.find((x) => x.id === t.dataset.lpRen); if (l) openRename(l); return; }
+  if (t.dataset.lpUpdate) { setView("prospects"); await openList(t.dataset.lpUpdate); const l = curList(); if (l) await runSearch(l, 0, true); return; }
   if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
   if (t.id === "net-imp") { openImport(); return; }
   if (t.id === "diag") { openDiag(); return; }
