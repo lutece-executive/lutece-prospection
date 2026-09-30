@@ -461,6 +461,11 @@ aside.criteria{gap:12px;background:var(--bg)}
 .dirs li b{font-size:13.5px}
 .dirs li span{font-size:12px;color:var(--ink-3)}
 
+.ncat{display:inline-block;font-size:10.5px;font-weight:700;letter-spacing:.03em;text-transform:uppercase;color:var(--orange-ink);background:var(--orange-soft);border-radius:4px;padding:0 5px;margin-right:2px}
+details.more{margin-top:3px}
+details.more summary{cursor:pointer;color:var(--accent);font-size:12px;font-weight:600}
+details.more[open]{white-space:normal;color:var(--ink-2);font-size:12px;line-height:1.45}
+
 </style>
 </head>
 <body>
@@ -1613,7 +1618,8 @@ function computeSignals(en) {
       if (/administration|dirigeant|président|gérant|directeur général|nomination|commissaire/.test(t)) add("dir", "Changement de dirigeant", 2, e.text, e.date, "BODACC");
       else if (/capital/.test(t)) add("cap", "Modification du capital", 1, e.text, e.date, "BODACC");
       else if (/transfert/.test(t) && /siège|siege/.test(t)) add("siege", "Transfert de siège", 1, e.text, e.date, "BODACC");
-    } else if (e.fam.includes("vente") || /vente|cession/.test(t)) add("vente", "Vente ou cession de fonds", 1, e.text, e.date, "BODACC");
+    } else if (/apport partiel|fusion|scission|transmission universelle/.test(t)) add("restruct", "Restructuration juridique (fusion, apport, scission)", 2, e.text, e.date, "BODACC");
+    else if (e.fam.includes("vente") || /vente|cession/.test(t)) add("vente", "Vente ou cession de fonds", 1, e.text, e.date, "BODACC");
     else if (e.fam.includes("radiation")) add("rad", "Radiation", 0, e.text, e.date, "BODACC");
   }
   const closings = (en.bodacc || []).map((e) => e.closing).filter(Boolean).sort();
@@ -1630,21 +1636,45 @@ function computeSignals(en) {
     }
   }
   for (const n of en.news || []) {
-    if (!ago(n.date, 6)) continue;
-    const t = n.title.toLowerCase(), src = n.source || "Presse";
-    if (/(départ|quitte|démission).{0,40}(directeur financier|directrice financière|daf|cfo)|(directeur financier|daf|cfo).{0,40}(quitte|départ)/.test(t)) add("daf_left", "Départ du DAF (presse)", 3, n.title, n.date, src);
-    else if (/(nomm|nouveau|nouvelle|rejoint|arrivée).{0,40}(directeur financier|directrice financière|daf |cfo)|(directeur financier|directrice financière|cfo).{0,40}(nomm|rejoint)/.test(t)) add("daf_new", "Nouveau DAF (presse)", 2, n.title, n.date, src);
-    else if (/redressement|sauvegarde|liquidation|difficult|plan social|pse\b|licenciement/.test(t)) add("press_diff", "Difficultés relayées par la presse", 2, n.title, n.date, src);
-    else if (/rach[eè]t|acquisition|acquiert|rachète|cède|cession|lbo|entre au capital|fonds d.investissement|reprise de|reprend/.test(t)) add("lbo", "Rachat ou nouvel actionnaire (presse)", 2, n.title, n.date, src);
-    else if (/l[eè]ve \d|levée de fonds|lève des fonds/.test(t)) add("funds", "Levée de fonds", 2, n.title, n.date, src);
-    else if (/nouvelle usine|nouveau site|inaugure|ouvre|recrute|croissance|extension|investit/.test(t)) add("devel", "Développement (presse)", 1, n.title, n.date, src);
+    if (!ago(n.date, 6) || !newsCat(n.title)) continue;
+    const t = unent(n.title).toLowerCase(), src = unent(n.source) || "Presse";
+    if (/(départ|quitte|démission).{0,40}(directeur financier|directrice financière|daf|cfo)|(directeur financier|daf|cfo).{0,40}(quitte|départ)/.test(t)) add("daf_left", "Départ du DAF (presse)", 3, unent(n.title), n.date, src);
+    else if (/(nomm|nouveau|nouvelle|rejoint|arrivée).{0,40}(directeur financier|directrice financière|daf |cfo)|(directeur financier|directrice financière|cfo).{0,40}(nomm|rejoint)/.test(t)) add("daf_new", "Nouveau DAF (presse)", 2, unent(n.title), n.date, src);
+    else if (/redressement|sauvegarde|liquidation|difficult|plan social|pse\b|licenciement/.test(t)) add("press_diff", "Difficultés relayées par la presse", 2, unent(n.title), n.date, src);
+    else if (/rach[eè]t|acquisition|acquiert|rachète|cède|cession|lbo|entre au capital|fonds d.investissement|reprise de|reprend/.test(t)) add("lbo", "Rachat ou nouvel actionnaire (presse)", 2, unent(n.title), n.date, src);
+    else if (/l[eè]ve \d|levée de fonds|lève des fonds/.test(t)) add("funds", "Levée de fonds", 2, unent(n.title), n.date, src);
+    else if (/nouvelle usine|nouveau site|inaugure|ouvre|recrute|croissance|extension|investit/.test(t)) add("devel", "Développement (presse)", 1, unent(n.title), n.date, src);
   }
   return out.sort((a, b) => b.w - a.w);
+}
+function unent(t) {
+  let x = String(t ?? "");
+  for (let i = 0; i < 2; i++) x = x.replace(/&#(\d+);/g, (m, n) => String.fromCodePoint(+n)).replace(/&#x([0-9a-f]+);/gi, (m, n) => String.fromCodePoint(parseInt(n, 16)))
+    .replace(/&quot;/g, '"').replace(/&apos;|&#39;/g, "'").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ").replace(/&amp;/g, "&");
+  return x;
+}
+const NEWS_CATS = [
+  ["Difficultés", /(redressement|sauvegarde|liquidation|difficult|plan social|\bpse\b|licenciement|restructur|faillite|cessation de paiement)/],
+  ["Dirigeants", /(nomm[ée]|nomination|nouveau (pdg|directeur|président|dg|patron)|nouvelle (directrice|présidente|patronne)|prend la (tête|direction)|quitte|démission|succède|directeur général|directrice générale|directeur financier|directrice financière|\bpdg\b|\bdaf\b|\bcfo\b|\bceo\b|nouveau président)/],
+  ["Rachat / cession", /(rach[eè]t|acquisition|acquiert|rachète|cède|cession|\bvend\b|vente de|filiale|fusion|\blbo\b|entre au capital|fonds d.investissement|actionnaire|reprise|reprend|offre publique|\bopa\b|consolidation)/],
+  ["Résultats", /(chiffre d.affaires|résultats? (annuels|semestriels|financiers|net)|bénéfice|pertes?\b|ventes (en|annuelles)|exercice|marge|ebitda|rentabilit)/],
+  ["Financement", /(l[eè]ve \d|levée de fonds|financement|introduction en bourse|\bipo\b|emprunt obligataire|augmentation de capital)/],
+  ["Développement", /(usine|nouveau site|implant|inaugure|ouvre (un|une|son|sa)|recrute|investit|investissement|extension|expansion|déménage|nouveau siège|contrat (de|avec)|remporte)/],
+];
+const newsCat = (title) => { const t = unent(title).toLowerCase(); return (NEWS_CATS.find(([, re]) => re.test(t)) || [null])[0]; };
+const NEWS_QUERY = (name) => `"${name}" (nomination OR nommé OR directeur OR PDG OR rachat OR acquisition OR cession OR filiale OR fusion OR "chiffre d'affaires" OR résultats OR levée OR restructuration OR redressement OR usine OR investissement)`;
+function summarize(t, max = 150) {
+  const x = unent(t).replace(/\s+/g, " ").trim();
+  if (x.length <= max) return x;
+  const cut = x.slice(0, max);
+  const stop = Math.max(cut.lastIndexOf(". "), cut.lastIndexOf(" · "), cut.lastIndexOf(" : "));
+  return (stop > 60 ? cut.slice(0, stop) : cut.slice(0, cut.lastIndexOf(" "))) + "…";
 }
 const scoreOf = (sig) => Math.min(3, (sig || []).reduce((a, s) => a + s.w, 0));
 const prioOf = (r) => { const en = r.company_info?.enrich; if (!en || en.status !== "ok") return -1; const s = scoreOf(en.signals); return s >= 3 ? 3 : s; };
 const HOOK = {
   rj: (r) => `Dans le contexte actuel de ${nice(r.company)}, nos DAF de transition ont l'habitude de piloter la trésorerie et le plan de continuation aux côtés de l'administrateur. Êtes-vous suffisamment renforcés côté finance ?`,
+  restruct: (r) => `J'ai vu le projet de restructuration juridique en cours chez ${nice(r.company)}. Ces opérations créent souvent un pic de charge côté finance : apports, comptes de transition, reporting. Un renfort de transition vous serait-il utile ?`,
   plan: (r) => `Vous êtes en phase d'exécution du plan de continuation. Un DAF de transition peut sécuriser le suivi des échéances et le reporting aux partenaires. Est-ce un sujet pour vous ?`,
   press_diff: (r) => `J'ai lu que ${nice(r.company)} traversait une période plus tendue. Dans ces phases, un directeur financier de transition aide à reprendre la main sur la trésorerie. Comment abordez-vous ce sujet côté finance ?`,
   daf_left: (r) => `J'ai appris le départ de votre directeur financier. Le temps de recruter son successeur, nous pouvons installer un DAF de transition en quelques jours pour sécuriser la clôture et la trésorerie. Comment gérez-vous cette période ?`,
@@ -1662,6 +1692,7 @@ const HOOK = {
 };
 const MAILSIG = {
   rj: "Dans les contextes de restructuration, nos DAF de transition ont l'habitude de travailler aux côtés des administrateurs et des partenaires financiers.",
+  restruct: "Les opérations de restructuration juridique (fusion, apport, scission) créent souvent un pic de charge ponctuel pour l'équipe financière.",
   plan: "Pendant l'exécution d'un plan, un DAF de transition sécurise le suivi des échéances et le reporting aux partenaires.",
   press_diff: "Dans les périodes plus tendues, un directeur financier de transition aide à reprendre rapidement la main sur la trésorerie.",
   daf_left: "Dans une période de transition à la direction financière, ce type de renfort permet de sécuriser la continuité sans précipiter un recrutement.",
@@ -1692,7 +1723,7 @@ async function enrichProspect(r, forced = null, quiet = false) {
       const siren = String(co.siren);
       const [bd, news] = await Promise.all([
         bodacc(siren).catch(() => null),
-        api("news.search", { q: `"${nice(r.company)}"` }).catch((e) => ({ items: [], errors: [e.message] })),
+        api("news.search", { q: NEWS_QUERY(nice(r.company)) }).catch((e) => ({ items: [], errors: [e.message] })),
       ]);
       const fin = Object.entries(co.finances || {}).map(([year, v]) => ({ year, ca: v?.ca ?? null, res: v?.resultat_net ?? null })).sort((a, b) => a.year.localeCompare(b.year));
       en = {
@@ -1702,7 +1733,7 @@ async function enrichProspect(r, forced = null, quiet = false) {
         categorie: co.categorie_entreprise, etat: co.etat_administratif,
         dirigeants: (co.dirigeants || []).slice(0, 5).map((d) => ({ nom: d.denomination || [d.prenoms, d.nom].filter(Boolean).join(" "), qualite: d.qualite || "" })),
         finances: fin.slice(-3), bodacc: bodaccEvents(bd).slice(0, 12), bodaccOk: !!bd,
-        news: (Array.isArray(news) ? news : news?.items || []).filter((n) => n.title && ago(n.date, 12)).slice(0, 6),
+        news: (Array.isArray(news) ? news : news?.items || []).map((n) => ({ ...n, title: unent(n.title), source: unent(n.source) })).filter((n) => n.title && ago(n.date, 12)).slice(0, 12),
         newsSource: Array.isArray(news) ? "Google Actualités" : news?.source || null,
         newsError: Array.isArray(news) ? null : (news?.items?.length ? null : (news?.errors || []).join(" ; ") || null),
       };
@@ -1738,6 +1769,13 @@ function prioCell(r) {
   const t = topSignal(r);
   return p ? `<div class="sig"><span class="prio p${p}"><i></i>${PRIO[p]}</span><span class="siglbl">${esc(t?.label || "")}${en.signals.filter((s) => s.w > 0).length > 1 ? ` +${en.signals.filter((s) => s.w > 0).length - 1}` : ""}</span></div>` : `<span class="prio p0">Aucun signal</span>`;
 }
+function newsHTML(en) {
+  const all = (en.news || []).map((n) => ({ ...n, title: unent(n.title), source: unent(n.source), cat: newsCat(n.title) }));
+  const rel = all.filter((n) => n.cat).slice(0, 6), hidden = all.length - all.filter((n) => n.cat).length;
+  if (!rel.length) return `<p class="hint" style="margin:0">${en.newsError && !all.length ? `Actualités indisponibles pour l'instant (${esc(en.newsError)}). Cliquez sur « Actualiser » plus tard.` : `Aucune actualité business récente (dirigeants, rachats, résultats, difficultés…).${hidden ? ` ${hidden} article${hidden > 1 ? "s" : ""} sans rapport masqué${hidden > 1 ? "s" : ""}.` : ""}`}</p>`;
+  return `<ul class="news">${rel.map((n) => `<li><time>${esc(new Date(n.date).toLocaleDateString("fr-FR", { month: "2-digit", year: "numeric" }))}</time><span><span class="ncat">${esc(n.cat)}</span> <a class="pdlink" style="font-weight:500" href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)}</a> <small>· ${esc(n.source || "")}</small></span></li>`).join("")}</ul>
+    ${hidden ? `<p class="hint" style="margin:0">${hidden} article${hidden > 1 ? "s" : ""} sans rapport avec l'activité masqué${hidden > 1 ? "s" : ""}.</p>` : ""}`;
+}
 function dirigeantsHTML(en) {
   const all = en.dirigeants || [];
   const cac = all.filter((d) => /commissaire/i.test(d.qualite));
@@ -1760,7 +1798,7 @@ function prepHTML(r) {
     <p class="hint" style="margin:0">Société retenue : <b>${esc(en.nom)}</b> · SIREN ${esc(en.siren)}${en.commune ? " · " + esc(en.commune) : ""} · <button class="linkbtn" id="prep-fix">Corriger</button> · <a class="pdlink" href="https://annuaire-entreprises.data.gouv.fr/entreprise/${esc(en.siren)}" target="_blank" rel="noopener">Fiche officielle ↗</a></p>
     ${en.etat === "C" ? `<div class="pdbanner dnc"><b>Société cessée au registre</b></div>` : ""}
     <h3>Pourquoi appeler maintenant</h3>
-    ${sig.length ? `<ul class="siglist">${sig.map((s) => `<li class="w${s.w}"><b>${esc(s.label)}</b><span>${esc(s.text || "")}</span><span style="grid-column:1/-1">${esc(s.date ? (String(s.date).length > 7 ? new Date(s.date).toLocaleDateString("fr-FR") : s.date) : "")} · ${esc(src(s))}</span></li>`).join("")}</ul>`
+    ${sig.length ? `<ul class="siglist">${sig.map((s) => `<li class="w${s.w}"><b>${esc(s.label)}</b><span>${esc(summarize(s.text || ""))}${unent(s.text || "").length > 150 ? `<details class="more"><summary>Voir le détail</summary>${esc(unent(s.text))}</details>` : ""}${s.src === "BODACC" ? ` <a class="pdlink" href="https://www.bodacc.fr/pages/annonces-commerciales/?q=${esc(en.siren)}" target="_blank" rel="noopener">Annonce BODACC ↗</a>` : ""}</span><span style="grid-column:1/-1">${esc(s.date ? (String(s.date).length > 7 ? new Date(s.date).toLocaleDateString("fr-FR") : s.date) : "")} · ${esc(src(s))}</span></li>`).join("")}</ul>`
       : `<p class="hint" style="margin:0">Aucun signal particulier détecté (annonces légales des 18 derniers mois, presse des 6 derniers mois, derniers comptes).</p>`}
     <div class="row" style="justify-content:space-between"><h3>Accroche suggérée</h3><button class="btn small" data-copy="${esc(hookFor(r))}">Copier</button></div>
     <p class="hook">${esc(hookFor(r))}</p>
@@ -1774,7 +1812,7 @@ function prepHTML(r) {
     ${!f.length ? `<p class="hint" style="margin:0">Comptes non publiés ou confidentiels.</p>` : ""}
     ${dirigeantsHTML(en)}
     <h3>Actualités</h3>
-    ${en.news?.length ? `<ul class="news">${en.news.map((n) => `<li><time>${esc(new Date(n.date).toLocaleDateString("fr-FR", { month: "2-digit", year: "numeric" }))}</time><span><a class="pdlink" style="font-weight:500" href="${esc(n.link)}" target="_blank" rel="noopener">${esc(n.title)}</a> <small>· ${esc(n.source || "")}</small></span></li>`).join("")}</ul>` : `<p class="hint" style="margin:0">${en.newsError ? `Actualités indisponibles pour l'instant (${esc(en.newsError)}). Cliquez sur « Actualiser » plus tard.` : "Aucune actualité récente trouvée."}</p>`}
+    ${newsHTML(en)}
     <p class="hint" style="margin:0">Analysé le ${frDate(en.at)} · Registre des entreprises, BODACC${en.bodaccOk ? "" : " (indisponible)"}, ${esc(en.newsSource || "actualités")} · gratuit</p>
   </section>`;
 }
