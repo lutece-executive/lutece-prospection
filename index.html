@@ -763,18 +763,29 @@ function renderSaved() {
   $("#saved").innerHTML = S.lists.map((l) => `<button data-list="${l.id}" aria-current="${l.id === S.cur}"><span>${esc(l.name)}${l.recurring ? ` <span class="rec" title="Relancée chaque lundi">↻ lun.</span>` : ""}</span><small>${l.count ?? ""}</small></button>`).join("");
 }
 
+const ZONE_VARIANTS = (z) => [...new Set([z, z.normalize("NFD").replace(/[\u0300-\u036f]/g, ""), z.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, " ")])];
+const locField = (o, keys) => { for (const k of keys) if (o && o[k] != null && o[k] !== "") return String(o[k]); return ""; };
+async function lookupRegion(zone) {
+  for (const text of ZONE_VARIANTS(zone)) {
+    let res;
+    try { res = await api("lusha.locations", { text }); } catch { continue; }
+    const list = findList(res).filter((x) => x && typeof x === "object");
+    const want = slug(zone);
+    const cand = list.map((x) => ({ country: locField(x, ["country", "countryName", "country_name"]), state: locField(x, ["state", "stateName", "state_name", "region", "regionName"]), city: locField(x, ["city", "cityName", "city_name"]) }))
+      .filter((x) => x.state && (!x.country || /france/i.test(x.country)));
+    const hit = cand.find((x) => slug(x.state) === want && !x.city) ?? cand.find((x) => slug(x.state) === want) ?? cand.find((x) => slug(x.state).includes(want.split("-")[0]));
+    if (hit) return { country: hit.country || "France", state: hit.state };
+  }
+  return null;
+}
 async function zoneFilter(zone) {
   if (zone === "Monde") return null;
   if (zone === "Europe") return { continent: "Europe" };
   if (zone === "France entière") return { country: "France" };
   if (S.locCache[zone]) return S.locCache[zone];
-  try {
-    const res = await api("lusha.locations", { text: zone });
-    const list = Array.isArray(res) ? res : res?.data ?? res?.results ?? [];
-    const hit = list.find((x) => /france/i.test(x.country ?? "") && x.state) ?? list.find((x) => x.state);
-    if (hit) { const loc = { country: hit.country ?? "France", state: hit.state }; S.locCache[zone] = loc; return loc; }
-  } catch { /* repli ci-dessous */ }
-  toast(`Région « ${zone} » introuvable dans Lusha : recherche sur toute la France.`, 5000);
+  const loc = await lookupRegion(zone);
+  if (loc) { S.locCache[zone] = loc; return loc; }
+  toast(`Région « ${zone} » introuvable dans Lusha : recherche sur toute la France. Cliquez sur « Diagnostic » et envoyez-moi une capture.`, 7000);
   return { country: "France" };
 }
 function jobTitles() {
@@ -1348,6 +1359,7 @@ async function openDiag() {
   catch (e) { line(`Fonction serveur : ÉCHEC (${e.status ?? "?"}) ${e.code ?? ""} ${e.message}`); return; }
   try { const f = await api("lusha.filters"); line(`Lusha filtres : secteurs ${findList(f.industries).length}, effectifs ${findList(f.sizes).length}`); if (f.errors && Object.keys(f.errors).length) line(`Erreurs Lusha : ${JSON.stringify(f.errors)}`); line(`Extrait secteurs : ${JSON.stringify(f.industries).slice(0, 300)}`); }
   catch (e) { line(`Lusha filtres : ÉCHEC ${e.code ?? ""} ${e.message}`); }
+  try { const l = await api("lusha.locations", { text: "Ile-de-France" }); line(`Lusha lieux « Ile-de-France » (brut) : ${JSON.stringify(l).slice(0, 400)}`); } catch (e) { line(`Lusha lieux : ÉCHEC ${e.code ?? ""} ${e.message}`); }
   try { const u = await api("lusha.usage"); line(`Lusha crédits (brut) : ${JSON.stringify(u).slice(0, 300)}`); } catch (e) { line(`Lusha crédits : ÉCHEC ${e.message}`); }
   try { const u = await api("pd.users"); line(`Pipedrive utilisateurs : ${u.map((x) => x.name).join(", ")}`); } catch (e) { line(`Pipedrive : ÉCHEC ${e.code ?? ""} ${e.message}`); }
 }
