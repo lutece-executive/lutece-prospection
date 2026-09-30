@@ -765,40 +765,52 @@ function renderSaved() {
 
 const ZONE_VARIANTS = (z) => [...new Set([z, z.normalize("NFD").replace(/[\u0300-\u036f]/g, ""), z.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/-/g, " ")])];
 const locField = (o, keys) => { for (const k of keys) if (o && o[k] != null && o[k] !== "") return String(o[k]); return ""; };
-const REGION_CITY = { "Île-de-France": "Paris", "Auvergne-Rhône-Alpes": "Lyon", "Hauts-de-France": "Lille", "Grand Est": "Strasbourg", "Provence-Alpes-Côte d'Azur": "Marseille",
-  "Nouvelle-Aquitaine": "Bordeaux", "Occitanie": "Toulouse", "Pays de la Loire": "Nantes", "Bretagne": "Rennes", "Normandie": "Rouen", "Bourgogne-Franche-Comté": "Dijon", "Centre-Val de Loire": "Orléans", "Corse": "Ajaccio" };
+// Lusha ne connaît pas les régions françaises (seulement pays et ville) :
+// une région = ses principales villes d'affaires.
+const REGION_CITIES = {
+  "Île-de-France": ["Paris", "Courbevoie", "Puteaux", "Nanterre", "Boulogne-Billancourt", "Issy-les-Moulineaux", "Neuilly-sur-Seine", "Levallois-Perret", "Clichy", "Saint-Denis", "Rueil-Malmaison", "Suresnes", "Saint-Cloud", "Montrouge", "Ivry-sur-Seine", "Montreuil", "Vincennes", "Créteil", "Rungis", "Massy", "Vélizy-Villacoublay", "Guyancourt", "Versailles", "Saint-Germain-en-Laye", "Cergy", "Évry", "Noisy-le-Grand", "Roissy-en-France", "Argenteuil", "Meaux"],
+  "Auvergne-Rhône-Alpes": ["Lyon", "Villeurbanne", "Grenoble", "Saint-Étienne", "Clermont-Ferrand", "Annecy", "Chambéry", "Valence", "Villefranche-sur-Saône", "Vénissieux", "Bourg-en-Bresse", "Roanne"],
+  "Hauts-de-France": ["Lille", "Roubaix", "Tourcoing", "Villeneuve-d'Ascq", "Marcq-en-Barœul", "Amiens", "Dunkerque", "Valenciennes", "Arras", "Calais", "Beauvais", "Compiègne"],
+  "Grand Est": ["Strasbourg", "Reims", "Metz", "Nancy", "Mulhouse", "Colmar", "Troyes", "Épernay", "Charleville-Mézières", "Épinal"],
+  "Provence-Alpes-Côte d'Azur": ["Marseille", "Nice", "Aix-en-Provence", "Toulon", "Cannes", "Antibes", "Avignon", "Sophia Antipolis", "Monaco", "Vitrolles"],
+  "Nouvelle-Aquitaine": ["Bordeaux", "Mérignac", "Limoges", "Poitiers", "Pau", "La Rochelle", "Bayonne", "Niort", "Angoulême", "Cognac", "Périgueux"],
+  "Occitanie": ["Toulouse", "Montpellier", "Nîmes", "Perpignan", "Blagnac", "Béziers", "Albi", "Tarbes", "Castres"],
+  "Pays de la Loire": ["Nantes", "Angers", "Le Mans", "Saint-Nazaire", "Cholet", "La Roche-sur-Yon", "Laval", "Saint-Herblain"],
+  "Bretagne": ["Rennes", "Brest", "Lorient", "Vannes", "Saint-Brieuc", "Quimper", "Saint-Malo"],
+  "Normandie": ["Rouen", "Caen", "Le Havre", "Évreux", "Cherbourg-en-Cotentin", "Alençon"],
+  "Bourgogne-Franche-Comté": ["Dijon", "Besançon", "Belfort", "Chalon-sur-Saône", "Auxerre", "Mâcon", "Montbéliard"],
+  "Centre-Val de Loire": ["Orléans", "Tours", "Bourges", "Blois", "Chartres", "Châteauroux"],
+  "Corse": ["Ajaccio", "Bastia"],
+};
 async function lookupRegion(zone) {
-  // 1. Par la capitale régionale : Lusha renvoie la ville avec le nom exact de sa région
-  const city = REGION_CITY[zone];
-  if (city) {
-    try {
-      const list = findList(await api("lusha.locations", { text: city })).filter((x) => x && typeof x === "object");
-      const fr = list.find((x) => /france/i.test(locField(x, ["country", "countryName", "country_name"])) && locField(x, ["state", "stateName", "state_name", "region"]));
-      if (fr) return { country: locField(fr, ["country", "countryName", "country_name"]), state: locField(fr, ["state", "stateName", "state_name", "region"]) };
-    } catch { /* on essaie par le nom de la région */ }
+  const key = "zone:" + zone;
+  const cached = await db(sb.from("settings").select("value").eq("key", key).maybeSingle());
+  if (cached?.value?.length) return cached.value;
+  const cities = REGION_CITIES[zone] ?? [];
+  const found = [];
+  for (let i = 0; i < cities.length; i += 5) {
+    const batch = cities.slice(i, i + 5);
+    const res = await Promise.all(batch.map((c) => api("lusha.locations", { text: c }).catch(() => [])));
+    res.forEach((r, j) => {
+      const want = slug(batch[j]);
+      const list = findList(r).filter((x) => x && typeof x === "object" && /france|monaco/i.test(locField(x, ["country", "country_name"])));
+      const hit = list.find((x) => slug(locField(x, ["city", "city_name"])) === want) ?? list.find((x) => slug(locField(x, ["city", "city_name"])).startsWith(want));
+      if (hit) found.push({ country: locField(hit, ["country", "country_name"]), city: locField(hit, ["city", "city_name"]) });
+    });
   }
-  // 2. Par le nom de la région, avec et sans accents
-  for (const text of ZONE_VARIANTS(zone)) {
-    let res;
-    try { res = await api("lusha.locations", { text }); } catch { continue; }
-    const list = findList(res).filter((x) => x && typeof x === "object");
-    const want = slug(zone);
-    const cand = list.map((x) => ({ country: locField(x, ["country", "countryName", "country_name"]), state: locField(x, ["state", "stateName", "state_name", "region", "regionName"]), city: locField(x, ["city", "cityName", "city_name"]) }))
-      .filter((x) => x.state && (!x.country || /france/i.test(x.country)));
-    const hit = cand.find((x) => slug(x.state) === want && !x.city) ?? cand.find((x) => slug(x.state) === want) ?? cand.find((x) => slug(x.state).includes(want.split("-")[0]));
-    if (hit) return { country: hit.country || "France", state: hit.state };
-  }
-  return null;
+  if (found.length) await db(sb.from("settings").upsert({ key, value: found, updated_at: new Date().toISOString() }));
+  return found.length ? found : null;
 }
 async function zoneFilter(zone) {
   if (zone === "Monde") return null;
-  if (zone === "Europe") return { continent: "Europe" };
-  if (zone === "France entière") return { country: "France" };
+  if (zone === "Europe") return [{ continent: "Europe" }];
+  if (zone === "France entière") return [{ country: "France" }];
   if (S.locCache[zone]) return S.locCache[zone];
-  const loc = await lookupRegion(zone);
-  if (loc) { S.locCache[zone] = loc; return loc; }
-  toast(`Région « ${zone} » introuvable dans Lusha : recherche sur toute la France. Cliquez sur « Diagnostic » et envoyez-moi une capture.`, 7000);
-  return { country: "France" };
+  toast(`Préparation de la zone ${zone}…`);
+  const locs = await lookupRegion(zone);
+  if (locs) { S.locCache[zone] = locs; return locs; }
+  toast(`Zone « ${zone} » introuvable dans Lusha : recherche sur toute la France.`, 7000);
+  return [{ country: "France" }];
 }
 function jobTitles() {
   const t = [];
@@ -811,7 +823,7 @@ async function buildFilters() {
   if (!titles.length) throw new Error("Sélectionnez au moins une fonction.");
   const contacts = { include: { jobTitles: titles } };
   const loc = await zoneFilter(S.zone);
-  if (loc) contacts.include.locations = [loc];
+  if (loc) contacts.include.locations = loc;
   const companies = { include: {} };
   if (S.mode === "grp") {
     if (!S.groupSel.length) throw new Error("Ajoutez au moins une société.");
@@ -1372,7 +1384,7 @@ async function openDiag() {
   try { const f = await api("lusha.filters"); line(`Lusha filtres : secteurs ${findList(f.industries).length}, effectifs ${findList(f.sizes).length}`); if (f.errors && Object.keys(f.errors).length) line(`Erreurs Lusha : ${JSON.stringify(f.errors)}`); line(`Extrait secteurs : ${JSON.stringify(f.industries).slice(0, 300)}`); }
   catch (e) { line(`Lusha filtres : ÉCHEC ${e.code ?? ""} ${e.message}`); }
   for (const t of ["Paris", "Ile-de-France"]) { try { const l = await api("lusha.locations", { text: t }); line(`Lusha lieux « ${t} » (brut) : ${JSON.stringify(l).slice(0, 400)}`); } catch (e) { line(`Lusha lieux « ${t} » : ÉCHEC ${e.code ?? ""} ${e.message}`); } }
-  line(`Zone Île-de-France retenue : ${JSON.stringify(await lookupRegion("Île-de-France"))}`);
+  const z = await lookupRegion("Île-de-France"); line(`Zone Île-de-France : ${z ? z.length + " villes reconnues par Lusha (" + z.slice(0, 6).map((x) => x.city).join(", ") + "…)" : "aucune ville reconnue"}`);
   try { const u = await api("lusha.usage"); line(`Lusha crédits (brut) : ${JSON.stringify(u).slice(0, 300)}`); } catch (e) { line(`Lusha crédits : ÉCHEC ${e.message}`); }
   try { const u = await api("pd.users"); line(`Pipedrive utilisateurs : ${u.map((x) => x.name).join(", ")}`); } catch (e) { line(`Pipedrive : ÉCHEC ${e.code ?? ""} ${e.message}`); }
 }
