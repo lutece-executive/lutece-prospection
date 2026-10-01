@@ -519,6 +519,28 @@ tbody td:first-child,thead th:first-child{width:118px}
 :root[data-theme="dark"] .rc .av{background:#1d3350;color:#9CC8F5}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .rb-head b,:root:not([data-theme="light"]) .rc-act a,:root:not([data-theme="light"]) .relaybox details summary{color:#70B5F9}:root:not([data-theme="light"]) .rc .av{background:#1d3350;color:#9CC8F5}}
 
+/* En-tête de liste synthétique */
+.listhead.lh-card{flex-direction:column;align-items:stretch;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:12px 14px;border-top:3px solid var(--navy,#1B3A6B)}
+.lh-main{display:flex;flex-direction:column;gap:8px;min-width:0}
+.lh-main h1{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:18px}
+.lh-sub{color:var(--ink-2);font-size:13px;display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.lh-chips{display:flex;flex-wrap:wrap;gap:6px;min-width:0;flex:1 1 300px}
+.lh-chip{display:inline-flex;align-items:center;gap:5px;background:var(--surface-2);border-radius:999px;padding:3px 10px 3px 8px;font-size:12.5px;color:var(--ink);max-width:100%;cursor:default}
+.lh-chip>span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:26ch}
+.lh-chip svg{width:14px;height:14px;flex:none;fill:none;stroke:var(--navy,#1B3A6B);stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round}
+.lh-chip em{font-style:normal;font-weight:700;font-size:11px;color:#fff;background:var(--orange,#E8772E);border-radius:999px;padding:0 6px;line-height:16px}
+.lh-stats{display:flex;align-items:stretch;gap:6px;flex:none}
+.lh-kpi{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:center;min-width:64px;padding:4px 10px 6px;border-radius:8px;background:var(--surface-2);overflow:hidden}
+.lh-kpi b{font-size:17px;line-height:1.1;color:var(--navy,#1B3A6B);font-variant-numeric:tabular-nums}
+.lh-kpi b small{font-size:11.5px;font-weight:500;color:var(--ink-3)}
+.lh-kpi span{font-size:11px;color:var(--ink-2)}
+.lh-kpi i{position:absolute;left:0;bottom:0;height:3px;width:var(--p);background:var(--orange,#E8772E)}
+.lh-kpi.pd b{color:var(--orange,#E8772E)}
+.lh-upd{font-size:11px;color:var(--ink-3);line-height:1.3;align-self:center;padding-left:4px;text-align:right}
+.lh-upd b{color:var(--ink-2);font-weight:600}
+:root[data-theme="dark"] .lh-chip svg{stroke:#9CC8F5}:root[data-theme="dark"] .lh-kpi b{color:#DCE6F5}:root[data-theme="dark"] .listhead.lh-card{border-top-color:#5B83C2}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lh-chip svg{stroke:#9CC8F5}:root:not([data-theme="light"]) .lh-kpi b{color:#DCE6F5}:root:not([data-theme="light"]) .listhead.lh-card{border-top-color:#5B83C2}}
+
 </style>
 </head>
 <body>
@@ -617,8 +639,8 @@ tbody td:first-child,thead th:first-child{width:118px}
   </aside>
 
   <main class="list">
-    <div class="listhead">
-      <div><h1 id="lt">Aucune liste ouverte</h1><p id="ls">Lancez une recherche à gauche pour créer votre première liste.</p></div>
+    <div class="listhead lh-card">
+      <div class="lh-main"><h1 id="lt">Aucune liste ouverte</h1><div id="ls" class="lh-sub">Lancez une recherche à gauche pour créer votre première liste.</div></div>
       <div class="tabs" role="tablist" id="tabs"></div>
     </div>
     <div class="tablewrap">
@@ -1282,6 +1304,34 @@ const FILTERS = {
   all: () => true, hot: (r) => prioOf(r) === 3 && !r.dnc, todo: (r) => !r.outcome && !r.dnc, new: (r) => r.is_new, net: (r) => !!first(r) || relays(r).length > 0,
   out: (r) => !r.sent_at && r.pd?.kind !== "person", follow: (r) => r.relance && !r.dnc, dnc: (r) => !!r.dnc,
 };
+function chipList(label, items, icon, max = 2) {
+  if (!items.length) return "";
+  const shown = items.slice(0, max).join(", "), more = items.length - max;
+  return `<span class="lh-chip" title="${esc(label + " : " + items.join(", "))}"><svg viewBox="0 0 16 16" aria-hidden="true">${icon}</svg><span>${esc(shown)}</span>${more > 0 ? `<em>+${more}</em>` : ""}</span>`;
+}
+const LH_ICONS = {
+  fn: '<circle cx="8" cy="5" r="3"/><path d="M2.5 14c.6-3 2.8-4.5 5.5-4.5s4.9 1.5 5.5 4.5"/>',
+  co: '<rect x="2.5" y="3" width="7" height="11" rx="1"/><path d="M9.5 7h4v7h-4M5 6h2M5 9h2M5 12h2"/>',
+  zone: '<path d="M8 14.5s-4.5-4.2-4.5-7.7a4.5 4.5 0 0 1 9 0c0 3.5-4.5 7.7-4.5 7.7z"/><circle cx="8" cy="6.8" r="1.6"/>',
+  size: '<circle cx="5.5" cy="6" r="2.2"/><circle cx="11" cy="6.5" r="1.8"/><path d="M1.5 13.5c.4-2.4 2-3.6 4-3.6s3.6 1.2 4 3.6M10 10c1.9 0 3.3.9 3.8 3"/>',
+};
+function listHeadHTML(L, D, done, sent) {
+  const fns = D.fams.length ? D.fams : D.fns;
+  const tot = L.total ? Number(L.total).toLocaleString("fr-FR") : null;
+  const pct = L.total ? Math.min(100, Math.round(S.rows.length / L.total * 100)) : 100;
+  return `<div class="lh-chips">
+      ${chipList("Fonctions", fns, LH_ICONS.fn)}
+      ${chipList(D.group ? "Sociétés" : "Secteurs", D.sectors.length ? D.sectors : ["Tous secteurs"], LH_ICONS.co)}
+      ${chipList("Zone", [D.zone], LH_ICONS.zone, 1)}
+      ${chipList("Effectif", D.sizes.length ? D.sizes.map((x) => x + " sal.") : ["Toutes tailles"], LH_ICONS.size)}
+    </div>
+    <div class="lh-stats">
+      <div class="lh-kpi" title="${tot ? `${S.rows.length} chargés sur ${tot} trouvés par Lusha` : ""}"><b>${S.rows.length}${tot ? `<small> / ${tot}</small>` : ""}</b><span>prospects</span>${tot ? `<i style="--p:${pct}%"></i>` : ""}</div>
+      <div class="lh-kpi"><b>${done}</b><span>appelés</span></div>
+      <div class="lh-kpi pd"><b>${sent}</b><span>dans Pipedrive</span></div>
+      <div class="lh-upd">Mise à jour<br><b>${fmtDay(L.last_run_at)}</b></div>
+    </div>`;
+}
 function renderList() {
   const L = curList();
   $("#listfoot").hidden = !L;
@@ -1289,7 +1339,8 @@ function renderList() {
   $("#lt").textContent = L.name;
   const done = S.rows.filter((r) => r.outcome).length, sent = S.rows.filter((r) => r.sent_at).length;
   const D = describeList(L);
-  $("#ls").textContent = `${D.zone} · ${D.sectorTxt} · ${D.sizeTxt} · ${S.rows.length} prospects${L.total ? ` sur ${Number(L.total).toLocaleString("fr-FR")} trouvés` : ""} · ${done} appelés · ${sent} envoyés dans Pipedrive · mise à jour : ${fmtDay(L.last_run_at)}`;
+  $("#lt").title = L.name;
+  $("#ls").innerHTML = listHeadHTML(L, D, done, sent);
   const tabs = [["all", "Tous"], ["hot", "Prioritaires"], ["todo", "À appeler"], ["new", "Nouveaux"], ["net", "Mon réseau"], ["out", "Hors Pipedrive"], ["follow", "Relances"], ["dnc", "Ne plus contacter"]]
     .map(([k, l]) => [k, l, S.rows.filter(FILTERS[k]).length]).filter(([k, , n]) => k === "all" || n || S.filter === k);
   $("#tabs").innerHTML = tabs.map(([k, l, n]) => `<button class="tab" role="tab" aria-selected="${S.filter === k}" data-f="${k}">${l}<small>${n}</small></button>`).join("");
