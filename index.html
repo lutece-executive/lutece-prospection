@@ -492,6 +492,33 @@ tbody td:first-child,thead th:first-child{width:118px}
 .lisq.search{opacity:.55}
 .lisq.search:hover{opacity:1}
 
+/* Bloc relations LinkedIn dans la société */
+.relaybox{border:1.5px solid #0A66C2;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:8px;background:color-mix(in srgb,#0A66C2 4%,transparent)}
+.rb-head{display:flex;gap:10px;align-items:flex-start}
+.rb-head i{font-style:normal;font:700 13px/1 Arial,sans-serif;background:#0A66C2;color:#fff;border-radius:4px;padding:4px 5px;margin-top:1px}
+.rb-head div{display:flex;flex-direction:column;gap:1px}
+.rb-head b{color:#0A66C2;font-size:14px}
+.rb-head span{color:var(--ink-2);font-size:12px}
+.relaybox ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:5px}
+.rc{display:grid;grid-template-columns:30px minmax(0,1fr) auto;grid-template-areas:"av id own" "av act act";column-gap:9px;row-gap:3px;align-items:center;background:var(--surface,#fff);border:1px solid var(--line,#E3E8EF);border-radius:8px;padding:7px 9px}
+.rc.chosen{border-color:var(--orange,#E8772E);box-shadow:inset 3px 0 0 var(--orange,#E8772E)}
+.rc .av{grid-area:av;width:30px;height:30px;border-radius:50%;background:#E8F0FB;color:#0A66C2;font-weight:700;font-size:12px;display:flex;align-items:center;justify-content:center;align-self:start}
+.rc-id{grid-area:id;display:flex;flex-direction:column;min-width:0}
+.rc-id b{font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rc-id span{font-size:12px;color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+.rc .own{grid-area:own;font-size:10.5px;font-weight:700;border-radius:999px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;align-self:start;color:#fff;background:var(--navy,#1B3A6B)}
+.rc .own-christophe{background:var(--orange,#E8772E)}
+.rc-act{grid-area:act;display:flex;gap:10px;align-items:center}
+.rc-act a{color:#0A66C2;font-size:12px;text-decoration:none;font-weight:600}
+.rc-act a:hover{text-decoration:underline}
+.rc-act em{font-style:normal;font-size:12px;font-weight:700;color:var(--orange,#E8772E)}
+.rc-act .btn.small{padding:3px 10px;font-size:12px}
+.relaybox details summary{cursor:pointer;font-size:12.5px;color:#0A66C2;font-weight:600;padding:2px 0}
+.relaybox details ul{margin-top:5px}
+:root[data-theme="dark"] .rb-head b,:root[data-theme="dark"] .rc-act a,:root[data-theme="dark"] .relaybox details summary{color:#70B5F9}
+:root[data-theme="dark"] .rc .av{background:#1d3350;color:#9CC8F5}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .rb-head b,:root:not([data-theme="light"]) .rc-act a,:root:not([data-theme="light"]) .relaybox details summary{color:#70B5F9}:root:not([data-theme="light"]) .rc .av{background:#1d3350;color:#9CC8F5}}
+
 </style>
 </head>
 <body>
@@ -1277,11 +1304,30 @@ function renderList() {
 
 /* ---------- Fiche ---------- */
 const pdUrl = (id) => `https://${CONFIG.pipedriveDomain}.pipedrive.com/person/${id}`;
+const RELAY_RANK = /(financ|daf|cfo|comptab|contr[oô]l|tr[ée]sor|directeur g[ée]n[ée]ral|directrice g[ée]n[ée]rale|\bdg\b|ceo|pr[ée]sident|\brh\b|ressources humaines|drh)/i;
+function initials(c) { return ((c.first_name || "?")[0] + (c.last_name || "")[0] || "").toUpperCase(); }
+function relayBox(r, rl) {
+  const owners = [...new Set(rl.map((c) => c.owner))];
+  const sorted = [...rl].sort((a, b) => (RELAY_RANK.test(b.position || "") - RELAY_RANK.test(a.position || "")) || (a.last_name || "").localeCompare(b.last_name || ""));
+  const card = (c) => {
+    const chosen = r.intro && normUrl(r.intro.url) === c.nUrl;
+    return `<li class="rc${chosen ? " chosen" : ""}"><span class="av">${esc(initials(c))}</span>
+      <div class="rc-id"><b>${esc(c.first_name + " " + c.last_name)}</b><span>${esc(c.position || "Poste non renseigné")}</span></div>
+      <span class="own own-${esc((c.owner || "").toLowerCase())}" title="Relation de ${esc(c.owner)}">${esc((c.owner || "?")[0])}</span>
+      <div class="rc-act">${c.url ? `<a href="${esc(c.url)}" target="_blank" rel="noopener" title="Voir le profil LinkedIn">Profil ↗</a>` : ""}
+      ${chosen ? `<em>✓ Choisi</em>` : `<button class="btn small" data-pick="${esc(c.nUrl)}|${esc(c.owner)}|${esc(c.nName)}">Choisir</button>`}</div></li>`;
+  };
+  const top = sorted.slice(0, 4), rest = sorted.slice(4);
+  return `<div class="relaybox"><div class="rb-head"><i>in</i><div><b>${rl.length} relation${rl.length > 1 ? "s" : ""} chez ${esc(r.company)}</b>
+      <span>${owners.length === 1 ? `Dans le réseau de ${esc(owners[0])}` : owners.map((o) => `${esc(o)} : ${rl.filter((c) => c.owner === o).length}`).join(" · ")} · intermédiaires possibles</span></div></div>
+    <ul>${top.map(card).join("")}</ul>
+    ${rest.length ? `<details><summary>Voir les ${rest.length} autre${rest.length > 1 ? "s" : ""}</summary><ul>${rest.map(card).join("")}</ul></details>` : ""}</div>`;
+}
 function liHead(r) {
   const f = first(r), rl = relays(r);
   let h = "";
   if (f) h = `<div class="lihead"><i>in</i><div><b>Relation de 1er degré</b><span>Dans le réseau LinkedIn de ${esc(f.join(" et de "))}</span></div>${r.linkedin_url ? `<a href="${esc(r.linkedin_url.startsWith("http") ? r.linkedin_url : "https://" + r.linkedin_url)}" target="_blank" rel="noopener">Écrire sur LinkedIn ↗</a>` : ""}</div>`;
-  else if (rl.length) h = `<div class="lihead relay"><i>in</i><div><b>${esc(relayLabel(r))}</b><span>${esc(rl.map((c) => `${c.first_name} ${c.last_name} (${c.position || "poste inconnu"}, relation de ${c.owner})`).join(" · "))}</span><span>Intermédiaires possibles pour une introduction · détail plus bas</span></div></div>`;
+  else if (rl.length) h = relayBox(r, rl);
   if (r.intro) h += `<div class="pdbanner intro"><b>Introduction via ${esc(r.intro.first + " " + r.intro.last)} · ${esc(r.intro.status)}</b><span>${esc(r.intro.position || "")}${r.intro.company ? " chez " + esc(r.intro.company) : ""} · relation de ${esc(r.intro.owner)}</span></div>`;
   return h;
 }
@@ -1303,7 +1349,7 @@ function netHTML(r) {
       ${r.intro && normUrl(r.intro.url) === c.nUrl ? "" : `<button class="btn small" data-pick="${esc(c.nUrl)}|${esc(c.owner)}|${esc(c.nName)}">Choisir comme intermédiaire</button>`}</li>`).join("")}</ul>` : "";
   return `<section class="prep" aria-label="Réseau LinkedIn"><h3>Réseau LinkedIn</h3>
     ${f ? `<p class="hook" style="margin:0"><b>Relation de 1er degré</b> de ${esc(f.join(" et de "))}. Un message LinkedIn direct est possible avant l'appel.</p>` : ""}
-    ${rl.length ? `<p class="hint" style="margin:0">Vos relations qui travaillent chez ${esc(r.company)}. Elles ne sont pas forcément connectées au prospect sur LinkedIn, mais sont de bons intermédiaires pour une introduction.</p>${list}` : f ? "" : `<p class="hint" style="margin:0">${S.conns.length ? `Aucune de vos relations ne travaille chez ${esc(r.company)}.` : "Importez vos relations LinkedIn (colonne de gauche) pour voir vos liens avec ce prospect."}</p>`}
+    ${rl.length ? (f ? `<p class="hint" style="margin:0">Vos relations qui travaillent chez ${esc(r.company)}. Elles ne sont pas forcément connectées au prospect sur LinkedIn, mais sont de bons intermédiaires pour une introduction.</p>${list}` : `<p class="hint" style="margin:0">Vos ${rl.length} relation${rl.length > 1 ? "s" : ""} chez ${esc(r.company)} sont listées en haut de la fiche : cliquez sur « Choisir » pour en faire votre intermédiaire.</p>`) : f ? "" : `<p class="hint" style="margin:0">${S.conns.length ? `Aucune de vos relations ne travaille chez ${esc(r.company)}.` : "Importez vos relations LinkedIn (colonne de gauche) pour voir vos liens avec ce prospect."}</p>`}
     ${introHTML(r, f)}</section>`;
 }
 function introHTML(r, f) {
