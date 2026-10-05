@@ -541,6 +541,37 @@ tbody td:first-child,thead th:first-child{width:118px}
 :root[data-theme="dark"] .lh-chip svg{stroke:#9CC8F5}:root[data-theme="dark"] .lh-kpi b{color:#DCE6F5}:root[data-theme="dark"] .listhead.lh-card{border-top-color:#5B83C2}
 @media (prefers-color-scheme: dark){:root:not([data-theme="light"]) .lh-chip svg{stroke:#9CC8F5}:root:not([data-theme="light"]) .lh-kpi b{color:#DCE6F5}:root:not([data-theme="light"]) .listhead.lh-card{border-top-color:#5B83C2}}
 
+/* Défilement indépendant des trois colonnes (écrans larges) */
+@media (min-width:1101px){
+  html,body{height:100%;overflow:hidden}
+  #app:not([hidden]){display:flex;flex-direction:column;height:100vh;height:100dvh}
+  #app > header.top,#app > .cfgwarn{flex:none}
+  #app > .app{flex:1 1 auto;min-height:0}
+  aside.criteria,aside.detail,.listspage{overflow-y:auto;min-height:0;overscroll-behavior:contain;scrollbar-gutter:stable}
+  main.list{min-height:0;overflow:hidden}
+  main.list .tablewrap{flex:1 1 auto;min-height:0;overflow:auto;overscroll-behavior:contain}
+  main.list thead th{position:sticky;top:0;z-index:2}
+  main.list #listfoot{flex:none}
+  .listspage .tablewrap{overflow:visible}
+}
+aside.criteria::-webkit-scrollbar,aside.detail::-webkit-scrollbar,.tablewrap::-webkit-scrollbar{width:8px;height:8px}
+aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.tablewrap::-webkit-scrollbar-thumb{background:var(--line);border-radius:8px}
+
+/* Listes récentes */
+.saved .sv{display:flex;flex-direction:column;align-items:stretch;gap:4px;width:100%;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:9px;padding:8px 10px;cursor:pointer;transition:border-color .15s,box-shadow .15s}
+.saved .sv:hover{border-color:var(--navy,#1B3A6B);background:var(--surface)}
+.saved .sv[aria-current="true"]{background:var(--navy,#1B3A6B);border-color:var(--navy,#1B3A6B);color:#fff;box-shadow:inset 3px 0 0 var(--orange,#E8772E)}
+.sv-top{display:flex;align-items:center;gap:8px;min-width:0}
+.sv-name{flex:1;min-width:0;font-weight:600;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.saved .sv-n{flex:none;font-family:var(--mono);font-size:11px;font-weight:600;background:var(--surface-2);color:var(--ink-2);border-radius:999px;padding:0 7px;line-height:18px}
+.sv-tags{display:flex;gap:4px;flex-wrap:wrap;min-width:0}
+.sv-tag{flex:0 1 auto;min-width:0;max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;font-size:11px;line-height:17px;padding:0 7px;border-radius:999px;background:var(--surface-2);color:var(--ink-2)}
+.sv-tag.fn{flex:none;background:#FDEFE5;color:#B4561A;font-weight:600}
+.sv-date{font-size:10.5px;color:var(--ink-3)}
+.saved .sv[aria-current="true"] .sv-n,.saved .sv[aria-current="true"] .sv-tag{background:rgba(255,255,255,.14);color:#E6EDF7}
+.saved .sv[aria-current="true"] .sv-tag.fn{background:var(--orange,#E8772E);color:#fff}
+.saved .sv[aria-current="true"] .sv-date{color:#AFC2DE}
+
 </style>
 </head>
 <body>
@@ -964,11 +995,22 @@ function autoName() {
   return `${fnTxt} · ${sec} · ${S.zone}`;
 }
 const fmtDay = (iso) => iso ? new Date(iso).toLocaleDateString("fr-FR", { day: "numeric", month: "short", year: "numeric" }) : "jamais";
+function fmtAgo(iso) {
+  if (!iso) return "jamais mise à jour";
+  const days = Math.floor((Date.now() - new Date(iso)) / 864e5);
+  return days <= 0 ? "mise à jour aujourd'hui" : days === 1 ? "mise à jour hier" : days < 30 ? `mise à jour il y a ${days} j` : `mise à jour le ${fmtDay(iso)}`;
+}
 function renderSaved() {
   $("#nlists").textContent = S.lists.length ? `(${S.lists.length})` : "";
   if (!S.lists.length) { $("#saved").innerHTML = `<span class="hint">Aucune liste pour l'instant.</span>`; return; }
   $("#saved").innerHTML = S.lists.slice(0, 6).map((l) => { const d = describeList(l);
-    return `<button data-list="${l.id}" aria-current="${l.id === S.cur}"><span class="top"><span>${esc(l.name)}</span><small>${l.count ?? ""}</small></span><span class="meta">${esc(d.zone)} · ${esc(d.sectorTxt)} · ${esc(d.sizeTxt)}</span></button>`; }).join("");
+    const fn = d.fams.length ? d.fams.join(" + ") : d.fns.slice(0, 2).join(", ");
+    const sec = d.sectors.length ? d.sectors[0] + (d.sectors.length > 1 ? ` +${d.sectors.length - 1}` : "") : "Tous secteurs";
+    const full = `${l.name}\nFonctions : ${fn || "—"}\n${d.group ? "Sociétés" : "Secteurs"} : ${d.sectorTxt}\nZone : ${d.zone}\nEffectif : ${d.sizeTxt}\nMise à jour : ${fmtDay(l.last_run_at)}`;
+    return `<button class="sv" data-list="${l.id}" aria-current="${l.id === S.cur}" title="${esc(full)}">
+      <span class="sv-top"><span class="sv-name">${esc(l.name)}</span>${l.count != null ? `<small class="sv-n">${l.count}</small>` : ""}</span>
+      <span class="sv-tags">${fn ? `<span class="sv-tag fn">${esc(fn)}</span>` : ""}<span class="sv-tag">${esc(d.zone)}</span><span class="sv-tag">${esc(sec)}</span></span>
+      <span class="sv-date">${fmtAgo(l.last_run_at)}</span></button>`; }).join("");
   if (S.view === "lists") renderListsPage();
 }
 function renderListsPage() {
@@ -2062,7 +2104,7 @@ document.addEventListener("click", async (e) => {
   if (t.id === "net-imp") { openImport(); return; }
   if (t.id === "diag") { openDiag(); return; }
   if (t.id === "meta-retry") { $("#c-sec").innerHTML = `<span class="hint">Chargement…</span>`; loadMeta(true); return; }
-  if (t.matches("tr[data-id]")) { S.sel = t.dataset.id; renderList(); renderDetail(); { const rr = current(); if (rr && !rr.company_info?.enrich) enrichProspect(rr); } if (innerWidth < 1100) $("#detail").scrollIntoView({ behavior: "smooth" }); return; }
+  if (t.matches("tr[data-id]")) { S.sel = t.dataset.id; renderList(); renderDetail(); { const rr = current(); if (rr && !rr.company_info?.enrich) enrichProspect(rr); } $("#detail").scrollTop = 0; if (innerWidth < 1100) $("#detail").scrollIntoView({ behavior: "smooth" }); return; }
   if (t.dataset.copy) { navigator.clipboard?.writeText(t.dataset.copy).then(() => toast("Copié"), () => toast("Copie impossible, sélectionnez le texte")); return; }
   const r = current(); if (!r) return;
   if (t.id === "cmp") return openCompare(r);
