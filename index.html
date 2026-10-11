@@ -572,6 +572,61 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 .saved .sv[aria-current="true"] .sv-tag.fn{background:var(--orange,#E8772E);color:#fff}
 .saved .sv[aria-current="true"] .sv-date{color:#AFC2DE}
 
+/* Mes opportunités du jour */
+.oppspage{grid-column:1 / -1;padding:18px clamp(16px,3vw,40px);display:flex;flex-direction:column;gap:14px;min-width:0;max-width:1180px;width:100%;margin:0 auto;box-sizing:border-box}
+@media (min-width:1101px){.oppspage{overflow-y:auto;min-height:0;max-width:none}.oppspage > *{max-width:1120px;width:100%;margin-left:auto;margin-right:auto}}
+.op-head{display:flex;align-items:flex-end;justify-content:space-between;gap:14px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-top:3px solid var(--navy,#1B3A6B);border-radius:12px;padding:14px 16px}
+.op-head h1{margin:0;font-size:20px;color:var(--navy,#1B3A6B)}
+.op-head p{margin:3px 0 0;color:var(--ink-2);font-size:13px;max-width:75ch}
+.op-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.op-cost{font-size:12px;color:var(--ink-2);background:var(--surface-2);border-radius:999px;padding:4px 10px}
+.op-progress{display:flex;flex-direction:column;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.op-bar{height:6px;background:var(--surface-2);border-radius:6px;overflow:hidden}
+.op-bar i{display:block;height:100%;width:5%;background:var(--orange,#E8772E);transition:width .4s}
+#op-msg{font-size:12.5px;color:var(--ink-2)}
+#op-list{display:flex;flex-direction:column;gap:14px}
+.op-empty{display:flex;flex-direction:column;gap:4px;background:var(--surface);border:1px dashed var(--line);border-radius:12px;padding:22px;text-align:center;color:var(--ink-2)}
+.op-empty b{color:var(--ink);font-size:15px}
+.oc{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 1px 2px rgba(27,58,107,.05)}
+.oc h2{margin:6px 0 0;font-size:19px;color:var(--navy,#1B3A6B)}
+.oc h4{margin:0 0 4px;font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-3);font-weight:700;display:flex;align-items:center;gap:6px}
+.oc p{margin:0}
+.oc-head .hint{margin-top:2px}
+.oc-badges{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.ost{font-size:11px;font-weight:700;border-radius:999px;padding:2px 9px;line-height:18px;white-space:nowrap}
+.st-new{background:var(--orange,#E8772E);color:#fff}
+.st-up{background:#FDEFE5;color:#B4561A;border:1px solid #F3C29E}
+.st-seen{background:var(--surface-2);color:var(--ink-2)}
+.st-done{background:#E7F4EC;color:#1E7A45}
+.st-dis{background:var(--surface-2);color:var(--ink-3)}
+.oscore{font-weight:700;font-size:15px;color:var(--navy,#1B3A6B);font-variant-numeric:tabular-nums}
+.oscore small{font-size:11.5px;font-weight:500;color:var(--ink-2);margin-left:2px}
+.oscore.lvl-forte{color:#1E7A45}
+.oscore.sm{font-size:12.5px;min-width:24px;text-align:right}
+.oneed{font-size:12px;font-weight:600;background:#E8EEF7;color:var(--navy,#1B3A6B);border-radius:6px;padding:2px 8px}
+.oc-grid,.oc-cols{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);gap:14px}
+.oc-cols{grid-template-columns:1fr 1fr}
+.oc section{min-width:0}
+.oc ul,.oc ol{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:3px;font-size:13.5px}
+.oc a{color:var(--accent);text-decoration:none;font-size:12.5px;font-weight:500;white-space:nowrap}
+.oc a:hover{text-decoration:underline}
+.hyp{font-style:normal;text-transform:none;letter-spacing:0;font-size:10.5px;font-weight:700;color:#B4561A;background:#FDEFE5;border-radius:4px;padding:0 6px}
+.oc-need{background:color-mix(in srgb,var(--orange,#E8772E) 6%,transparent);border-left:3px solid var(--orange,#E8772E);border-radius:0 8px 8px 0;padding:8px 12px}
+.oc-call blockquote{margin:0 0 6px;padding:8px 12px;background:var(--surface-2);border-radius:8px;font-size:14px;line-height:1.5}
+.oc-call .btn{margin-top:6px}
+.oc-more{border-top:1px solid var(--line);padding-top:8px}
+.oc-more > summary{cursor:pointer;font-weight:600;font-size:13px;color:var(--accent)}
+.oc-more[open]{display:flex;flex-direction:column;gap:12px}
+.oc-foot{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid var(--line);padding-top:10px}
+.oc-foot .spacer{flex:1}
+.op-more{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.op-more > summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--ink-2)}
+.op-rows{display:flex;flex-direction:column;margin-top:8px}
+.op-row{display:grid;grid-template-columns:auto minmax(120px,auto) auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:7px 0;border-top:1px solid var(--line);font-size:13px}
+.op-row-t{color:var(--ink-2);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.op-confirm{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+@media (max-width:760px){.oc-grid,.oc-cols{grid-template-columns:1fr}.op-row{grid-template-columns:auto 1fr auto}.op-row-t,.op-row .oscore{display:none}}
+
 </style>
 </head>
 <body>
@@ -600,7 +655,7 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 <div id="app" hidden>
 <header class="top">
   <div class="brand"><b>Prospection Lutèce</b><span>Recherche → appel → Pipedrive</span></div>
-  <nav class="topnav" id="topnav"><button data-view="prospects" aria-pressed="true">Prospects</button><button data-view="lists" aria-pressed="false">Mes listes <small id="nlists"></small></button></nav>
+  <nav class="topnav" id="topnav"><button data-view="opps" aria-pressed="true">Opportunités <small id="nopps"></small></button><button data-view="prospects" aria-pressed="false">Prospects</button><button data-view="lists" aria-pressed="false">Mes listes <small id="nlists"></small></button></nav>
   <div class="credits" title="Crédits Lusha restants">Crédits Lusha <b id="credits">…</b></div>
   <div class="userpick"><span id="me-name"></span><button class="btn small ghost" id="diag">Diagnostic</button><button class="btn small ghost" id="logout">Se déconnecter</button></div>
 </header>
@@ -691,6 +746,15 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
   </main>
 
   <aside class="detail" id="detail" aria-live="polite"><p class="empty">Sélectionnez un prospect dans la liste.</p></aside>
+
+  <section class="oppspage" id="oppspage" hidden>
+    <div class="op-head">
+      <div><h1>Mes opportunités du jour</h1><p id="op-sub">Chargement…</p></div>
+      <div class="op-actions"><span class="op-cost" id="op-cost"></span><button class="btn" id="opp-cfg">Réglages</button><button class="btn primary" id="opp-run">Lancer l'analyse</button></div>
+    </div>
+    <div class="op-progress" id="op-progress" hidden><div class="op-bar"><i id="op-bar"></i></div><span id="op-msg"></span></div>
+    <div id="op-list"></div>
+  </section>
 
   <section class="listspage" id="listspage" hidden>
     <div class="listhead">
@@ -845,6 +909,7 @@ async function boot() {
   api("ping").then((p) => { if (!p.lusha || !p.pipedrive) showCfg(`Clés manquantes côté serveur : ${[!p.lusha && "Lusha", !p.pipedrive && "Pipedrive"].filter(Boolean).join(" et ")}.`); })
     .catch((e) => showCfg(`Impossible de joindre la fonction serveur « ${FN} » : ${e.message}`));
   if (S.lists[0]) openList(S.lists[0].id);
+  setView("opps");
 }
 
 /* ---------- Crédits ---------- */
@@ -1050,8 +1115,12 @@ document.addEventListener("change", (e) => { if (e.target.dataset?.lpSel) { e.ta
 function setView(v) {
   S.view = v;
   document.querySelectorAll("#topnav button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.view === v));
-  $("#listspage").hidden = v !== "lists"; document.querySelector("main.list").hidden = v === "lists"; $("#detail").hidden = v === "lists";
+  $("#listspage").hidden = v !== "lists"; $("#oppspage").hidden = v !== "opps";
+  document.querySelector("main.list").hidden = v !== "prospects"; $("#detail").hidden = v !== "prospects";
+  document.querySelector("aside.criteria").hidden = v === "opps";
+  document.body.classList.toggle("view-opps", v === "opps");
   if (v === "lists") renderListsPage();
+  if (v === "opps") loadOpps();
 }
 ["#lp-q", "#lp-fam", "#lp-zone", "#lp-sec"].forEach((id) => $(id).addEventListener(id === "#lp-q" ? "input" : "change", renderListsPage));
 function openRename(l) {
@@ -2079,6 +2148,176 @@ async function openDiag() {
   try { const n = await api("news.search", { q: "\"Marionnaud\"" }); line(`Actualités (test « Marionnaud ») : ${n.items?.length ?? (Array.isArray(n) ? n.length : 0)} article(s) via ${n.source || "—"}${n.errors?.length ? " · " + n.errors.join(" ; ") : ""}`); } catch (e) { line(`Actualités : ÉCHEC ${e.message}`); }
   try { const u = await api("lusha.usage"); line(`Lusha crédits (brut) : ${JSON.stringify(u).slice(0, 300)}`); } catch (e) { line(`Lusha crédits : ÉCHEC ${e.message}`); }
   try { const u = await api("pd.users"); line(`Pipedrive utilisateurs : ${u.map((x) => x.name).join(", ")}`); } catch (e) { line(`Pipedrive : ÉCHEC ${e.code ?? ""} ${e.message}`); }
+  try { const a = await api("opp.ping"); line(`IA Claude : ${a.ok ? "OK" : "réponse vide"} · modèles ${a.model} et ${a.deep}`); } catch (e) { line(`IA Claude : ÉCHEC ${e.code ?? ""} ${e.message}`); }
+}
+
+/* ---------- Mes opportunités du jour ---------- */
+const OPP_CFG = { minEffectif: 50, dailyCapUsd: 1, monthlyCapUsd: 20, maxDeep: 10, threshold: 60 };
+const OPP_STATUS = { new: ["Nouvelle", "st-new"], up: ["En hausse", "st-up"], seen: ["Déjà vue", "st-seen"], done: ["Traitée", "st-done"], dismissed: ["Écartée", "st-dis"] };
+const OPP_PHASE = { watchlist: [8, "Préparation des sociétés"], collect: [35, "Collecte BODACC et presse"], triage: [65, "Tri des actualités"], select: [72, "Choix des sociétés à analyser"], analyse: [80, "Analyse approfondie"], finalize: [97, "Finalisation"], done: [100, "Terminé"], capped: [100, "Plafond atteint"], error: [100, "Erreur"] };
+S.opps = []; S.oppRuns = []; S.oppCfg = { ...OPP_CFG }; S.oppRunning = false;
+const usd = (v) => `${Number(v || 0).toLocaleString("fr-FR", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} $`;
+const fmtWhen = (iso) => iso ? new Date(iso).toLocaleString("fr-FR", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" }) : "—";
+function oppActive(o) { return ["new", "up", "seen"].includes(o.status) && (!o.last_event_at || ago(o.last_event_at, 4)); }
+async function loadOpps() {
+  try {
+    const [opps, runs, cfg] = await Promise.all([
+      db(sb.from("opportunities").select("*").order("score", { ascending: false })),
+      db(sb.from("opp_runs").select("*").order("started_at", { ascending: false }).range(0, 59)),
+      db(sb.from("settings").select("value").eq("key", "opp.config").maybeSingle()),
+    ]);
+    S.opps = opps || []; S.oppRuns = runs || []; S.oppCfg = { ...OPP_CFG, ...(cfg?.value || {}) };
+  } catch { S.opps = []; S.oppRuns = []; }
+  renderOpps();
+}
+function oppSpent() {
+  const now = new Date(), day = new Date(now.getFullYear(), now.getMonth(), now.getDate()), month = new Date(now.getFullYear(), now.getMonth(), 1);
+  const sum = (from) => S.oppRuns.filter((r) => new Date(r.started_at) >= from).reduce((a, r) => a + Number(r.cost_usd || 0), 0);
+  return { day: sum(day), month: sum(month) };
+}
+function renderOpps() {
+  const cfg = S.oppCfg, last = S.oppRuns.find((r) => r.finished_at) || S.oppRuns[0];
+  const st = last?.stats || {};
+  $("#op-sub").textContent = last
+    ? `Dernière analyse : ${fmtWhen(last.finished_at || last.started_at)} · ${st.companiesChecked ?? 0} sociétés vérifiées · ${st.newEvents ?? 0} événements nouveaux · ${st.analysed ?? 0} analysées en profondeur${last.phase === "capped" ? " · arrêtée au plafond de dépense" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
+    : "Aucune analyse pour l'instant. Cliquez sur « Lancer l'analyse » : l'outil passe en revue les sociétés de vos listes.";
+  const sp = oppSpent();
+  $("#op-cost").textContent = `IA : ${usd(sp.day)} aujourd'hui · ${usd(sp.month)} ce mois (plafond ${usd(cfg.monthlyCapUsd)})`;
+  const active = S.opps.filter(oppActive);
+  const top = active.filter((o) => (o.score ?? 0) >= cfg.threshold).slice(0, 5);
+  const watch = active.filter((o) => !top.includes(o));
+  const closed = S.opps.filter((o) => ["done", "dismissed"].includes(o.status));
+  const nNew = top.filter((o) => ["new", "up"].includes(o.status)).length;
+  $("#nopps").textContent = nNew ? `(${nNew})` : "";
+  $("#op-list").innerHTML = (top.length ? top.map(oppCard).join("")
+    : `<div class="op-empty"><b>Rien de solide pour l'instant.</b><span>${last ? "Aucune société ne dépasse le seuil de pertinence. Les signaux plus faibles sont listés ci-dessous." : "Lancez une première analyse pour voir vos opportunités."}</span></div>`)
+    + (watch.length ? `<details class="op-more"><summary>À surveiller (${watch.length})</summary><div class="op-rows">${watch.map(oppRow).join("")}</div></details>` : "")
+    + (closed.length ? `<details class="op-more"><summary>Traitées et écartées (${closed.length})</summary><div class="op-rows">${closed.map(oppRow).join("")}</div></details>` : "");
+}
+function oppMeta(o) {
+  const a = o.analysis || {};
+  return [a.secteur_naf && `NAF ${a.secteur_naf}`, EFFECTIF[a.effectif_code], a.commune && nice(a.commune)].filter(Boolean).join(" · ");
+}
+function srcLink(u, label) { return u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(label || "Source")} ↗</a>` : ""; }
+function oppCard(o) {
+  const a = o.analysis || {}, [stL, stC] = OPP_STATUS[o.status] || ["", ""], ev = a.evenement || {}, dec = a.decideur || {};
+  const lvl = a.niveau || o.level || "";
+  const pr = (a.prospects || [])[0];
+  const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "source"; } };
+  return `<article class="oc">
+    <header class="oc-head">
+      <div class="oc-badges"><span class="ost ${stC}">${stL}</span><span class="oscore lvl-${esc(lvl)}" title="Pertinence estimée par l'IA">${o.score ?? "—"}<small>/100 · ${esc(lvl)}</small></span><span class="oneed">${esc(o.need || a.besoin || "")}</span>${o.status === "up" && o.prev_score != null ? `<span class="hint">avant : ${o.prev_score}</span>` : ""}</div>
+      <h2>${esc(nice(o.company))}</h2><p class="hint">${esc(oppMeta(o))}</p>
+    </header>
+    <div class="oc-grid">
+      <section><h4>Événement déclencheur</h4><p>${esc(ev.resume || "")}</p><p class="hint">${esc(/^\d{4}-\d{2}-\d{2}$/.test(ev.date || "") ? fmtDay(ev.date) : ev.date || "")} · ${srcLink(ev.source_url, host(ev.source_url))}</p></section>
+      <section><h4>Décideur à contacter</h4>${dec.nom && dec.origine !== "inconnu" ? `<p><b>${esc(dec.nom)}</b><br>${esc(dec.fonction || "")}</p><p class="hint">Origine : ${esc(dec.origine)}</p>` : `<p class="hint">Non identifié. Utilisez « Chercher les décideurs ».</p>`}</section>
+    </div>
+    <section class="oc-need"><h4>Besoin potentiel <em class="hyp">hypothèse</em></h4><p>${esc(a.besoin_detail || "")}</p></section>
+    <section class="oc-call"><h4>Angle d'appel</h4><blockquote>${esc(a.angle_telephonique || "")}</blockquote>${a.question_ouverture ? `<p><b>Question d'ouverture :</b> ${esc(a.question_ouverture)}</p>` : ""}<button class="btn small" data-copy="${esc(a.angle_telephonique || "")}">Copier</button></section>
+    <details class="oc-more"><summary>Voir l'analyse complète</summary>
+      <div class="oc-cols">
+        <section><h4>Faits vérifiés</h4><ul class="oc-facts">${(a.faits || []).map((f) => `<li>${esc(f.texte)} ${srcLink(f.source_url, host(f.source_url))}</li>`).join("") || `<li class="hint">Aucun fait sourcé.</li>`}</ul></section>
+        <section><h4>Hypothèses commerciales <em class="hyp">non confirmées</em></h4><ul>${(a.hypotheses || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
+      </div>
+      <div class="oc-cols">
+        <section><h4>Pourquoi ce niveau</h4><ul>${(a.justification || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
+        <section><h4>À vérifier au téléphone</h4><ul>${(a.a_verifier || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
+      </div>
+      <section><h4>Argumentaire</h4><ol>${(a.argumentaire || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ol></section>
+      <section><h4>Réseau LinkedIn</h4>${(a.relations || []).length ? `<ul>${a.relations.map((c) => `<li>${esc(c.nom)} · ${esc(c.poste || "poste inconnu")} · relation de ${esc(c.owner)}</li>`).join("")}</ul>` : `<p class="hint">Aucune de vos relations importées ne travaille dans cette société.</p>`}</section>
+      <p class="hint">Analyse du ${fmtWhen(o.scored_at)} · proposée pour la première fois le ${fmtDay(o.first_seen_at)}</p>
+    </details>
+    <footer class="oc-foot">
+      ${pr ? `<button class="btn primary small" data-opp-open="${esc(pr.id)}|${esc(pr.list_id)}">Ouvrir la fiche de ${esc(pr.nom)}</button>` : ""}
+      <button class="btn small" data-opp-lusha="${esc(o.company)}" title="Prépare une recherche Lusha sur cette société. Rien n'est dépensé avant votre clic sur « Lancer la recherche ».">Chercher les décideurs (Lusha, ≈ 1 crédit)</button>
+      <span class="spacer"></span>
+      <button class="linkbtn" data-opp-done="${esc(o.siren)}">Traitée</button>
+      <button class="linkbtn" data-opp-dismiss="${esc(o.siren)}">Pas pertinent</button>
+    </footer>
+  </article>`;
+}
+function oppRow(o) {
+  const a = o.analysis || {}, [stL, stC] = OPP_STATUS[o.status] || ["", ""];
+  const closed = ["done", "dismissed"].includes(o.status);
+  return `<div class="op-row"><span class="ost ${stC}">${stL}</span><b>${esc(nice(o.company))}</b><span class="oscore sm">${o.score ?? "—"}</span>
+    <span class="op-row-t">${esc(a.evenement?.resume || o.need || "")}${o.feedback ? ` · <i>${esc(o.feedback)}</i>` : ""}</span>
+    ${closed ? `<button class="linkbtn" data-opp-restore="${esc(o.siren)}">Remettre</button>` : `<button class="linkbtn" data-opp-dismiss="${esc(o.siren)}">Pas pertinent</button>`}</div>`;
+}
+async function setOppStatus(siren, patch) {
+  await db(sb.from("opportunities").update({ ...patch, updated_at: new Date().toISOString() }).eq("siren", siren));
+  const o = S.opps.find((x) => x.siren === siren); if (o) Object.assign(o, patch);
+  renderOpps();
+}
+function openOppDismiss(siren) {
+  const o = S.opps.find((x) => x.siren === siren); if (!o) return;
+  const reasons = ["Société trop petite", "Déjà client ou en contact", "Hors de notre cible", "Information erronée", "Événement sans impact sur la finance ou la direction"];
+  modal(`<header><h3>Écarter ${esc(nice(o.company))}</h3><p>Votre raison aide l'IA à mieux trier les prochaines fois.</p></header>
+  <div class="body"><div class="choice">${reasons.map((r, i) => `<label><input type="radio" name="dis-r" value="${esc(r)}" ${i ? "" : "checked"}> ${esc(r)}</label>`).join("")}</div>
+  <div class="field"><label for="dis-t">Précision <span class="hint">facultatif</span></label><input type="text" id="dis-t" placeholder="Ex. moins de 30 M€ de CA"></div></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="dis-go">Écarter</button></footer>`);
+  $("#dis-go").onclick = async () => {
+    const r = document.querySelector("input[name=dis-r]:checked")?.value || "", t = $("#dis-t").value.trim();
+    closeModal(); await setOppStatus(siren, { status: "dismissed", feedback: [r, t].filter(Boolean).join(" : "), feedback_by: S.me });
+    toast("Écartée. Elle ne reviendra que sur un nouvel événement pertinent.");
+  };
+}
+function oppToLusha(company) {
+  setView("prospects"); setSide(false);
+  S.mode = "grp"; S.groupSel = [company]; renderCrit();
+  toast("Société préremplie à gauche. Vérifiez les fonctions puis cliquez sur « Lancer la recherche » : c'est seulement à ce moment que Lusha est utilisé (≈ 1 crédit).", 8000);
+}
+function openOppConfig() {
+  const c = S.oppCfg, opt = (vals, cur, fmt = (v) => v) => vals.map((v) => `<option value="${v}" ${Number(cur) === v ? "selected" : ""}>${fmt(v)}</option>`).join("");
+  modal(`<header><h3>Réglages des opportunités</h3><p>Communs à Christophe et vous.</p></header>
+  <div class="body">
+    <div class="field"><label for="oc-min">Taille minimale des sociétés surveillées</label><select id="oc-min">${opt([10, 20, 50, 100, 250], c.minEffectif, (v) => v + " salariés et plus")}</select></div>
+    <div class="field"><label for="oc-th">Pertinence minimale pour figurer dans « Mes opportunités »</label><select id="oc-th">${opt([50, 60, 70, 80], c.threshold, (v) => v + " / 100")}</select></div>
+    <div class="field"><label for="oc-deep">Sociétés analysées en profondeur par exécution</label><select id="oc-deep">${opt([5, 10, 15], c.maxDeep)}</select></div>
+    <div class="row"><div class="field"><label for="oc-day">Plafond IA par jour</label><select id="oc-day">${opt([0.5, 1, 2, 5], c.dailyCapUsd, usd)}</select></div>
+    <div class="field"><label for="oc-month">Plafond IA par mois</label><select id="oc-month">${opt([10, 20, 30, 50], c.monthlyCapUsd, usd)}</select></div></div>
+  </div><footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="oc-save">Enregistrer</button></footer>`);
+  $("#oc-save").onclick = async () => {
+    const v = { ...c, minEffectif: +$("#oc-min").value, threshold: +$("#oc-th").value, maxDeep: +$("#oc-deep").value, dailyCapUsd: +$("#oc-day").value, monthlyCapUsd: +$("#oc-month").value };
+    await db(sb.from("settings").upsert({ key: "opp.config", value: v, updated_at: new Date().toISOString() }));
+    S.oppCfg = v; closeModal(); renderOpps(); toast("Réglages enregistrés.");
+  };
+}
+function confirmOppRun() {
+  if (S.oppRunning) return;
+  const sp = oppSpent(), c = S.oppCfg;
+  modal(`<header><h3>Lancer l'analyse des opportunités</h3><p>L'outil passe en revue les sociétés de vos listes (${c.minEffectif} salariés et plus) : annonces BODACC, presse, puis analyse par Claude des ${c.maxDeep} sociétés les plus prometteuses.</p></header>
+  <div class="body"><ul class="op-confirm">
+    <li><b>Lusha :</b> aucun crédit utilisé.</li>
+    <li><b>Coût IA estimé :</b> 0,10 à 0,50 $ selon le nombre d'événements nouveaux. Déjà dépensé : ${usd(sp.day)} aujourd'hui, ${usd(sp.month)} ce mois. L'analyse s'arrête d'elle-même au plafond (${usd(c.dailyCapUsd)} par jour, ${usd(c.monthlyCapUsd)} par mois).</li>
+    <li><b>Durée :</b> quelques minutes la première fois (rapprochement de toutes les sociétés avec le registre), environ une minute ensuite. Gardez cet onglet ouvert.</li>
+  </ul></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="or-go">Lancer</button></footer>`);
+  $("#or-go").onclick = () => { closeModal(); runOpps(); };
+}
+async function runOpps() {
+  S.oppRunning = true; $("#opp-run").disabled = true; $("#op-progress").hidden = false;
+  const show = (run) => { const [pct, lbl] = OPP_PHASE[run?.phase] || [5, "…"]; let p = pct; const q = run?.stats?.queue; if (run?.phase === "analyse" && q?.length) p = 75 + Math.round((run.cursor / q.length) * 20); $("#op-bar").style.width = p + "%"; $("#op-msg").textContent = run?.stats?.message || lbl; };
+  show({ phase: "watchlist", stats: { message: "Démarrage…" } });
+  let runId = null, fails = 0;
+  try {
+    for (let i = 0; i < 400; i++) {
+      let res;
+      try { res = await api("opp.step", { runId, who: S.me }); fails = 0; }
+      catch (e) { if (e.code === "CONFIG" || ++fails >= 3) throw e; await new Promise((r) => setTimeout(r, 2000)); continue; }
+      runId = res.run?.id; show(res.run);
+      if (res.done) {
+        if (res.run.phase === "error") toast("Analyse interrompue : " + (res.run.error || "erreur"), 9000);
+        else if (res.run.phase === "capped") toast("Plafond de dépense IA atteint : la suite reprendra à la prochaine analyse.", 8000);
+        else toast(`Analyse terminée · coût IA ${usd(res.run.cost_usd)}`);
+        break;
+      }
+      if (res.run?.error) $("#op-msg").textContent = (res.run.stats?.message || "") + " · nouvel essai (" + res.run.error + ")";
+    }
+  } catch (e) { toast("Analyse impossible : " + e.message, 9000); }
+  S.oppRunning = false; $("#opp-run").disabled = false;
+  setTimeout(() => { $("#op-progress").hidden = true; }, 1500);
+  await loadOpps();
 }
 
 /* ---------- Événements ---------- */
@@ -2103,6 +2342,13 @@ document.addEventListener("click", async (e) => {
   if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
   if (t.id === "net-imp") { openImport(); return; }
   if (t.id === "diag") { openDiag(); return; }
+  if (t.id === "opp-run") { confirmOppRun(); return; }
+  if (t.id === "opp-cfg") { openOppConfig(); return; }
+  if (t.dataset.oppOpen) { const [pid, lid] = t.dataset.oppOpen.split("|"); setView("prospects"); await openList(lid); S.sel = pid; renderList(); renderDetail(); { const rr = current(); if (rr && !rr.company_info?.enrich) enrichProspect(rr); } return; }
+  if (t.dataset.oppLusha) { oppToLusha(t.dataset.oppLusha); return; }
+  if (t.dataset.oppDone) { await setOppStatus(t.dataset.oppDone, { status: "done", feedback: null, feedback_by: S.me }); toast("Marquée comme traitée : elle ne reviendra que sur un nouvel événement."); return; }
+  if (t.dataset.oppDismiss) { openOppDismiss(t.dataset.oppDismiss); return; }
+  if (t.dataset.oppRestore) { await setOppStatus(t.dataset.oppRestore, { status: "seen", feedback: null }); return; }
   if (t.id === "meta-retry") { $("#c-sec").innerHTML = `<span class="hint">Chargement…</span>`; loadMeta(true); return; }
   if (t.matches("tr[data-id]")) { S.sel = t.dataset.id; renderList(); renderDetail(); { const rr = current(); if (rr && !rr.company_info?.enrich) enrichProspect(rr); } $("#detail").scrollTop = 0; if (innerWidth < 1100) $("#detail").scrollIntoView({ behavior: "smooth" }); return; }
   if (t.dataset.copy) { navigator.clipboard?.writeText(t.dataset.copy).then(() => toast("Copié"), () => toast("Copie impossible, sélectionnez le texte")); return; }
