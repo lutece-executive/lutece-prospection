@@ -627,6 +627,64 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 .op-confirm{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
 @media (max-width:760px){.oc-grid,.oc-cols{grid-template-columns:1fr}.op-row{grid-template-columns:auto 1fr auto}.op-row-t,.op-row .oscore{display:none}}
 
+/* Cartes d'opportunité, version 2 */
+.oc{gap:14px;padding:18px 20px}
+.oc-name{margin:6px 0 0;font-size:20px;color:var(--navy,#1B3A6B)}
+.oc h4{display:flex;align-items:center;gap:7px;margin:0 0 6px;font-size:11px;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2);font-weight:700}
+.dot{width:8px;height:8px;border-radius:50%;display:inline-block;flex:none}
+.dot.ev{background:var(--navy,#1B3A6B)} .dot.need{background:var(--orange,#E8772E)} .dot.dec{background:#1E7A45} .dot.call{background:#0A66C2}
+.oc-trio{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.oc-box{background:var(--surface-2);border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.oc-box p{margin:0;font-size:13.5px;line-height:1.5}
+.oc-box.need{background:#FFF5EE;box-shadow:inset 3px 0 0 var(--orange,#E8772E)}
+.oc-needtag{font-weight:700;color:#B4561A}
+.oc-src{font-size:12px;color:var(--ink-3)}
+.oc a.src{font-size:12px;font-weight:600;color:#0A66C2;text-decoration:none;white-space:nowrap}
+.oc a.src:hover{text-decoration:underline}
+.oc-call{border:1px solid #D6E4F5;background:#F5F9FE;border-radius:10px;padding:12px 14px}
+.oc-call-h{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.oc-call blockquote{margin:2px 0 0;padding:0;background:none;font-size:14.5px;line-height:1.55;color:var(--ink)}
+.oc-q{margin:8px 0 0;font-size:13.5px;display:flex;gap:8px;align-items:baseline;flex-wrap:wrap}
+.oc-q span{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:#0A66C2}
+.oc-more{border-top:1px solid var(--line);padding-top:10px}
+.oc-more > summary{cursor:pointer;font-weight:600;font-size:13.5px;color:var(--navy,#1B3A6B);list-style:none;display:inline-flex;align-items:center;gap:6px}
+.oc-more > summary::-webkit-details-marker{display:none}
+.oc-more > summary::before{content:"▸";transition:transform .15s}
+.oc-more[open] > summary::before{transform:rotate(90deg)}
+.oc-more[open]{display:block}
+.oc-detail{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+.oc-panel{border:1px solid var(--line);border-radius:10px;padding:12px 14px;min-width:0}
+.oc-panel.wide{grid-column:1 / -1}
+.oc-list{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px;line-height:1.5}
+.oc-list li{position:relative;padding-left:16px}
+.oc-list li::before{content:"";position:absolute;left:2px;top:.62em;width:6px;height:6px;border-radius:50%;background:var(--navy,#1B3A6B);opacity:.55}
+.oc-list.q li::before{content:"?";width:auto;height:auto;background:none;top:0;left:0;font-weight:700;color:#0A66C2;opacity:1}
+.oc-list.onum{counter-reset:n}
+.oc-list.onum li{padding-left:24px;counter-increment:n}
+.oc-list.onum li::before{content:counter(n);width:17px;height:17px;top:.15em;left:0;border-radius:50%;background:var(--navy,#1B3A6B);opacity:1;color:#fff;font-size:10.5px;font-weight:700;display:flex;align-items:center;justify-content:center}
+.oc-facts{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.oc-facts li{display:grid;grid-template-columns:88px minmax(0,1fr) auto;gap:10px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px}
+.oc-facts li:first-child{border-top:0;padding-top:0}
+.oc-fd{font-size:12px;color:var(--ink-3);font-variant-numeric:tabular-nums}
+.fact{font-style:normal;text-transform:none;letter-spacing:0;font-size:10.5px;font-weight:700;color:#1E7A45;background:#E7F4EC;border-radius:4px;padding:0 6px}
+.oc-stamp{margin-top:10px!important}
+.op-help{margin:6px 0 2px!important}
+.op-item{border-top:1px solid var(--line)}
+.op-item > summary{display:grid;grid-template-columns:auto minmax(120px,auto) auto minmax(0,1fr) auto;align-items:center;gap:10px;padding:9px 4px;cursor:pointer;list-style:none;font-size:13.5px;border-radius:8px}
+.op-item > summary::-webkit-details-marker{display:none}
+.op-item > summary:hover{background:var(--surface-2)}
+.op-open{font-size:12.5px;font-weight:600;color:var(--navy,#1B3A6B);white-space:nowrap}
+.op-open::after{content:" ▸"}
+.op-item[open] .op-open::after{content:" ▾"}
+.op-item[open] > summary{background:var(--surface-2)}
+.op-item-body{display:flex;flex-direction:column;gap:12px;padding:10px 4px 16px}
+@media (max-width:900px){.oc-trio{grid-template-columns:1fr}.oc-detail{grid-template-columns:1fr}.oc-facts li{grid-template-columns:1fr}}
+@media (max-width:760px){.op-item > summary{grid-template-columns:auto 1fr auto}.op-item .op-row-t,.op-item .oscore{display:none}}
+
+.oc.oc-flat{border:0;box-shadow:none;background:none;padding:10px 4px 16px;border-radius:0}
+.oc .oc-list,.oc .oc-facts{padding:0;margin:0}
+.oc .oc-list li{border:0}
+
 </style>
 </head>
 <body>
@@ -2167,6 +2225,9 @@ async function loadOpps() {
       db(sb.from("settings").select("value").eq("key", "opp.config").maybeSingle()),
     ]);
     S.opps = opps || []; S.oppRuns = runs || []; S.oppCfg = { ...OPP_CFG, ...(cfg?.value || {}) };
+    const sirens = S.opps.map((o) => o.siren);
+    const evs = sirens.length ? await db(sb.from("opp_events").select("siren,title,url,source,event_date,sig_label,status").in("siren", sirens).in("status", ["kept", "analysed"]).order("event_date", { ascending: false }).range(0, 499)) : [];
+    S.oppEvents = {}; for (const e of evs || []) (S.oppEvents[e.siren] ||= []).push(e);
   } catch { S.opps = []; S.oppRuns = []; }
   renderOpps();
 }
@@ -2191,58 +2252,81 @@ function renderOpps() {
   $("#nopps").textContent = nNew ? `(${nNew})` : "";
   $("#op-list").innerHTML = (top.length ? top.map(oppCard).join("")
     : `<div class="op-empty"><b>Rien de solide pour l'instant.</b><span>${last ? "Aucune société ne dépasse le seuil de pertinence. Les signaux plus faibles sont listés ci-dessous." : "Lancez une première analyse pour voir vos opportunités."}</span></div>`)
-    + (watch.length ? `<details class="op-more" ${top.length ? "" : "open"}><summary>À surveiller (${watch.length})</summary><div class="op-rows">${watch.map(oppRow).join("")}</div></details>` : "")
+    + (watch.length ? `<details class="op-more" ${top.length ? "" : "open"}><summary>À surveiller (${watch.length})</summary><p class="hint op-help">Sociétés où un signal a été détecté, mais dont la pertinence estimée reste sous ${S.oppCfg.threshold}/100. Cliquez sur une ligne pour voir l'analyse.</p><div class="op-rows">${watch.map(oppRow).join("")}</div></details>` : "")
     + (closed.length ? `<details class="op-more"><summary>Traitées et écartées (${closed.length})</summary><div class="op-rows">${closed.map(oppRow).join("")}</div></details>` : "");
 }
 function oppMeta(o) {
   const a = o.analysis || {};
   return [a.secteur_naf && `NAF ${a.secteur_naf}`, EFFECTIF[a.effectif_code], a.commune && nice(a.commune)].filter(Boolean).join(" · ");
 }
-function srcLink(u, label) { return u ? `<a href="${esc(u)}" target="_blank" rel="noopener">${esc(label || "Source")} ↗</a>` : ""; }
-function oppCard(o) {
-  const a = o.analysis || {}, [stL, stC] = OPP_STATUS[o.status] || ["", ""], ev = a.evenement || {}, dec = a.decideur || {};
-  const lvl = a.niveau || o.level || "";
-  const pr = (a.prospects || [])[0];
-  const host = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "source"; } };
-  return `<article class="oc">
-    <header class="oc-head">
-      <div class="oc-badges"><span class="ost ${stC}">${stL}</span><span class="oscore lvl-${esc(lvl)}" title="Pertinence estimée par l'IA">${o.score ?? "—"}<small>/100 · ${esc(lvl)}</small></span><span class="oneed">${esc(o.need || a.besoin || "")}</span>${o.status === "up" && o.prev_score != null ? `<span class="hint">avant : ${o.prev_score}</span>` : ""}</div>
-      <h2>${esc(nice(o.company))}</h2><p class="hint">${esc(oppMeta(o))}</p>
-    </header>
-    <div class="oc-grid">
-      <section><h4>Événement déclencheur</h4><p>${esc(ev.resume || "")}</p><p class="hint">${esc(/^\d{4}-\d{2}-\d{2}$/.test(ev.date || "") ? fmtDay(ev.date) : ev.date || "")} · ${srcLink(ev.source_url, host(ev.source_url))}</p></section>
-      <section><h4>Décideur à contacter</h4>${dec.nom && dec.origine !== "inconnu" ? `<p><b>${esc(dec.nom)}</b><br>${esc(dec.fonction || "")}</p><p class="hint">Origine : ${esc(dec.origine)}</p>` : `<p class="hint">Non identifié. Utilisez « Chercher les décideurs ».</p>`}</section>
+// Remet au propre les textes de l'IA (anciennes analyses comprises) : balises parasites, listes écrites en un seul bloc
+function oLines(v) {
+  if (v == null || v === "") return [];
+  if (typeof v === "string" && /^\s*[\[{]/.test(v)) { try { return oLines(JSON.parse(v)); } catch { /* texte */ } }
+  if (Array.isArray(v)) return v.flatMap(oLines);
+  if (typeof v === "object") return [String(v.texte ?? v.text ?? Object.values(v).join(" "))];
+  return String(v).replace(/<\/?parameter[^>]*>/g, "\n").split(/\n+/).map((x) => x.replace(/^\s*(?:[-•*]|\d+[.)])\s*/, "").trim()).filter(Boolean);
+}
+const oText = (v) => oLines(v).join(" ");
+const oDate = (d) => /^\d{4}-\d{2}-\d{2}/.test(d || "") ? fmtDay(d) : (d || "");
+const hostOf = (u) => { try { return new URL(u).hostname.replace(/^www\./, ""); } catch { return "source"; } };
+function srcLink(u, label) { return u ? `<a class="src" href="${esc(u)}" target="_blank" rel="noopener">${esc(label || hostOf(u))} ↗</a>` : ""; }
+function oppView(o) {
+  const a = o.analysis || {}, evs = S.oppEvents?.[o.siren] || [], ev = a.evenement || {}, top = evs[0];
+  const dec = a.decideur || {}, pr = (a.prospects || [])[0];
+  const decName = dec.nom && !/inconnu|^\?$/i.test(dec.nom) ? oText(dec.nom) : pr?.nom || "";
+  const decFn = dec.nom && !/inconnu|^\?$/i.test(dec.nom) ? oText(dec.fonction) : pr?.fonction || "";
+  const decOrig = dec.nom && !/inconnu|^\?$/i.test(dec.nom) ? oText(dec.origine) : pr ? "liste de prospects" : "";
+  const facts = oLines(a.faits).length && (a.faits || []).some((f) => f?.source_url) ? (a.faits || []).filter((f) => f?.source_url).map((f) => ({ t: oText(f.texte), u: f.source_url, d: "" })) : [];
+  const seen = new Set(facts.map((f) => f.u));
+  for (const e of evs) if (!seen.has(e.url) || e.source === "BODACC") facts.push({ t: e.title, u: e.url, d: e.event_date, s: e.source });
+  return {
+    a, pr, decName, decFn, decOrig, facts: facts.slice(0, 8),
+    evResume: oText(ev.resume) || top?.title || "", evDate: oDate(oText(ev.date) || top?.event_date), evUrl: ev.source_url || top?.url,
+    need: oText(a.besoin_detail), angle: oText(a.angle_telephonique), question: oText(a.question_ouverture),
+    hyp: oLines(a.hypotheses), why: oLines(a.justification), check: oLines(a.a_verifier), args: oLines(a.argumentaire),
+  };
+}
+const oList = (items, cls = "") => items.length ? `<ul class="oc-list ${cls}">${items.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>` : `<p class="hint">—</p>`;
+function oppBody(o) {
+  const v = oppView(o), a = v.a;
+  return `
+    <div class="oc-trio">
+      <section class="oc-box"><h4><i class="dot ev"></i>Événement déclencheur</h4><p>${esc(v.evResume) || `<span class="hint">Non précisé</span>`}</p><p class="oc-src">${esc(v.evDate)}${v.evUrl ? ` · ${srcLink(v.evUrl)}` : ""}</p></section>
+      <section class="oc-box need"><h4><i class="dot need"></i>Besoin potentiel <em class="hyp">hypothèse</em></h4><p class="oc-needtag">${esc(o.need || a.besoin || "")}</p><p>${esc(v.need)}</p></section>
+      <section class="oc-box"><h4><i class="dot dec"></i>Décideur à contacter</h4>${v.decName ? `<p><b>${esc(v.decName)}</b></p><p>${esc(v.decFn)}</p><p class="oc-src">${esc(v.decOrig)}</p>` : `<p class="hint">Non identifié : utilisez « Chercher les décideurs ».</p>`}</section>
     </div>
-    <section class="oc-need"><h4>Besoin potentiel <em class="hyp">hypothèse</em></h4><p>${esc(a.besoin_detail || "")}</p></section>
-    <section class="oc-call"><h4>Angle d'appel</h4><blockquote>${esc(a.angle_telephonique || "")}</blockquote>${a.question_ouverture ? `<p><b>Question d'ouverture :</b> ${esc(a.question_ouverture)}</p>` : ""}<button class="btn small" data-copy="${esc(a.angle_telephonique || "")}">Copier</button></section>
+    ${v.angle ? `<section class="oc-call"><div class="oc-call-h"><h4><i class="dot call"></i>Angle d'appel</h4><button class="btn small" data-copy="${esc(v.angle + (v.question ? "\n" + v.question : ""))}">Copier</button></div>
+      <blockquote>${esc(v.angle)}</blockquote>${v.question ? `<p class="oc-q"><span>Question d'ouverture</span>${esc(v.question)}</p>` : ""}</section>` : ""}
     <details class="oc-more"><summary>Voir l'analyse complète</summary>
-      <div class="oc-cols">
-        <section><h4>Faits vérifiés</h4><ul class="oc-facts">${(a.faits || []).map((f) => `<li>${esc(f.texte)} ${srcLink(f.source_url, host(f.source_url))}</li>`).join("") || `<li class="hint">Aucun fait sourcé.</li>`}</ul></section>
-        <section><h4>Hypothèses commerciales <em class="hyp">non confirmées</em></h4><ul>${(a.hypotheses || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
+      <div class="oc-detail">
+        <section class="oc-panel wide"><h4>Ce que disent les sources <em class="fact">faits</em></h4>
+          ${v.facts.length ? `<ul class="oc-facts">${v.facts.map((f) => `<li><span class="oc-fd">${esc(oDate(f.d) || "")}</span><span class="oc-ft">${esc(f.t)}</span>${srcLink(f.u, f.s || hostOf(f.u))}</li>`).join("")}</ul>` : `<p class="hint">Aucune source enregistrée.</p>`}</section>
+        <section class="oc-panel"><h4>Pourquoi cette note</h4>${oList(v.why)}</section>
+        <section class="oc-panel"><h4>À vérifier au téléphone</h4>${oList(v.check, "q")}</section>
+        <section class="oc-panel"><h4>Hypothèses commerciales <em class="hyp">non confirmées</em></h4>${oList(v.hyp)}</section>
+        <section class="oc-panel"><h4>Arguments à utiliser</h4>${v.args.length ? `<ol class="oc-list onum">${v.args.map((x) => `<li>${esc(x)}</li>`).join("")}</ol>` : `<p class="hint">—</p>`}</section>
+        <section class="oc-panel wide"><h4>Réseau LinkedIn</h4>${(a.relations || []).length ? `<ul class="oc-list">${a.relations.map((c) => `<li><b>${esc(c.nom)}</b> · ${esc(c.poste || "poste inconnu")} · relation de ${esc(c.owner)}</li>`).join("")}</ul>` : `<p class="hint">Aucune de vos relations importées ne travaille dans cette société.</p>`}</section>
       </div>
-      <div class="oc-cols">
-        <section><h4>Pourquoi ce niveau</h4><ul>${(a.justification || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
-        <section><h4>À vérifier au téléphone</h4><ul>${(a.a_verifier || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ul></section>
-      </div>
-      <section><h4>Argumentaire</h4><ol>${(a.argumentaire || []).map((h) => `<li>${esc(h)}</li>`).join("")}</ol></section>
-      <section><h4>Réseau LinkedIn</h4>${(a.relations || []).length ? `<ul>${a.relations.map((c) => `<li>${esc(c.nom)} · ${esc(c.poste || "poste inconnu")} · relation de ${esc(c.owner)}</li>`).join("")}</ul>` : `<p class="hint">Aucune de vos relations importées ne travaille dans cette société.</p>`}</section>
-      <p class="hint">Analyse du ${fmtWhen(o.scored_at)} · proposée pour la première fois le ${fmtDay(o.first_seen_at)}</p>
+      <p class="hint oc-stamp">Analyse du ${fmtWhen(o.scored_at)} · proposée pour la première fois le ${fmtDay(o.first_seen_at)}</p>
     </details>
     <footer class="oc-foot">
-      ${pr ? `<button class="btn primary small" data-opp-open="${esc(pr.id)}|${esc(pr.list_id)}">Ouvrir la fiche de ${esc(pr.nom)}</button>` : ""}
+      ${v.pr ? `<button class="btn primary small" data-opp-open="${esc(v.pr.id)}|${esc(v.pr.list_id)}">Ouvrir la fiche de ${esc(v.pr.nom)}</button>` : ""}
       <button class="btn small" data-opp-lusha="${esc(o.company)}" title="Prépare une recherche Lusha sur cette société. Rien n'est dépensé avant votre clic sur « Lancer la recherche ».">Chercher les décideurs (Lusha, ≈ 1 crédit)</button>
       <span class="spacer"></span>
-      <button class="linkbtn" data-opp-done="${esc(o.siren)}">Traitée</button>
-      <button class="linkbtn" data-opp-dismiss="${esc(o.siren)}">Pas pertinent</button>
-    </footer>
-  </article>`;
+      ${["done", "dismissed"].includes(o.status) ? `<button class="linkbtn" data-opp-restore="${esc(o.siren)}">Remettre dans les opportunités</button>` : `<button class="linkbtn" data-opp-done="${esc(o.siren)}">Traitée</button><button class="linkbtn" data-opp-dismiss="${esc(o.siren)}">Pas pertinent</button>`}
+    </footer>`;
 }
+function oppHead(o, tag = "h2") {
+  const a = o.analysis || {}, [stL, stC] = OPP_STATUS[o.status] || ["", ""], lvl = oText(a.niveau || o.level);
+  return `<div class="oc-badges"><span class="ost ${stC}">${stL}</span><span class="oscore lvl-${esc(lvl)}" title="Pertinence estimée par l'IA">${o.score ?? "—"}<small>/100 · ${esc(lvl)}</small></span><span class="oneed">${esc(o.need || oText(a.besoin))}</span>${o.status === "up" && o.prev_score != null ? `<span class="hint">avant : ${o.prev_score}</span>` : ""}</div>
+    <${tag} class="oc-name">${esc(nice(o.company))}</${tag}><p class="hint">${esc(oppMeta(o))}</p>`;
+}
+function oppCard(o) { return `<article class="oc"><header class="oc-head">${oppHead(o)}</header>${oppBody(o)}</article>`; }
 function oppRow(o) {
-  const a = o.analysis || {}, [stL, stC] = OPP_STATUS[o.status] || ["", ""];
-  const closed = ["done", "dismissed"].includes(o.status);
-  return `<div class="op-row"><span class="ost ${stC}">${stL}</span><b>${esc(nice(o.company))}</b><span class="oscore sm">${o.score ?? "—"}</span>
-    <span class="op-row-t">${esc(a.evenement?.resume || o.need || "")}${o.feedback ? ` · <i>${esc(o.feedback)}</i>` : ""}</span>
-    ${closed ? `<button class="linkbtn" data-opp-restore="${esc(o.siren)}">Remettre</button>` : `<button class="linkbtn" data-opp-dismiss="${esc(o.siren)}">Pas pertinent</button>`}</div>`;
+  const v = oppView(o), [stL, stC] = OPP_STATUS[o.status] || ["", ""];
+  return `<details class="op-item"><summary><span class="ost ${stC}">${stL}</span><b>${esc(nice(o.company))}</b><span class="oscore sm">${o.score ?? "—"}</span><span class="op-row-t">${esc(v.evResume || o.need || "")}${o.feedback ? ` · <i>${esc(o.feedback)}</i>` : ""}</span><span class="op-open">Voir le détail</span></summary>
+    <div class="op-item-body oc oc-flat"><p class="hint">${esc(oppMeta(o))}</p>${oppBody(o)}</div></details>`;
 }
 async function setOppStatus(siren, patch) {
   await db(sb.from("opportunities").update({ ...patch, updated_at: new Date().toISOString() }).eq("siren", siren));
