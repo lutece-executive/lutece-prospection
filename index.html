@@ -2179,7 +2179,7 @@ function renderOpps() {
   const cfg = S.oppCfg, last = S.oppRuns.find((r) => r.finished_at) || S.oppRuns[0];
   const st = last?.stats || {};
   $("#op-sub").textContent = last
-    ? `Dernière analyse : ${fmtWhen(last.finished_at || last.started_at)} · ${st.companiesChecked ?? 0} sociétés vérifiées · ${st.newEvents ?? 0} événements nouveaux · ${st.analysed ?? 0} analysées en profondeur${last.phase === "capped" ? " · arrêtée au plafond de dépense" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
+    ? `Dernière analyse : ${fmtWhen(last.finished_at || last.started_at)} · ${st.companiesChecked ?? 0} sociétés vérifiées · ${st.newEvents ?? 0} événements nouveaux · ${st.analysed ?? 0} analysées en profondeur (${st.above ?? 0} au-dessus du seuil, ${st.below ?? 0} à surveiller${st.failed ? `, ${st.failed} non abouties` : ""}) · coût ${usd(last.cost_usd)}${st.failed && st.lastFailure ? ` · dernier problème : ${st.lastFailure}` : ""}${last.phase === "capped" ? " · arrêtée au plafond de dépense" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
     : "Aucune analyse pour l'instant. Cliquez sur « Lancer l'analyse » : l'outil passe en revue les sociétés de vos listes.";
   const sp = oppSpent();
   $("#op-cost").textContent = `IA : ${usd(sp.day)} aujourd'hui · ${usd(sp.month)} ce mois (plafond ${usd(cfg.monthlyCapUsd)})`;
@@ -2191,7 +2191,7 @@ function renderOpps() {
   $("#nopps").textContent = nNew ? `(${nNew})` : "";
   $("#op-list").innerHTML = (top.length ? top.map(oppCard).join("")
     : `<div class="op-empty"><b>Rien de solide pour l'instant.</b><span>${last ? "Aucune société ne dépasse le seuil de pertinence. Les signaux plus faibles sont listés ci-dessous." : "Lancez une première analyse pour voir vos opportunités."}</span></div>`)
-    + (watch.length ? `<details class="op-more"><summary>À surveiller (${watch.length})</summary><div class="op-rows">${watch.map(oppRow).join("")}</div></details>` : "")
+    + (watch.length ? `<details class="op-more" ${top.length ? "" : "open"}><summary>À surveiller (${watch.length})</summary><div class="op-rows">${watch.map(oppRow).join("")}</div></details>` : "")
     + (closed.length ? `<details class="op-more"><summary>Traitées et écartées (${closed.length})</summary><div class="op-rows">${closed.map(oppRow).join("")}</div></details>` : "");
 }
 function oppMeta(o) {
@@ -2309,7 +2309,7 @@ async function runOpps() {
       if (res.done) {
         if (res.run.phase === "error") toast("Analyse interrompue : " + (res.run.error || "erreur"), 9000);
         else if (res.run.phase === "capped") toast("Plafond de dépense IA atteint : la suite reprendra à la prochaine analyse.", 8000);
-        else toast(`Analyse terminée · coût IA ${usd(res.run.cost_usd)}`);
+        else { const t = res.run.stats || {}; toast(`Analyse terminée : ${t.analysed ?? 0} société(s) analysée(s), ${t.above ?? 0} opportunité(s), ${t.below ?? 0} à surveiller${t.failed ? `, ${t.failed} non abouties` : ""} · coût IA ${usd(res.run.cost_usd)}`, 9000); }
         break;
       }
       if (res.run?.error) $("#op-msg").textContent = (res.run.stats?.message || "") + " · nouvel essai (" + res.run.error + ")";
