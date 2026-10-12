@@ -2584,8 +2584,8 @@ function misAdminPitch(m, a) {
   return `Bonjour Maître ${(a.person || "").replace(/^Me\s+/, "").split(" ").slice(-1)[0] || ""}, je suis Guillaume Alonso du cabinet Lutèce Executive. Nous plaçons des directeurs financiers de transition, opérationnels sous quelques jours, auprès d'entreprises en procédure collective. Vous venez d'être nommé administrateur de ${nice(m.company)} : si le dirigeant a besoin d'un renfort sur la trésorerie ou le reporting, nous pouvons lui présenter un profil très rapidement. Seriez-vous d'accord pour que nous en parlions ?`.replace("Guillaume Alonso", S.me === "Christophe" ? "Christophe Cognet" : "Guillaume Alonso");
 }
 function liMini(name, company, url) {
-  const u = url ? (/^https?:/.test(url) ? url : "https://" + url) : `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent([name, company].filter(Boolean).join(" "))}`;
-  return `<a class="li-mini${url ? "" : " search"}" href="${esc(u)}" target="_blank" rel="noopener" title="${url ? "Ouvrir le profil LinkedIn" : "Rechercher sur LinkedIn"}">in</a>`;
+  const u = url ? (/^https?:/.test(url) ? url : "https://" + url) : `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent(String(name || "").trim())}`; // nom seul : LinkedIn renvoie une erreur avec le nom de la société
+  return `<a class="li-mini${url ? "" : " search"}" href="${esc(u)}" target="_blank" rel="noopener" title="${url ? "Ouvrir le profil LinkedIn" : `Rechercher « ${esc(name)} » sur LinkedIn`}">in</a>`;
 }
 function misStep(n, title, body) { return `<li class="mstep"><span class="mstep-n">${n}</span><div><b>${title}</b>${body}</div></li>`; }
 function misCard(m) {
