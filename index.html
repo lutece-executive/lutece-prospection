@@ -685,6 +685,27 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 .oc .oc-list,.oc .oc-facts{padding:0;margin:0}
 .oc .oc-list li{border:0}
 
+/* Opportunités de mission */
+.op-lead{margin:3px 0 0;font-size:13.5px;color:var(--ink)!important}
+.mis-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:8px 10px}
+.mis-kinds{display:flex;gap:6px;flex-wrap:wrap}
+.mis-kinds .chip{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:4px 11px;font-size:12.5px;font-weight:600;color:var(--ink-2);cursor:pointer}
+.mis-kinds .chip[aria-pressed="true"]{background:var(--navy,#1B3A6B);border-color:var(--navy,#1B3A6B);color:#fff}
+.mkind{font-size:11.5px;font-weight:700;border-radius:6px;padding:3px 9px;color:#fff}
+.mkind.k-rj{background:#B42318} .mkind.k-daf{background:var(--navy,#1B3A6B)} .mkind.k-poste{background:var(--orange,#E8772E)}
+.mis-st{margin-left:auto;font-size:12.5px;font-weight:600;border:1px solid var(--line);border-radius:8px;padding:4px 8px;background:var(--surface);color:var(--ink)}
+.mis-proof{border-left:3px solid var(--navy,#1B3A6B);background:var(--surface-2);border-radius:0 10px 10px 0;padding:10px 14px}
+.mis-proof blockquote{margin:2px 0 6px;font-size:14px;line-height:1.55;font-style:italic;color:var(--ink)}
+.mis-proof blockquote::before{content:"« "} .mis-proof blockquote::after{content:" »"}
+.mis-check{margin:6px 0 0!important;display:flex;gap:12px;flex-wrap:wrap;font-size:12.5px;font-weight:600;color:#1E7A45}
+.mis-cols{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.mis-who{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:7px;font-size:13.5px}
+.mis-who li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 8px}
+.mis-who em{font-style:normal;font-size:11.5px;color:var(--ink-3)}
+.mis-role{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3);min-width:100%}
+@media (max-width:900px){.mis-cols{grid-template-columns:1fr}}
+.oc .mis-who{padding:0}
+
 </style>
 </head>
 <body>
@@ -807,8 +828,8 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 
   <section class="oppspage" id="oppspage" hidden>
     <div class="op-head">
-      <div><h1>Mes opportunités du jour</h1><p id="op-sub">Chargement…</p></div>
-      <div class="op-actions"><span class="op-cost" id="op-cost"></span><button class="btn" id="opp-cfg">Réglages</button><button class="btn primary" id="opp-run">Lancer l'analyse</button></div>
+      <div><h1>Opportunités de mission</h1><p class="op-lead">Uniquement des situations avérées, preuve à l'appui : procédures collectives, départs de DAF confirmés, postes repérés.</p><p id="op-sub">Chargement…</p></div>
+      <div class="op-actions"><span class="op-cost" id="op-cost"></span><button class="btn" id="opp-cfg">Réglages</button><button class="btn" id="mis-add">+ Poste repéré</button><button class="btn primary" id="opp-run">Lancer la recherche</button></div>
     </div>
     <div class="op-progress" id="op-progress" hidden><div class="op-bar"><i id="op-bar"></i></div><span id="op-msg"></span></div>
     <div id="op-list"></div>
@@ -1178,7 +1199,7 @@ function setView(v) {
   document.querySelector("aside.criteria").hidden = v === "opps";
   document.body.classList.toggle("view-opps", v === "opps");
   if (v === "lists") renderListsPage();
-  if (v === "opps") loadOpps();
+  if (v === "opps") loadMissions();
 }
 ["#lp-q", "#lp-fam", "#lp-zone", "#lp-sec"].forEach((id) => $(id).addEventListener(id === "#lp-q" ? "input" : "change", renderListsPage));
 function openRename(l) {
@@ -2404,6 +2425,196 @@ async function runOpps() {
   await loadOpps();
 }
 
+/* ---------- Opportunités de mission (situations avérées) ---------- */
+const MIS_KIND = { rj: ["Procédure collective", "k-rj"], daf: ["Départ de DAF", "k-daf"], poste: ["Poste repéré", "k-poste"] };
+const MIS_STATUS = [["a_traiter", "À traiter"], ["appelee", "Appelée"], ["rdv", "Rendez-vous obtenu"], ["proposition", "Proposition envoyée"], ["mission", "Mission signée"], ["sans_suite", "Sans suite"]];
+const MIS_TABS = [["todo", "À traiter", (m) => m.status === "a_traiter"], ["open", "En cours", (m) => ["appelee", "rdv", "proposition"].includes(m.status)], ["won", "Gagnées", (m) => m.status === "mission"], ["all", "Toutes", (m) => m.status !== "ecartee"], ["out", "Écartées et sans suite", (m) => ["ecartee", "sans_suite"].includes(m.status)]];
+const MIS_ZONES = { "Île-de-France": ["75", "77", "78", "91", "92", "93", "94", "95"], "France entière": [] };
+S.missions = []; S.misTab = "todo"; S.misKind = ""; S.misPros = [];
+async function loadMissions() {
+  try {
+    const [ms, runs, cfg, pros] = await Promise.all([
+      db(sb.from("missions").select("*").order("event_date", { ascending: false })),
+      db(sb.from("opp_runs").select("*").order("started_at", { ascending: false }).range(0, 59)),
+      db(sb.from("settings").select("value").eq("key", "opp.config").maybeSingle()),
+      db(sb.from("prospects").select("id,list_id,first_name,last_name,job_title,company").range(0, 4999)),
+    ]);
+    S.missions = ms || []; S.oppRuns = runs || []; S.oppCfg = { ...OPP_CFG, depts: MIS_ZONES["Île-de-France"], rjDays: 30, dafDays: 60, ...(cfg?.value || {}) }; S.misPros = pros || [];
+  } catch { S.missions = []; }
+  renderMissions();
+}
+function misRuns() { return S.oppRuns.filter((r) => r.stats?.kind === "missions"); }
+function renderMissions() {
+  const cfg = S.oppCfg, last = misRuns().find((r) => r.finished_at) || misRuns()[0], st = last?.stats || {};
+  const zone = Object.entries(MIS_ZONES).find(([, v]) => v.join() === (cfg.depts || []).join())?.[0] || `départements ${(cfg.depts || []).join(", ")}`;
+  $("#op-sub").textContent = last
+    ? `Dernière recherche : ${fmtWhen(last.finished_at || last.started_at)} · ${st.rjFound ?? 0} procédure(s) collective(s) retenue(s) sur ${st.rjSeen ?? 0} annonce(s) BODACC · ${st.dafFound ?? 0} départ(s) de DAF confirmé(s) sur ${st.dafChecked ?? 0} article(s) vérifié(s) · coût IA ${usd(last.cost_usd)}${last.phase === "capped" ? " · arrêtée au plafond" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
+    : "Aucune recherche pour l'instant. Cliquez sur « Lancer la recherche ».";
+  $("#op-cost").textContent = `${zone} · ${cfg.minEffectif}+ salariés · IA ce mois : ${usd(oppSpent().month)}`;
+  const tabOf = MIS_TABS.find((t) => t[0] === S.misTab) || MIS_TABS[0];
+  const base = S.missions.filter((m) => !S.misKind || m.kind === S.misKind);
+  const list = base.filter(tabOf[2]);
+  const todo = S.missions.filter((m) => m.status === "a_traiter").length;
+  $("#nopps").textContent = todo ? `(${todo})` : "";
+  $("#op-list").innerHTML = `
+    <div class="mis-bar">
+      <div class="tabs">${MIS_TABS.map(([k, l, f]) => `<button class="tab" aria-selected="${S.misTab === k}" data-mtab="${k}">${l}<small>${base.filter(f).length}</small></button>`).join("")}</div>
+      <div class="mis-kinds">${[["", "Tous types"], ...Object.entries(MIS_KIND).map(([k, [l]]) => [k, l])].map(([k, l]) => `<button class="chip ${k ? "k-" + k : ""}" aria-pressed="${S.misKind === k}" data-mkind="${k}">${l}</button>`).join("")}</div>
+    </div>
+    ${list.length ? list.map(misCard).join("") : `<div class="op-empty"><b>${S.missions.length ? "Rien dans cette vue." : "Aucune situation avérée pour l'instant."}</b><span>${S.missions.length ? "Changez d'onglet ou de type." : "Lancez une recherche, ou ajoutez un poste de DAF repéré sur LinkedIn ou l'APEC."}</span></div>`}`;
+}
+function misPeople(m) {
+  const n = normTxt(m.company), ci = m.company_info || {};
+  const pros = S.misPros.filter((p) => normTxt(p.company) === n);
+  const rel = (S.conns || []).filter((c) => c.nCo === n).slice(0, 6);
+  return { pros, rel, dirs: (ci.dirigeants || []).slice(0, 3) };
+}
+function misAngle(m) {
+  const d = m.details || {}, co = nice(m.company);
+  if (m.kind === "rj") return `J'ai vu l'ouverture de la procédure de ${(d.procedure || "redressement").toLowerCase().replace("procédure de ", "")} de ${co}. Dans cette phase, la prévision de trésorerie à 13 semaines et le reporting à l'administrateur mobilisent fortement la finance. Nous pouvons installer sous quelques jours un directeur financier de transition habitué à ces procédures. Comment êtes-vous organisés côté finance aujourd'hui ?`;
+  if (m.kind === "daf") return `J'ai appris le départ de ${d.personne && !/inconnu/i.test(d.personne) ? d.personne : "votre directeur financier"}. Le temps de recruter son successeur, nous pouvons installer un DAF de transition en quelques jours pour sécuriser la clôture et la trésorerie, et nous menons aussi le recrutement en CDI. Comment gérez-vous cette période ?`;
+  return `Vous recrutez actuellement ${d.poste ? "un(e) " + d.poste : "un directeur financier"}. Nous pouvons mener ce recrutement, et si le poste est déjà vacant, assurer l'intérim avec un DAF de transition d'ici l'arrivée du candidat. Où en êtes-vous de ce recrutement ?`;
+}
+function misCard(m) {
+  const [kl, kc] = MIS_KIND[m.kind] || ["", ""], d = m.details || {}, ci = m.company_info || {}, pp = misPeople(m);
+  const meta = [EFFECTIF[ci.effectif_code], ci.commune && nice(ci.commune), ci.naf && `NAF ${ci.naf}`, m.siren && `SIREN ${m.siren}`].filter(Boolean).join(" · ");
+  const ago = m.event_date ? Math.max(0, Math.round((Date.now() - new Date(m.event_date)) / 864e5)) : null;
+  const who = [];
+  if (m.kind === "rj") {
+    if (d.administrateur) who.push(`<li><span class="mis-role">Administrateur judiciaire</span><b>${esc(d.administrateur)}</b><em>prescripteur à contacter</em></li>`);
+    if (d.mandataire) who.push(`<li><span class="mis-role">Mandataire judiciaire</span>${esc(d.mandataire)}</li>`);
+  }
+  if (m.kind === "daf" && d.personne && !/inconnu/i.test(d.personne)) who.push(`<li><span class="mis-role">DAF sortant</span>${esc(d.personne)}${d.interim ? ` · intérim : ${esc(d.interim)}` : ""}</li>`);
+  for (const x of pp.dirs) who.push(`<li><span class="mis-role">${esc(x.qualite || "Dirigeant")}</span>${esc(nice(x.nom))} <em>registre</em></li>`);
+  for (const p of pp.pros.slice(0, 3)) who.push(`<li><span class="mis-role">${esc(p.job_title || "Prospect")}</span><b>${esc(p.first_name + " " + p.last_name)}</b> <button class="linkbtn" data-opp-open="${esc(p.id)}|${esc(p.list_id)}">Ouvrir la fiche</button></li>`);
+  const angle = misAngle(m);
+  return `<article class="oc mis">
+    <header class="oc-head">
+      <div class="oc-badges"><span class="mkind ${kc}">${kl}</span><span class="hint">${esc(oDate(m.event_date))}${ago != null ? ` · il y a ${ago} j` : ""}</span>${m.kind === "poste" && d.publie_par === "cabinet" ? `<span class="ost st-seen">via un cabinet</span>` : ""}
+        <select class="mis-st" data-mst="${esc(m.id)}" aria-label="Suivi">${MIS_STATUS.map(([k, l]) => `<option value="${k}" ${m.status === k ? "selected" : ""}>${l}</option>`).join("")}${m.status === "ecartee" ? `<option value="ecartee" selected>Écartée</option>` : ""}</select></div>
+      <h2 class="oc-name">${esc(nice(m.company))}</h2><p class="hint">${esc(meta)}</p>
+    </header>
+    <section class="mis-proof"><h4><i class="dot ev"></i>${esc(m.title || kl)}</h4>
+      <blockquote>${esc(m.proof || "")}</blockquote>
+      <p class="oc-src">${esc(m.source || "")}${m.source_url ? ` · ${srcLink(m.source_url, m.kind === "rj" ? "Voir l'annonce BODACC" : m.kind === "poste" ? "Voir l'annonce" : "Lire l'article")}` : ""}</p>
+      ${m.kind === "daf" ? `<p class="mis-check"><span>✓ Départ confirmé par l'article</span><span>${d.successeur === "non" ? "✓ Aucun successeur nommé" : "✓ Aucun successeur mentionné"}</span>${d.citation_successeur ? `<span class="hint">« ${esc(d.citation_successeur)} »</span>` : ""}</p>` : ""}
+    </section>
+    <div class="mis-cols">
+      <section class="oc-box"><h4><i class="dot dec"></i>Qui contacter</h4>${who.length ? `<ul class="mis-who">${who.join("")}</ul>` : `<p class="hint">Aucun nom connu : utilisez « Chercher les décideurs ».</p>`}</section>
+      <section class="oc-box"><h4><i class="dot call"></i>Réseau LinkedIn</h4>${pp.rel.length ? `<ul class="mis-who">${pp.rel.map((c) => `<li><b>${esc(c.first_name + " " + c.last_name)}</b> · ${esc(c.position || "")} <em>relation de ${esc(c.owner)}</em></li>`).join("")}</ul>` : `<p class="hint">Aucune de vos relations importées dans cette société.</p>`}</section>
+    </div>
+    <section class="oc-call"><div class="oc-call-h"><h4><i class="dot need"></i>Angle d'appel</h4><button class="btn small" data-copy="${esc(angle)}">Copier</button></div><blockquote>${esc(angle)}</blockquote></section>
+    ${m.feedback ? `<p class="hint">Note : ${esc(m.feedback)}</p>` : ""}
+    <footer class="oc-foot">
+      <button class="btn small" data-opp-lusha="${esc(nice(m.company))}" title="Prépare une recherche Lusha sur cette société. Rien n'est dépensé avant votre clic sur « Lancer la recherche ».">Chercher les décideurs (Lusha, ≈ 1 crédit)</button>
+      <span class="spacer"></span>
+      ${m.status === "ecartee" ? `<button class="linkbtn" data-mrestore="${esc(m.id)}">Remettre à traiter</button>` : `<button class="linkbtn" data-mdismiss="${esc(m.id)}">Pas pertinent</button>`}
+    </footer></article>`;
+}
+async function setMission(id, patch) {
+  await db(sb.from("missions").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id));
+  const m = S.missions.find((x) => x.id === id); if (m) Object.assign(m, patch);
+  renderMissions();
+}
+function openMisDismiss(id) {
+  const m = S.missions.find((x) => x.id === id); if (!m) return;
+  const reasons = ["Société hors cible", "Déjà client ou en contact", "Situation déjà réglée", "Information erronée"];
+  modal(`<header><h3>Écarter ${esc(nice(m.company))}</h3><p>Votre raison nous aidera à affiner la recherche.</p></header>
+  <div class="body"><div class="choice">${reasons.map((r, i) => `<label><input type="radio" name="md-r" value="${esc(r)}" ${i ? "" : "checked"}> ${esc(r)}</label>`).join("")}</div>
+  <div class="field"><label for="md-t">Précision <span class="hint">facultatif</span></label><input type="text" id="md-t"></div></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="md-go">Écarter</button></footer>`);
+  $("#md-go").onclick = async () => { const r = document.querySelector("input[name=md-r]:checked")?.value || "", t = $("#md-t").value.trim(); closeModal(); await setMission(id, { status: "ecartee", feedback: [r, t].filter(Boolean).join(" : ") }); toast("Écartée."); };
+}
+function openPosteForm() {
+  modal(`<header><h3>Ajouter un poste repéré</h3><p>Un poste de DAF, RAF ou DG publié par une entreprise (LinkedIn, APEC…). Rien n'est dépensé.</p></header>
+  <div class="body">
+    <div class="field"><label for="pf-co">Entreprise</label><input type="text" id="pf-co" placeholder="Nom de l'entreprise" autocomplete="off"><div class="suggest" id="pf-sug" hidden></div><span class="hint" id="pf-pick"></span></div>
+    <div class="field"><label for="pf-job">Intitulé du poste</label><input type="text" id="pf-job" placeholder="Directeur administratif et financier"></div>
+    <div class="field"><label for="pf-url">Lien de l'annonce</label><input type="url" id="pf-url" placeholder="https://www.linkedin.com/jobs/view/…"></div>
+    <div class="row"><div class="field"><label for="pf-date">Publiée le</label><input type="date" id="pf-date" value="${todayISO()}"></div>
+      <div class="field"><label for="pf-src">Site</label><select id="pf-src"><option>LinkedIn</option><option>APEC</option><option>Welcome to the Jungle</option><option>Site de l'entreprise</option><option>Autre</option></select></div>
+      <div class="field"><label for="pf-by">Publiée par</label><select id="pf-by"><option value="entreprise">l'entreprise</option><option value="cabinet">un cabinet</option></select></div></div>
+  </div><footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="pf-go">Ajouter</button></footer>`);
+  let picked = null, timer = null;
+  $("#pf-co").addEventListener("input", (e) => {
+    picked = null; $("#pf-pick").textContent = ""; clearTimeout(timer);
+    const v = e.target.value.trim(); if (v.length < 3) { $("#pf-sug").hidden = true; return; }
+    timer = setTimeout(async () => {
+      try { const res = await registry(v); const l = findList(res?.results ?? res).slice(0, 6); S._pf = l;
+        $("#pf-sug").innerHTML = l.map((c, i) => `<button type="button" data-pfi="${i}">${esc(nice(c.nom_complet || c.nom_raison_sociale))} <small>${esc(c.siege?.libelle_commune || "")} · ${esc(EFFECTIF[c.tranche_effectif_salarie] || "effectif inconnu")}</small></button>`).join(""); $("#pf-sug").hidden = !l.length; } catch { /* registre indisponible */ }
+    }, 350);
+  });
+  $("#pf-sug").addEventListener("click", (e) => { const b = e.target.closest("[data-pfi]"); if (!b) return; picked = S._pf[+b.dataset.pfi]; $("#pf-co").value = nice(picked.nom_complet || picked.nom_raison_sociale); $("#pf-sug").hidden = true; $("#pf-pick").textContent = `SIREN ${picked.siren} · ${EFFECTIF[picked.tranche_effectif_salarie] || "effectif inconnu"}`; });
+  $("#pf-go").onclick = async () => {
+    const name = $("#pf-co").value.trim(), job = $("#pf-job").value.trim(), url = $("#pf-url").value.trim();
+    if (!name || !job) { toast("Indiquez au moins l'entreprise et l'intitulé du poste."); return; }
+    const co = picked || {}, src = $("#pf-src").value, by = $("#pf-by").value;
+    const row = { hash: "poste:" + (url || name + job + Date.now()), kind: "poste", siren: co.siren ? String(co.siren) : null, company: co.nom_complet || name, event_date: $("#pf-date").value || todayISO(),
+      title: `Recrute : ${job}`, proof: `${job} · annonce publiée sur ${src}${by === "cabinet" ? " par un cabinet" : " par l'entreprise"}`, source: src, source_url: url || null,
+      details: { poste: job, publie_par: by }, company_info: { name: co.nom_complet || name, naf: co.activite_principale, effectif_code: co.tranche_effectif_salarie, commune: co.siege?.libelle_commune, dirigeants: (co.dirigeants || []).slice(0, 4).map((d) => ({ nom: d.denomination || [d.prenoms, d.nom].filter(Boolean).join(" "), qualite: d.qualite || "" })) },
+      status: "a_traiter", created_by: S.me };
+    const ins = await db(sb.from("missions").insert(row).select());
+    closeModal(); S.missions.unshift((ins && ins[0]) || row); S.misTab = "todo"; S.misKind = ""; renderMissions(); toast("Poste ajouté.");
+  };
+}
+function openMisConfig() {
+  const c = S.oppCfg, opt = (vals, cur, fmt = (v) => v) => vals.map((v) => `<option value="${v}" ${Number(cur) === v ? "selected" : ""}>${fmt(v)}</option>`).join("");
+  const zoneName = Object.entries(MIS_ZONES).find(([, v]) => v.join() === (c.depts || []).join())?.[0] || "autre";
+  modal(`<header><h3>Réglages de la recherche</h3><p>Communs à Christophe et vous.</p></header>
+  <div class="body">
+    <div class="field"><label for="mc-zone">Zone (siège de la société)</label><select id="mc-zone">${Object.keys(MIS_ZONES).map((z) => `<option ${z === zoneName ? "selected" : ""}>${z}</option>`).join("")}<option value="autre" ${zoneName === "autre" ? "selected" : ""}>Départements au choix</option></select></div>
+    <div class="field"><label for="mc-dep">Départements <span class="hint">séparés par des virgules</span></label><input type="text" id="mc-dep" value="${esc((c.depts || []).join(", "))}"></div>
+    <div class="field"><label for="mc-min">Taille minimale</label><select id="mc-min">${opt([20, 50, 100, 250], c.minEffectif, (v) => v + " salariés et plus")}</select></div>
+    <div class="row"><div class="field"><label for="mc-rj">Procédures publiées depuis</label><select id="mc-rj">${opt([15, 30, 60], c.rjDays, (v) => v + " jours")}</select></div>
+    <div class="field"><label for="mc-daf">Départs de DAF depuis</label><select id="mc-daf">${opt([30, 60, 90], c.dafDays, (v) => v + " jours")}</select></div></div>
+    <div class="row"><div class="field"><label for="mc-day">Plafond IA par jour</label><select id="mc-day">${opt([0.5, 1, 2, 5], c.dailyCapUsd, usd)}</select></div>
+    <div class="field"><label for="mc-month">Plafond IA par mois</label><select id="mc-month">${opt([10, 20, 30, 50], c.monthlyCapUsd, usd)}</select></div></div>
+  </div><footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="mc-save">Enregistrer</button></footer>`);
+  $("#mc-zone").onchange = (e) => { if (MIS_ZONES[e.target.value]) $("#mc-dep").value = MIS_ZONES[e.target.value].join(", "); };
+  $("#mc-save").onclick = async () => {
+    const depts = $("#mc-dep").value.split(/[\s,;]+/).map((x) => x.trim().toUpperCase()).filter((x) => /^(\d{2}|2A|2B|97\d)$/.test(x));
+    const v = { ...c, depts, minEffectif: +$("#mc-min").value, rjDays: +$("#mc-rj").value, dafDays: +$("#mc-daf").value, dailyCapUsd: +$("#mc-day").value, monthlyCapUsd: +$("#mc-month").value };
+    await db(sb.from("settings").upsert({ key: "opp.config", value: v, updated_at: new Date().toISOString() }));
+    S.oppCfg = v; closeModal(); renderMissions(); toast("Réglages enregistrés.");
+  };
+}
+function confirmMisRun() {
+  if (S.oppRunning) return;
+  const c = S.oppCfg;
+  modal(`<header><h3>Lancer la recherche</h3><p>L'outil cherche deux types de situations avérées, dans votre zone, pour les sociétés de ${c.minEffectif} salariés et plus.</p></header>
+  <div class="body"><ul class="op-confirm">
+    <li><b>Procédures collectives</b> ouvertes depuis ${c.rjDays} jours (sauvegarde, redressement), avec l'administrateur nommé. Source officielle BODACC, sans IA, gratuit.</li>
+    <li><b>Départs de DAF</b> annoncés depuis ${c.dafDays} jours. Chaque article est lu en entier et vérifié par Claude, quelques centimes par article ; un article payant ou douteux est écarté.</li>
+    <li><b>Lusha :</b> aucun crédit utilisé.</li>
+  </ul></div>
+  <footer><button class="btn" data-close>Annuler</button><button class="btn primary" id="mr-go">Lancer</button></footer>`);
+  $("#mr-go").onclick = () => { closeModal(); runMissions(); };
+}
+async function runMissions() {
+  S.oppRunning = true; $("#opp-run").disabled = true; $("#op-progress").hidden = false;
+  const PH = { m_rj: [25, "Procédures collectives"], m_news: [55, "Recherche des départs de DAF"], m_verify: [75, "Vérification des articles"], done: [100, "Terminé"], capped: [100, "Plafond atteint"], error: [100, "Erreur"] };
+  const show = (run) => { const [p, l] = PH[run?.phase] || [8, "…"]; $("#op-bar").style.width = p + "%"; $("#op-msg").textContent = run?.stats?.message || l; };
+  show({ phase: "m_rj", stats: { message: "Démarrage…" } });
+  let runId = null, fails = 0;
+  try {
+    for (let i = 0; i < 300; i++) {
+      let res;
+      try { res = await api("mission.step", { runId, who: S.me }); fails = 0; }
+      catch (e) { if (e.code === "CONFIG" || ++fails >= 3) throw e; await new Promise((r) => setTimeout(r, 2000)); continue; }
+      runId = res.run?.id; show(res.run);
+      if (res.done) {
+        const t = res.run.stats || {};
+        if (res.run.phase === "error") toast("Recherche interrompue : " + (res.run.error || "erreur"), 9000);
+        else toast(`Recherche terminée : ${t.rjFound ?? 0} procédure(s) collective(s), ${t.dafFound ?? 0} départ(s) de DAF confirmé(s) · coût IA ${usd(res.run.cost_usd)}`, 9000);
+        break;
+      }
+    }
+  } catch (e) { toast("Recherche impossible : " + e.message, 9000); }
+  S.oppRunning = false; $("#opp-run").disabled = false;
+  setTimeout(() => { $("#op-progress").hidden = true; }, 1500);
+  S.misTab = "todo"; await loadMissions();
+}
+
 /* ---------- Événements ---------- */
 const saveNotes = debounce(async (r, v) => { await saveRow(r, { notes: v }); const ind = $("#notes-ind"); if (ind) { ind.textContent = "Enregistré"; setTimeout(() => (ind.textContent = ""), 1500); } }, 700);
 document.addEventListener("click", async (e) => {
@@ -2423,11 +2634,16 @@ document.addEventListener("click", async (e) => {
   if (t.dataset.lpDel) { confirmDelete([t.dataset.lpDel]); return; }
   if (t.dataset.lpRen) { const l = S.lists.find((x) => x.id === t.dataset.lpRen); if (l) openRename(l); return; }
   if (t.dataset.lpUpdate) { setView("prospects"); await openList(t.dataset.lpUpdate); const l = curList(); if (l) await runSearch(l, 0, true); return; }
-  if (t.matches(".tab")) { S.filter = t.dataset.f; renderList(); return; }
+  if (t.matches(".tab") && t.dataset.f) { S.filter = t.dataset.f; renderList(); return; }
   if (t.id === "net-imp") { openImport(); return; }
   if (t.id === "diag") { openDiag(); return; }
-  if (t.id === "opp-run") { confirmOppRun(); return; }
-  if (t.id === "opp-cfg") { openOppConfig(); return; }
+  if (t.id === "opp-run") { confirmMisRun(); return; }
+  if (t.id === "opp-cfg") { openMisConfig(); return; }
+  if (t.id === "mis-add") { openPosteForm(); return; }
+  if (t.dataset.mtab) { S.misTab = t.dataset.mtab; renderMissions(); return; }
+  if (t.dataset.mkind !== undefined && t.matches("[data-mkind]")) { S.misKind = t.dataset.mkind; renderMissions(); return; }
+  if (t.dataset.mdismiss) { openMisDismiss(t.dataset.mdismiss); return; }
+  if (t.dataset.mrestore) { await setMission(t.dataset.mrestore, { status: "a_traiter", feedback: null }); return; }
   if (t.dataset.oppOpen) { const [pid, lid] = t.dataset.oppOpen.split("|"); setView("prospects"); await openList(lid); S.sel = pid; renderList(); renderDetail(); { const rr = current(); if (rr && !rr.company_info?.enrich) enrichProspect(rr); } return; }
   if (t.dataset.oppLusha) { oppToLusha(t.dataset.oppLusha); return; }
   if (t.dataset.oppDone) { await setOppStatus(t.dataset.oppDone, { status: "done", feedback: null, feedback_by: S.me }); toast("Marquée comme traitée : elle ne reviendra que sur un nouvel événement."); return; }
@@ -2456,6 +2672,7 @@ document.addEventListener("click", async (e) => {
 async function setIntro(r, c) { await saveRow(r, { intro: { first: c.first_name, last: c.last_name, position: c.position, company: c.company, owner: c.owner, url: c.url, status: "À solliciter" } }); renderList(); renderDetail(); toast(`Intermédiaire choisi : ${c.first_name} ${c.last_name}`); }
 document.addEventListener("change", async (e) => {
   if (e.target.id === "zone") { S.zone = e.target.value; return; }
+  if (e.target.dataset?.mst) { await setMission(e.target.dataset.mst, { status: e.target.value }); toast("Suivi mis à jour."); return; }
   const r = current(); if (!r) return;
   const el = e.target;
   if (el.id === "intro-st") { await saveRow(r, { intro: { ...r.intro, status: el.value } }); renderList(); renderDetail(); return; }
