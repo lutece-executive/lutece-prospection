@@ -706,6 +706,13 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 @media (max-width:900px){.mis-cols{grid-template-columns:1fr}}
 .oc .mis-who{padding:0}
 
+.op-why{margin-top:6px;font-size:12.5px}
+.op-why > summary{cursor:pointer;color:var(--navy,#1B3A6B);font-weight:600}
+.op-why-g{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:8px}
+.op-why h4{margin:0 0 4px;font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3)}
+.op-why ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px;color:var(--ink-2)}
+@media (max-width:760px){.op-why-g{grid-template-columns:1fr}}
+
 </style>
 </head>
 <body>
@@ -828,7 +835,7 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 
   <section class="oppspage" id="oppspage" hidden>
     <div class="op-head">
-      <div><h1>Opportunités de mission</h1><p class="op-lead">Uniquement des situations avérées, preuve à l'appui : procédures collectives, départs de DAF confirmés, postes repérés.</p><p id="op-sub">Chargement…</p></div>
+      <div><h1>Opportunités de mission</h1><p class="op-lead">Uniquement des situations avérées, preuve à l'appui : procédures collectives, départs de DAF confirmés, postes repérés.</p><p id="op-sub">Chargement…</p><details id="op-why" class="op-why" hidden></details></div>
       <div class="op-actions"><span class="op-cost" id="op-cost"></span><button class="btn" id="opp-cfg">Réglages</button><button class="btn" id="mis-add">+ Poste repéré</button><button class="btn primary" id="opp-run">Lancer la recherche</button></div>
     </div>
     <div class="op-progress" id="op-progress" hidden><div class="op-bar"><i id="op-bar"></i></div><span id="op-msg"></span></div>
@@ -2451,6 +2458,12 @@ function renderMissions() {
     ? `Dernière recherche : ${fmtWhen(last.finished_at || last.started_at)} · ${st.rjFound ?? 0} procédure(s) collective(s) retenue(s) sur ${st.rjSeen ?? 0} annonce(s) BODACC · ${st.dafFound ?? 0} départ(s) de DAF confirmé(s) sur ${st.dafChecked ?? 0} article(s) vérifié(s) · coût IA ${usd(last.cost_usd)}${last.phase === "capped" ? " · arrêtée au plafond" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
     : "Aucune recherche pour l'instant. Cliquez sur « Lancer la recherche ».";
   $("#op-cost").textContent = `${zone} · ${cfg.minEffectif}+ salariés · IA ce mois : ${usd(oppSpent().month)}`;
+  const why = (o) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<li><b>${n}</b> ${esc(k)}</li>`).join("");
+  const w = $("#op-why");
+  w.hidden = !(st.rjReasons || st.dafReasons);
+  w.innerHTML = `<summary>Pourquoi ces résultats ? Détail des annonces et articles écartés</summary><div class="op-why-g">
+    <div><h4>Annonces BODACC écartées</h4><ul>${why(st.rjReasons) || "<li>Aucune</li>"}</ul>${(st.rjSample || []).length ? `<p class="hint">Exemples de jugements classés « autre » : ${st.rjSample.map((x) => "« " + esc(x) + " »").join(" · ")}</p>` : ""}</div>
+    <div><h4>Articles de presse écartés</h4><ul>${why(st.dafReasons) || "<li>Aucun</li>"}</ul></div></div>`;
   const tabOf = MIS_TABS.find((t) => t[0] === S.misTab) || MIS_TABS[0];
   const base = S.missions.filter((m) => !S.misKind || m.kind === S.misKind);
   const list = base.filter(tabOf[2]);
