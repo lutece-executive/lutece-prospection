@@ -740,6 +740,33 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 .mstep-angle p{margin:6px 0 0!important;line-height:1.5}
 .mis-pres p.hint{margin:6px 0 0}
 
+/* Bandeau des opportunités, version 2 */
+.mis-bar{flex-direction:column;align-items:stretch;padding:12px;gap:10px}
+.mis-kpis{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+.mkpi{display:flex;flex-direction:column;align-items:flex-start;gap:2px;border:1px solid var(--line);border-radius:10px;padding:10px 14px;background:var(--surface);cursor:pointer;text-align:left;border-top:4px solid var(--kc);transition:box-shadow .15s,transform .15s}
+.mkpi b{font-size:26px;line-height:1.1;color:var(--kc);font-variant-numeric:tabular-nums}
+.mkpi span{font-size:13.5px;font-weight:600;color:var(--ink)}
+.mkpi:hover{box-shadow:0 6px 16px -8px rgba(27,58,107,.35);transform:translateY(-1px)}
+.mkpi[aria-pressed="true"]{background:color-mix(in srgb,var(--kc) 10%,var(--surface));border-color:var(--kc)}
+.mk-todo{--kc:#E8772E} .mk-open{--kc:#0A66C2} .mk-won{--kc:#1E7A45} .mk-all{--kc:#1B3A6B} .mk-out{--kc:#7A8998}
+.mis-kinds{align-items:center}
+.mis-kl{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--ink-3);margin-right:2px}
+.mis-kinds .chip{font-size:13px;padding:5px 13px}
+.mis-kinds .chip.k-rj[aria-pressed="true"]{background:#B42318;border-color:#B42318}
+.mis-kinds .chip.k-daf[aria-pressed="true"]{background:var(--navy,#1B3A6B)}
+.mis-kinds .chip.k-poste[aria-pressed="true"]{background:var(--orange,#E8772E);border-color:var(--orange,#E8772E)}
+@media (max-width:760px){.mis-kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+/* Suivi d'une opportunité */
+.mis-track{margin-left:auto;display:flex;align-items:center;gap:10px;border-radius:10px;padding:6px 8px 6px 12px;background:var(--surface-2);border:1px solid var(--line)}
+.mis-track > span{display:flex;flex-direction:column;font-size:12.5px;font-weight:700;color:var(--ink);line-height:1.2}
+.mis-track small{font-size:10.5px;font-weight:500;color:var(--ink-3)}
+.mis-track .mis-st{margin:0;font-size:13.5px;font-weight:700;padding:6px 10px;border-radius:8px;border:2px solid var(--sc,#7A8998);color:var(--sc,#1B3A6B);background:var(--surface);cursor:pointer}
+.mis-track.st-a_traiter{--sc:#E8772E} .mis-track.st-appelee{--sc:#0A66C2} .mis-track.st-rdv{--sc:#6941C6} .mis-track.st-proposition{--sc:#1B3A6B} .mis-track.st-mission{--sc:#1E7A45} .mis-track.st-sans_suite,.mis-track.st-ecartee{--sc:#7A8998}
+/* Petit bouton LinkedIn */
+.li-mini{display:inline-flex;align-items:center;justify-content:center;width:18px;height:18px;border-radius:4px;background:#0A66C2;color:#fff!important;font:700 11px/1 Arial,sans-serif;text-decoration:none!important;vertical-align:1px}
+.li-mini:hover{background:#004182}
+.li-mini.search{opacity:.6} .li-mini.search:hover{opacity:1}
+
 </style>
 </head>
 <body>
@@ -2461,7 +2488,7 @@ async function runOpps() {
 
 /* ---------- Opportunités de mission (situations avérées) ---------- */
 const MIS_KIND = { rj: ["Procédure collective", "k-rj"], daf: ["Départ de DAF", "k-daf"], poste: ["Poste repéré", "k-poste"] };
-const MIS_STATUS = [["a_traiter", "À traiter"], ["appelee", "Appelée"], ["rdv", "Rendez-vous obtenu"], ["proposition", "Proposition envoyée"], ["mission", "Mission signée"], ["sans_suite", "Sans suite"]];
+const MIS_STATUS = [["a_traiter", "À traiter"], ["appelee", "J'ai appelé"], ["rdv", "Rendez-vous obtenu"], ["proposition", "Proposition envoyée"], ["mission", "Mission signée"], ["sans_suite", "Sans suite"]];
 const MIS_TABS = [["todo", "À traiter", (m) => m.status === "a_traiter"], ["open", "En cours", (m) => ["appelee", "rdv", "proposition"].includes(m.status)], ["won", "Gagnées", (m) => m.status === "mission"], ["all", "Toutes", (m) => m.status !== "ecartee"], ["out", "Écartées et sans suite", (m) => ["ecartee", "sans_suite"].includes(m.status)]];
 const MIS_ZONES = { "Île-de-France": ["75", "77", "78", "91", "92", "93", "94", "95"], "France entière": [] };
 S.missions = []; S.misTab = "todo"; S.misKind = ""; S.misPros = [];
@@ -2471,7 +2498,7 @@ async function loadMissions() {
       db(sb.from("missions").select("*").order("event_date", { ascending: false })),
       db(sb.from("opp_runs").select("*").order("started_at", { ascending: false }).range(0, 59)),
       db(sb.from("settings").select("value").eq("key", "opp.config").maybeSingle()),
-      db(sb.from("prospects").select("id,list_id,first_name,last_name,job_title,company").range(0, 4999)),
+      db(sb.from("prospects").select("id,list_id,first_name,last_name,job_title,company,linkedin_url").range(0, 4999)),
     ]);
     S.missions = ms || []; S.oppRuns = runs || [];
     for (const m of S.missions.filter((x) => x.status === "a_traiter" && !misInScope(x))) { m.status = "ecartee"; m.feedback = "Hors cible (taille, holding ou jugement ancien)"; db(sb.from("missions").update({ status: "ecartee", feedback: m.feedback }).eq("id", m.id)).catch(() => {}); } S.oppCfg = { ...OPP_CFG, depts: MIS_ZONES["Île-de-France"], rjDays: 30, dafDays: 60, ...(cfg?.value || {}) }; S.misPros = pros || [];
@@ -2499,8 +2526,8 @@ function renderMissions() {
   $("#nopps").textContent = todo ? `(${todo})` : "";
   $("#op-list").innerHTML = `
     <div class="mis-bar">
-      <div class="tabs">${MIS_TABS.map(([k, l, f]) => `<button class="tab" aria-selected="${S.misTab === k}" data-mtab="${k}">${l}<small>${base.filter(f).length}</small></button>`).join("")}</div>
-      <div class="mis-kinds">${[["", "Tous types"], ...Object.entries(MIS_KIND).map(([k, [l]]) => [k, l])].map(([k, l]) => `<button class="chip ${k ? "k-" + k : ""}" aria-pressed="${S.misKind === k}" data-mkind="${k}">${l}</button>`).join("")}</div>
+      <div class="mis-kpis">${MIS_TABS.map(([k, l, f]) => `<button class="mkpi mk-${k}" aria-pressed="${S.misTab === k}" data-mtab="${k}"><b>${base.filter(f).length}</b><span>${l}</span></button>`).join("")}</div>
+      <div class="mis-kinds"><span class="mis-kl">Type</span>${[["", "Tous"], ...Object.entries(MIS_KIND).map(([k, [l]]) => [k, l])].map(([k, l]) => `<button class="chip ${k ? "k-" + k : ""}" aria-pressed="${S.misKind === k}" data-mkind="${k}">${l}</button>`).join("")}</div>
     </div>
     ${list.length ? list.map(misCard).join("") : `<div class="op-empty"><b>${S.missions.length ? "Rien dans cette vue." : "Aucune situation avérée pour l'instant."}</b><span>${S.missions.length ? "Changez d'onglet ou de type." : "Lancez une recherche, ou ajoutez un poste de DAF repéré sur LinkedIn ou l'APEC."}</span></div>`}
     ${!S.misKind || S.misKind === "rj" ? misPrescribers(S.missions.filter((m) => m.status !== "ecartee")) : ""}`;
@@ -2556,6 +2583,10 @@ function misWhy(m) {
 function misAdminPitch(m, a) {
   return `Bonjour Maître ${(a.person || "").replace(/^Me\s+/, "").split(" ").slice(-1)[0] || ""}, je suis Guillaume Alonso du cabinet Lutèce Executive. Nous plaçons des directeurs financiers de transition, opérationnels sous quelques jours, auprès d'entreprises en procédure collective. Vous venez d'être nommé administrateur de ${nice(m.company)} : si le dirigeant a besoin d'un renfort sur la trésorerie ou le reporting, nous pouvons lui présenter un profil très rapidement. Seriez-vous d'accord pour que nous en parlions ?`.replace("Guillaume Alonso", S.me === "Christophe" ? "Christophe Cognet" : "Guillaume Alonso");
 }
+function liMini(name, company, url) {
+  const u = url ? (/^https?:/.test(url) ? url : "https://" + url) : `https://www.linkedin.com/search/results/people/?keywords=${encodeURIComponent([name, company].filter(Boolean).join(" "))}`;
+  return `<a class="li-mini${url ? "" : " search"}" href="${esc(u)}" target="_blank" rel="noopener" title="${url ? "Ouvrir le profil LinkedIn" : "Rechercher sur LinkedIn"}">in</a>`;
+}
 function misStep(n, title, body) { return `<li class="mstep"><span class="mstep-n">${n}</span><div><b>${title}</b>${body}</div></li>`; }
 function misCard(m) {
   const [kl, kc] = MIS_KIND[m.kind] || ["", ""], d = m.details || {}, ci = m.company_info || {}, pp = misPeople(m);
@@ -2566,22 +2597,23 @@ function misCard(m) {
   if (m.kind === "rj") {
     const admins = misActors(d.administrateur);
     if (admins.length) steps.push(misStep(n++, "Appeler l'administrateur judiciaire, votre prescripteur",
-      `<p class="hint">Il assiste le dirigeant et peut lui recommander un DAF de transition. Une relation avec son étude peut vous apporter d'autres dossiers.</p><ul class="mstep-who">${admins.map((a) => `<li><b>${esc(a.person || a.firm)}</b>${a.person ? ` · ${esc(a.firm)}` : ""} <a class="src" href="${esc(gsearch(`${a.person} ${a.firm} administrateur judiciaire`))}" target="_blank" rel="noopener">Trouver ses coordonnées ↗</a> <button class="linkbtn" data-copy="${esc(misAdminPitch(m, a))}">Copier le message</button></li>`).join("")}</ul>`));
+      `<p class="hint">Il assiste le dirigeant et peut lui recommander un DAF de transition. Une relation avec son étude peut vous apporter d'autres dossiers.</p><ul class="mstep-who">${admins.map((a) => `<li><b>${esc(a.person || a.firm)}</b> ${a.person ? liMini(a.person.replace(/^Me\s+/, ""), "administrateur judiciaire") : ""}${a.person ? ` · ${esc(a.firm)}` : ""} <a class="src" href="${esc(gsearch(`${a.person} ${a.firm} administrateur judiciaire`))}" target="_blank" rel="noopener">Trouver ses coordonnées ↗</a> <button class="linkbtn" data-copy="${esc(misAdminPitch(m, a))}">Copier le message</button></li>`).join("")}</ul>`));
   }
   const bosses = pp.dirs.filter((x) => !/commissaire/i.test(x.qualite || ""));
   const pros = pp.pros.slice(0, 3);
   steps.push(misStep(n++, m.kind === "rj" ? "Appeler le dirigeant" : "Appeler la direction générale",
-    `<ul class="mstep-who">${pros.map((p) => `<li><b>${esc(p.first_name + " " + p.last_name)}</b> · ${esc(p.job_title || "")} <span class="hint">déjà dans vos listes</span> <button class="linkbtn" data-opp-open="${esc(p.id)}|${esc(p.list_id)}">Ouvrir sa fiche</button></li>`).join("")}${bosses.map((x) => `<li><b>${esc(nice(x.nom))}</b> · ${esc(x.qualite || "Dirigeant")} <span class="hint">registre</span></li>`).join("") || (pros.length ? "" : `<li class="hint">Aucun nom connu.</li>`)}</ul>
+    `<ul class="mstep-who">${pros.map((p) => `<li><b>${esc(p.first_name + " " + p.last_name)}</b> ${liMini(p.first_name + " " + p.last_name, nice(m.company), p.linkedin_url)} · ${esc(p.job_title || "")} <span class="hint">déjà dans vos listes</span> <button class="linkbtn" data-opp-open="${esc(p.id)}|${esc(p.list_id)}">Ouvrir sa fiche</button></li>`).join("")}${bosses.map((x) => `<li><b>${esc(nice(x.nom))}</b> ${/^(soci[ée]t[ée]|holding|sas|sarl|sa)\b/i.test(x.nom || "") ? "" : liMini(nice(x.nom).split(" ").filter((w, i, arr) => i === 0 || i === arr.length - 1).join(" "), nice(m.company))} · ${esc(x.qualite || "Dirigeant")} <span class="hint">registre</span></li>`).join("") || (pros.length ? "" : `<li class="hint">Aucun nom connu.</li>`)}</ul>
      <div class="mstep-act">${lushaBtn}<button class="btn small" data-copy="${esc(misAngle(m))}">Copier l'angle d'appel</button></div>
      <details class="mstep-angle"><summary>Voir l'angle d'appel</summary><p>${esc(misAngle(m))}</p></details>`));
   if (pp.rel.length) steps.push(misStep(n++, "Ou passer par votre réseau",
-    `<ul class="mstep-who">${pp.rel.map((c) => `<li><b>${esc(c.first_name + " " + c.last_name)}</b> · ${esc(c.position || "")} <span class="hint">relation de ${esc(c.owner)}</span></li>`).join("")}</ul>`));
-  steps.push(misStep(n++, "Noter le résultat", `<p class="hint">Mettez à jour le suivi en haut à droite de la carte (Appelée, Rendez-vous obtenu…). Les envois dans Pipedrive se font depuis la fiche prospect, comme d'habitude.</p>`));
+    `<ul class="mstep-who">${pp.rel.map((c) => `<li><b>${esc(c.first_name + " " + c.last_name)}</b> ${liMini(c.first_name + " " + c.last_name, nice(m.company), c.url)} · ${esc(c.position || "")} <span class="hint">relation de ${esc(c.owner)}</span></li>`).join("")}</ul>`));
+  steps.push(misStep(n++, "Noter le résultat", `<p class="hint">Indiquez où vous en êtes dans le menu « Où en êtes-vous ? » en haut à droite. Ce suivi reste dans l'outil ; pour créer la fiche et la relance dans Pipedrive, ouvrez la fiche du prospect et utilisez le bouton d'envoi, comme d'habitude.</p>`));
   const fact = m.kind === "rj" ? misRjSummary(m) : `<blockquote>${esc(m.proof || "")}</blockquote>${m.kind === "daf" ? `<p class="mis-check"><span>✓ Départ confirmé par l'article</span><span>${d.successeur === "non" ? "✓ Aucun successeur nommé" : "✓ Aucun successeur mentionné"}</span></p>` : ""}`;
   return `<article class="oc mis" id="mis-${esc(m.id)}">
     <header class="oc-head">
       <div class="oc-badges"><span class="mkind ${kc}">${kl}</span><span class="hint">${esc(oDate(m.event_date))}${ago != null ? ` · il y a ${ago} j` : ""}</span>${m.kind === "poste" && d.publie_par === "cabinet" ? `<span class="ost st-seen">via un cabinet</span>` : ""}
-        <select class="mis-st" data-mst="${esc(m.id)}" aria-label="Suivi">${MIS_STATUS.map(([k, l]) => `<option value="${k}" ${m.status === k ? "selected" : ""}>${l}</option>`).join("")}${m.status === "ecartee" ? `<option value="ecartee" selected>Écartée</option>` : ""}</select></div>
+        <label class="mis-track st-${esc(m.status)}" title="Ce suivi reste dans l'outil : il ne crée rien dans Pipedrive. Pour Pipedrive, ouvrez la fiche du prospect et utilisez le bouton d'envoi, comme d'habitude."><span>Où en êtes-vous ?<small>suivi interne · rien n'est envoyé à Pipedrive</small></span>
+          <select class="mis-st" data-mst="${esc(m.id)}">${MIS_STATUS.map(([k, l]) => `<option value="${k}" ${m.status === k ? "selected" : ""}>${l}</option>`).join("")}${m.status === "ecartee" ? `<option value="ecartee" selected>Écartée</option>` : ""}</select></label></div>
       <h2 class="oc-name">${esc(nice(m.company))}</h2><p class="hint">${esc(meta)}</p>
     </header>
     <section class="mis-sec"><h4><i class="dot ev"></i>Ce qui s'est passé</h4>${fact}
