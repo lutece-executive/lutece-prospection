@@ -724,6 +724,22 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 .mis-pres li span{display:block;font-size:12px;color:var(--ink-3)}
 .oc .mis-facts{display:grid;padding:0;gap:6px 14px}
 
+.mis-sec{display:flex;flex-direction:column;gap:4px}
+.mis-sec > p{margin:0;font-size:14px;line-height:1.55}
+.mis-sec.why{background:#FFF5EE;border-radius:10px;padding:10px 14px;box-shadow:inset 3px 0 0 var(--orange,#E8772E)}
+.mis-sec blockquote{margin:2px 0;font-size:14px;line-height:1.55;font-style:italic}
+.msteps{list-style:none;margin:4px 0 0;padding:0!important;display:flex;flex-direction:column;gap:10px}
+.mstep{display:grid;grid-template-columns:28px minmax(0,1fr);gap:10px;align-items:start;background:var(--surface-2);border-radius:10px;padding:10px 12px}
+.mstep-n{width:24px;height:24px;border-radius:50%;background:var(--navy,#1B3A6B);color:#fff;font-weight:700;font-size:12.5px;display:flex;align-items:center;justify-content:center}
+.mstep b{font-size:14px}
+.mstep p{margin:2px 0 4px!important}
+.oc .mstep-who{list-style:none;margin:4px 0 0;padding:0;display:flex;flex-direction:column;gap:5px;font-size:13.5px}
+.mstep-act{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+.mstep-angle{margin-top:6px;font-size:13px}
+.mstep-angle > summary{cursor:pointer;color:var(--navy,#1B3A6B);font-weight:600}
+.mstep-angle p{margin:6px 0 0!important;line-height:1.5}
+.mis-pres p.hint{margin:6px 0 0}
+
 </style>
 </head>
 <body>
@@ -846,7 +862,7 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 
   <section class="oppspage" id="oppspage" hidden>
     <div class="op-head">
-      <div><h1>Opportunités de mission</h1><p class="op-lead">Uniquement des situations avérées, preuve à l'appui : procédures collectives, départs de DAF confirmés, postes repérés.</p><p id="op-sub">Chargement…</p><details id="op-why" class="op-why" hidden></details></div>
+      <div><h1>Opportunités de mission</h1><p class="op-lead">Des entreprises où un besoin de direction financière est avéré, preuve à l'appui. Chaque carte dit ce qui s'est passé, pourquoi c'est une opportunité, et qui appeler dans quel ordre.</p><p id="op-sub">Chargement…</p><details id="op-why" class="op-why" hidden></details></div>
       <div class="op-actions"><span class="op-cost" id="op-cost"></span><button class="btn" id="opp-cfg">Réglages</button><button class="btn" id="mis-add">+ Poste repéré</button><button class="btn primary" id="opp-run">Lancer la recherche</button></div>
     </div>
     <div class="op-progress" id="op-progress" hidden><div class="op-bar"><i id="op-bar"></i></div><span id="op-msg"></span></div>
@@ -2467,7 +2483,7 @@ function renderMissions() {
   const cfg = S.oppCfg, last = misRuns().find((r) => r.finished_at) || misRuns()[0], st = last?.stats || {};
   const zone = Object.entries(MIS_ZONES).find(([, v]) => v.join() === (cfg.depts || []).join())?.[0] || `départements ${(cfg.depts || []).join(", ")}`;
   $("#op-sub").textContent = last
-    ? `Dernière recherche : ${fmtWhen(last.finished_at || last.started_at)} · ${st.rjFound ?? 0} procédure(s) collective(s) retenue(s) sur ${st.rjSeen ?? 0} annonce(s) BODACC · ${st.dafFound ?? 0} départ(s) de DAF confirmé(s) sur ${st.dafChecked ?? 0} article(s) vérifié(s) · coût IA ${usd(last.cost_usd)}${last.phase === "capped" ? " · arrêtée au plafond" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
+    ? `Dernière recherche : ${fmtWhen(last.finished_at || last.started_at)} · BODACC : ${st.rjSeen ?? 0} nouvelle(s) annonce(s) examinée(s)${st.rjKnown ? ` (${st.rjKnown} déjà vues lors d'une recherche précédente)` : ""}, ${st.rjFound ?? 0} procédure(s) retenue(s) · presse : ${st.dafFound ?? 0} départ(s) de DAF confirmé(s) sur ${st.dafChecked ?? 0} article(s) lu(s) · coût IA ${usd(last.cost_usd)}${last.phase === "capped" ? " · arrêtée au plafond" : last.phase === "error" ? " · interrompue : " + (last.error || "erreur") : ""}`
     : "Aucune recherche pour l'instant. Cliquez sur « Lancer la recherche ».";
   $("#op-cost").textContent = `${zone} · ${cfg.minEffectif}+ salariés · IA ce mois : ${usd(oppSpent().month)}`;
   const why = (o) => Object.entries(o || {}).sort((a, b) => b[1] - a[1]).map(([k, n]) => `<li><b>${n}</b> ${esc(k)}</li>`).join("");
@@ -2486,8 +2502,8 @@ function renderMissions() {
       <div class="tabs">${MIS_TABS.map(([k, l, f]) => `<button class="tab" aria-selected="${S.misTab === k}" data-mtab="${k}">${l}<small>${base.filter(f).length}</small></button>`).join("")}</div>
       <div class="mis-kinds">${[["", "Tous types"], ...Object.entries(MIS_KIND).map(([k, [l]]) => [k, l])].map(([k, l]) => `<button class="chip ${k ? "k-" + k : ""}" aria-pressed="${S.misKind === k}" data-mkind="${k}">${l}</button>`).join("")}</div>
     </div>
-    ${!S.misKind || S.misKind === "rj" ? misPrescribers(S.missions.filter((m) => m.status !== "ecartee")) : ""}
-    ${list.length ? list.map(misCard).join("") : `<div class="op-empty"><b>${S.missions.length ? "Rien dans cette vue." : "Aucune situation avérée pour l'instant."}</b><span>${S.missions.length ? "Changez d'onglet ou de type." : "Lancez une recherche, ou ajoutez un poste de DAF repéré sur LinkedIn ou l'APEC."}</span></div>`}`;
+    ${list.length ? list.map(misCard).join("") : `<div class="op-empty"><b>${S.missions.length ? "Rien dans cette vue." : "Aucune situation avérée pour l'instant."}</b><span>${S.missions.length ? "Changez d'onglet ou de type." : "Lancez une recherche, ou ajoutez un poste de DAF repéré sur LinkedIn ou l'APEC."}</span></div>`}
+    ${!S.misKind || S.misKind === "rj" ? misPrescribers(S.missions.filter((m) => m.status !== "ecartee")) : ""}`;
 }
 function misPeople(m) {
   const n = normTxt(m.company), ci = m.company_info || {};
@@ -2522,7 +2538,7 @@ function misPrescribers(list) {
   const by = {};
   for (const m of list) if (m.kind === "rj") for (const a of misActors(m.details?.administrateur)) { const k = misKey(a.firm); (by[k] ||= { firm: a.firm, people: new Set(), cos: [] }); if (a.person) by[k].people.add(a.person); by[k].cos.push(nice(m.company)); }
   const rows = Object.values(by).sort((a, b) => b.cos.length - a.cos.length).slice(0, 8);
-  return rows.length ? `<details class="mis-pres"><summary>Administrateurs judiciaires nommés : vos prescripteurs (${Object.keys(by).length})</summary><ul>${rows.map((r) => `<li><b>${esc(r.firm)}</b>${r.people.size ? ` · ${esc([...r.people].join(", "))}` : ""}<span>${r.cos.length} procédure${r.cos.length > 1 ? "s" : ""} : ${esc(r.cos.slice(0, 4).join(", "))}${r.cos.length > 4 ? "…" : ""}</span></li>`).join("")}</ul></details>` : "";
+  return rows.length ? `<details class="mis-pres"><summary>Pour aller plus loin : les études d'administrateurs judiciaires à rencontrer (${Object.keys(by).length})</summary><p class="hint">Ce sont les études nommées sur les procédures ci-dessus. Elles recommandent régulièrement des managers de transition aux entreprises qu'elles assistent : un rendez-vous avec une étude qui revient souvent peut vous apporter plusieurs missions dans l'année.</p><ul>${rows.map((r) => `<li><b>${esc(r.firm)}</b>${r.people.size ? ` · ${esc([...r.people].join(", "))}` : ""}<span>Nommée sur ${r.cos.length} procédure${r.cos.length > 1 ? "s" : ""} : ${esc(r.cos.slice(0, 4).join(", "))}${r.cos.length > 4 ? "…" : ""} · <a class="src" href="${esc(gsearch(r.firm + " administrateur judiciaire"))}" target="_blank" rel="noopener">coordonnées ↗</a></span></li>`).join("")}</ul></details>` : "";
 }
 function misRjSummary(m) {
   const t = m.proof || "", cess = (t.match(/cessation des paiements (?:le |au )?([0-9]{1,2}(?:er)? [a-zéû]+ [0-9]{4})/i) || [])[1];
@@ -2530,41 +2546,50 @@ function misRjSummary(m) {
   return `<ul class="mis-facts"><li><span>Procédure</span>${esc(m.details?.procedure || m.title || "")}</li><li><span>Jugement</span>${esc(oDate(m.event_date))}${m.details?.tribunal ? ` · ${esc(String(m.details.tribunal).replace(/^Greffe du /, ""))}` : ""}</li>${cess ? `<li><span>Cessation des paiements</span>${esc(cess)}</li>` : ""}${pouvoirs ? `<li><span>Administrateur</span>${esc(pouvoirs)}</li>` : ""}</ul>
     <details class="mis-full"><summary>Texte complet du jugement</summary><p>${esc(t)}</p></details>`;
 }
+const gsearch = (q) => `https://www.google.com/search?q=${encodeURIComponent(q)}`;
+function misWhy(m) {
+  const ci = m.company_info || {}, size = EFFECTIF[ci.effectif_code] || "taille non publiée", d = m.details || {};
+  if (m.kind === "rj") return `${nice(m.company)} (${size}) vient d'être placée en ${String(d.procedure || "procédure collective").toLowerCase()}. Dans les semaines qui suivent, la direction financière doit produire une prévision de trésorerie, un plan et un reporting régulier pour le tribunal : c'est le moment où un DAF de transition est le plus souvent appelé. L'administrateur judiciaire nommé assiste le dirigeant et lui recommande souvent ce renfort.`;
+  if (m.kind === "daf") return `Le directeur financier de ${nice(m.company)} (${size}) quitte son poste et aucun successeur n'est nommé. Le poste est vacant : il faut assurer la clôture, la trésorerie et le reporting pendant le recrutement, qui prend en général 3 à 6 mois.`;
+  return `${nice(m.company)} recrute ${d.poste ? "un(e) " + d.poste : "un directeur financier"}${d.publie_par === "cabinet" ? " via un cabinet" : ""}. Le poste est ouvert : vous pouvez proposer de mener le recrutement et, s'il est déjà vacant, un DAF de transition en attendant.`;
+}
+function misAdminPitch(m, a) {
+  return `Bonjour Maître ${(a.person || "").replace(/^Me\s+/, "").split(" ").slice(-1)[0] || ""}, je suis Guillaume Alonso du cabinet Lutèce Executive. Nous plaçons des directeurs financiers de transition, opérationnels sous quelques jours, auprès d'entreprises en procédure collective. Vous venez d'être nommé administrateur de ${nice(m.company)} : si le dirigeant a besoin d'un renfort sur la trésorerie ou le reporting, nous pouvons lui présenter un profil très rapidement. Seriez-vous d'accord pour que nous en parlions ?`.replace("Guillaume Alonso", S.me === "Christophe" ? "Christophe Cognet" : "Guillaume Alonso");
+}
+function misStep(n, title, body) { return `<li class="mstep"><span class="mstep-n">${n}</span><div><b>${title}</b>${body}</div></li>`; }
 function misCard(m) {
   const [kl, kc] = MIS_KIND[m.kind] || ["", ""], d = m.details || {}, ci = m.company_info || {}, pp = misPeople(m);
-  const meta = [EFFECTIF[ci.effectif_code], ci.commune && nice(ci.commune), ci.naf && `NAF ${ci.naf}`, m.siren && `SIREN ${m.siren}`].filter(Boolean).join(" · ");
+  const meta = [EFFECTIF[ci.effectif_code], ci.commune && nice(ci.commune), ci.naf && `NAF ${ci.naf}`].filter(Boolean).join(" · ");
   const ago = m.event_date ? Math.max(0, Math.round((Date.now() - new Date(m.event_date)) / 864e5)) : null;
-  const who = [];
+  const steps = []; let n = 1;
+  const lushaBtn = `<button class="btn small" data-opp-lusha="${esc(nice(m.company))}" title="Prépare une recherche Lusha sur cette société. Rien n'est dépensé avant votre clic sur « Lancer la recherche ».">Trouver ses coordonnées (Lusha)</button>`;
   if (m.kind === "rj") {
-    for (const a of misActors(d.administrateur)) who.push(`<li><span class="mis-role">Administrateur judiciaire · prescripteur</span><b>${esc(a.person || a.firm)}</b>${a.person ? `<em>${esc(a.firm)}</em>` : ""}</li>`);
-    for (const a of misActors(d.mandataire)) who.push(`<li><span class="mis-role">Mandataire judiciaire</span>${esc(a.person || a.firm)}${a.person ? ` <em>${esc(a.firm)}</em>` : ""}</li>`);
+    const admins = misActors(d.administrateur);
+    if (admins.length) steps.push(misStep(n++, "Appeler l'administrateur judiciaire, votre prescripteur",
+      `<p class="hint">Il assiste le dirigeant et peut lui recommander un DAF de transition. Une relation avec son étude peut vous apporter d'autres dossiers.</p><ul class="mstep-who">${admins.map((a) => `<li><b>${esc(a.person || a.firm)}</b>${a.person ? ` · ${esc(a.firm)}` : ""} <a class="src" href="${esc(gsearch(`${a.person} ${a.firm} administrateur judiciaire`))}" target="_blank" rel="noopener">Trouver ses coordonnées ↗</a> <button class="linkbtn" data-copy="${esc(misAdminPitch(m, a))}">Copier le message</button></li>`).join("")}</ul>`));
   }
-  if (m.kind === "daf" && d.personne && !/inconnu/i.test(d.personne)) who.push(`<li><span class="mis-role">DAF sortant</span>${esc(d.personne)}${d.interim ? ` · intérim : ${esc(d.interim)}` : ""}</li>`);
-  for (const x of pp.dirs.filter((x) => !/commissaire/i.test(x.qualite || ""))) who.push(`<li><span class="mis-role">${esc(x.qualite || "Dirigeant")}</span>${esc(nice(x.nom))} <em>registre</em></li>`);
-  for (const p of pp.pros.slice(0, 3)) who.push(`<li><span class="mis-role">${esc(p.job_title || "Prospect")}</span><b>${esc(p.first_name + " " + p.last_name)}</b> <button class="linkbtn" data-opp-open="${esc(p.id)}|${esc(p.list_id)}">Ouvrir la fiche</button></li>`);
-  const angle = misAngle(m);
-  return `<article class="oc mis">
+  const bosses = pp.dirs.filter((x) => !/commissaire/i.test(x.qualite || ""));
+  const pros = pp.pros.slice(0, 3);
+  steps.push(misStep(n++, m.kind === "rj" ? "Appeler le dirigeant" : "Appeler la direction générale",
+    `<ul class="mstep-who">${pros.map((p) => `<li><b>${esc(p.first_name + " " + p.last_name)}</b> · ${esc(p.job_title || "")} <span class="hint">déjà dans vos listes</span> <button class="linkbtn" data-opp-open="${esc(p.id)}|${esc(p.list_id)}">Ouvrir sa fiche</button></li>`).join("")}${bosses.map((x) => `<li><b>${esc(nice(x.nom))}</b> · ${esc(x.qualite || "Dirigeant")} <span class="hint">registre</span></li>`).join("") || (pros.length ? "" : `<li class="hint">Aucun nom connu.</li>`)}</ul>
+     <div class="mstep-act">${lushaBtn}<button class="btn small" data-copy="${esc(misAngle(m))}">Copier l'angle d'appel</button></div>
+     <details class="mstep-angle"><summary>Voir l'angle d'appel</summary><p>${esc(misAngle(m))}</p></details>`));
+  if (pp.rel.length) steps.push(misStep(n++, "Ou passer par votre réseau",
+    `<ul class="mstep-who">${pp.rel.map((c) => `<li><b>${esc(c.first_name + " " + c.last_name)}</b> · ${esc(c.position || "")} <span class="hint">relation de ${esc(c.owner)}</span></li>`).join("")}</ul>`));
+  steps.push(misStep(n++, "Noter le résultat", `<p class="hint">Mettez à jour le suivi en haut à droite de la carte (Appelée, Rendez-vous obtenu…). Les envois dans Pipedrive se font depuis la fiche prospect, comme d'habitude.</p>`));
+  const fact = m.kind === "rj" ? misRjSummary(m) : `<blockquote>${esc(m.proof || "")}</blockquote>${m.kind === "daf" ? `<p class="mis-check"><span>✓ Départ confirmé par l'article</span><span>${d.successeur === "non" ? "✓ Aucun successeur nommé" : "✓ Aucun successeur mentionné"}</span></p>` : ""}`;
+  return `<article class="oc mis" id="mis-${esc(m.id)}">
     <header class="oc-head">
       <div class="oc-badges"><span class="mkind ${kc}">${kl}</span><span class="hint">${esc(oDate(m.event_date))}${ago != null ? ` · il y a ${ago} j` : ""}</span>${m.kind === "poste" && d.publie_par === "cabinet" ? `<span class="ost st-seen">via un cabinet</span>` : ""}
         <select class="mis-st" data-mst="${esc(m.id)}" aria-label="Suivi">${MIS_STATUS.map(([k, l]) => `<option value="${k}" ${m.status === k ? "selected" : ""}>${l}</option>`).join("")}${m.status === "ecartee" ? `<option value="ecartee" selected>Écartée</option>` : ""}</select></div>
       <h2 class="oc-name">${esc(nice(m.company))}</h2><p class="hint">${esc(meta)}</p>
     </header>
-    <section class="mis-proof"><h4><i class="dot ev"></i>${esc(m.title || kl)}</h4>
-      ${m.kind === "rj" ? misRjSummary(m) : `<blockquote>${esc(m.proof || "")}</blockquote>`}
-      <p class="oc-src">${esc(m.source || "")}${m.source_url ? ` · ${srcLink(m.source_url, m.kind === "rj" ? "Voir l'annonce BODACC" : m.kind === "poste" ? "Voir l'annonce" : "Lire l'article")}` : ""}</p>
-      ${m.kind === "daf" ? `<p class="mis-check"><span>✓ Départ confirmé par l'article</span><span>${d.successeur === "non" ? "✓ Aucun successeur nommé" : "✓ Aucun successeur mentionné"}</span>${d.citation_successeur ? `<span class="hint">« ${esc(d.citation_successeur)} »</span>` : ""}</p>` : ""}
-    </section>
-    <div class="mis-cols">
-      <section class="oc-box"><h4><i class="dot dec"></i>Qui contacter</h4>${who.length ? `<ul class="mis-who">${who.join("")}</ul>` : `<p class="hint">Aucun nom connu : utilisez « Chercher les décideurs ».</p>`}</section>
-      <section class="oc-box"><h4><i class="dot call"></i>Réseau LinkedIn</h4>${pp.rel.length ? `<ul class="mis-who">${pp.rel.map((c) => `<li><b>${esc(c.first_name + " " + c.last_name)}</b> · ${esc(c.position || "")} <em>relation de ${esc(c.owner)}</em></li>`).join("")}</ul>` : `<p class="hint">Aucune de vos relations importées dans cette société.</p>`}</section>
-    </div>
-    <section class="oc-call"><div class="oc-call-h"><h4><i class="dot need"></i>Angle d'appel</h4><button class="btn small" data-copy="${esc(angle)}">Copier</button></div><blockquote>${esc(angle)}</blockquote></section>
+    <section class="mis-sec"><h4><i class="dot ev"></i>Ce qui s'est passé</h4>${fact}
+      <p class="oc-src">Source : ${esc(m.source || "")}${m.source_url ? ` · ${srcLink(m.source_url, m.kind === "rj" ? "voir l'annonce officielle" : m.kind === "poste" ? "voir l'annonce" : "lire l'article")}` : ""}</p></section>
+    <section class="mis-sec why"><h4><i class="dot need"></i>Pourquoi c'est une opportunité</h4><p>${esc(misWhy(m))}</p></section>
+    <section class="mis-sec"><h4><i class="dot dec"></i>Comment agir</h4><ol class="msteps">${steps.join("")}</ol></section>
     ${m.feedback ? `<p class="hint">Note : ${esc(m.feedback)}</p>` : ""}
-    <footer class="oc-foot">
-      <button class="btn small" data-opp-lusha="${esc(nice(m.company))}" title="Prépare une recherche Lusha sur cette société. Rien n'est dépensé avant votre clic sur « Lancer la recherche ».">Chercher les décideurs (Lusha, ≈ 1 crédit)</button>
-      <span class="spacer"></span>
-      ${m.status === "ecartee" ? `<button class="linkbtn" data-mrestore="${esc(m.id)}">Remettre à traiter</button>` : `<button class="linkbtn" data-mdismiss="${esc(m.id)}">Pas pertinent</button>`}
-    </footer></article>`;
+    <footer class="oc-foot"><span class="spacer"></span>${m.status === "ecartee" ? `<button class="linkbtn" data-mrestore="${esc(m.id)}">Remettre à traiter</button>` : `<button class="linkbtn" data-mdismiss="${esc(m.id)}">Pas pertinent</button>`}</footer></article>`;
 }
 async function setMission(id, patch) {
   await db(sb.from("missions").update({ ...patch, updated_at: new Date().toISOString() }).eq("id", id));
