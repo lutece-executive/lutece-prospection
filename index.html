@@ -713,6 +713,17 @@ aside.criteria::-webkit-scrollbar-thumb,aside.detail::-webkit-scrollbar-thumb,.t
 .op-why ul{margin:0;padding-left:16px;display:flex;flex-direction:column;gap:2px;color:var(--ink-2)}
 @media (max-width:760px){.op-why-g{grid-template-columns:1fr}}
 
+.mis-facts{list-style:none;margin:4px 0 6px;padding:0;display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:6px 14px;font-size:13.5px}
+.mis-facts span{display:block;font-size:10.5px;font-weight:700;text-transform:uppercase;letter-spacing:.05em;color:var(--ink-3)}
+.mis-full{font-size:12.5px;color:var(--ink-2);margin-bottom:4px}
+.mis-full > summary{cursor:pointer;font-weight:600;color:var(--navy,#1B3A6B)}
+.mis-full p{margin:6px 0 0!important;line-height:1.5}
+.mis-pres{background:var(--surface);border:1px solid var(--line);border-left:3px solid #B42318;border-radius:10px;padding:10px 14px}
+.mis-pres > summary{cursor:pointer;font-weight:700;font-size:13.5px;color:var(--ink)}
+.mis-pres ul{list-style:none;margin:8px 0 0;padding:0;display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.mis-pres li span{display:block;font-size:12px;color:var(--ink-3)}
+.oc .mis-facts{display:grid;padding:0;gap:6px 14px}
+
 </style>
 </head>
 <body>
@@ -2446,7 +2457,8 @@ async function loadMissions() {
       db(sb.from("settings").select("value").eq("key", "opp.config").maybeSingle()),
       db(sb.from("prospects").select("id,list_id,first_name,last_name,job_title,company").range(0, 4999)),
     ]);
-    S.missions = ms || []; S.oppRuns = runs || []; S.oppCfg = { ...OPP_CFG, depts: MIS_ZONES["Île-de-France"], rjDays: 30, dafDays: 60, ...(cfg?.value || {}) }; S.misPros = pros || [];
+    S.missions = ms || []; S.oppRuns = runs || [];
+    for (const m of S.missions.filter((x) => x.status === "a_traiter" && !misInScope(x))) { m.status = "ecartee"; m.feedback = "Hors cible (taille, holding ou jugement ancien)"; db(sb.from("missions").update({ status: "ecartee", feedback: m.feedback }).eq("id", m.id)).catch(() => {}); } S.oppCfg = { ...OPP_CFG, depts: MIS_ZONES["Île-de-France"], rjDays: 30, dafDays: 60, ...(cfg?.value || {}) }; S.misPros = pros || [];
   } catch { S.missions = []; }
   renderMissions();
 }
@@ -2463,7 +2475,7 @@ function renderMissions() {
   w.hidden = !(st.rjReasons || st.dafReasons);
   w.innerHTML = `<summary>Pourquoi ces résultats ? Détail des annonces et articles écartés</summary><div class="op-why-g">
     <div><h4>Annonces BODACC écartées</h4><ul>${why(st.rjReasons) || "<li>Aucune</li>"}</ul>${(st.rjSample || []).length ? `<p class="hint">Exemples de jugements classés « autre » : ${st.rjSample.map((x) => "« " + esc(x) + " »").join(" · ")}</p>` : ""}</div>
-    <div><h4>Articles de presse écartés</h4><ul>${why(st.dafReasons) || "<li>Aucun</li>"}</ul></div></div>`;
+    <div><h4>Articles de presse écartés</h4><p class="hint">${st.newsRaw ?? 0} article(s) trouvé(s) dans la presse${st.newsError ? ` · erreur : ${esc(st.newsError)}` : ""}</p><ul>${why(st.dafReasons) || "<li>Aucun</li>"}</ul></div></div>`;
   const tabOf = MIS_TABS.find((t) => t[0] === S.misTab) || MIS_TABS[0];
   const base = S.missions.filter((m) => !S.misKind || m.kind === S.misKind);
   const list = base.filter(tabOf[2]);
@@ -2474,13 +2486,14 @@ function renderMissions() {
       <div class="tabs">${MIS_TABS.map(([k, l, f]) => `<button class="tab" aria-selected="${S.misTab === k}" data-mtab="${k}">${l}<small>${base.filter(f).length}</small></button>`).join("")}</div>
       <div class="mis-kinds">${[["", "Tous types"], ...Object.entries(MIS_KIND).map(([k, [l]]) => [k, l])].map(([k, l]) => `<button class="chip ${k ? "k-" + k : ""}" aria-pressed="${S.misKind === k}" data-mkind="${k}">${l}</button>`).join("")}</div>
     </div>
+    ${!S.misKind || S.misKind === "rj" ? misPrescribers(S.missions.filter((m) => m.status !== "ecartee")) : ""}
     ${list.length ? list.map(misCard).join("") : `<div class="op-empty"><b>${S.missions.length ? "Rien dans cette vue." : "Aucune situation avérée pour l'instant."}</b><span>${S.missions.length ? "Changez d'onglet ou de type." : "Lancez une recherche, ou ajoutez un poste de DAF repéré sur LinkedIn ou l'APEC."}</span></div>`}`;
 }
 function misPeople(m) {
   const n = normTxt(m.company), ci = m.company_info || {};
-  const pros = S.misPros.filter((p) => normTxt(p.company) === n);
+  const seen = new Set(), pros = S.misPros.filter((p) => normTxt(p.company) === n && !seen.has(p.first_name + p.last_name) && seen.add(p.first_name + p.last_name));
   const rel = (S.conns || []).filter((c) => c.nCo === n).slice(0, 6);
-  return { pros, rel, dirs: (ci.dirigeants || []).slice(0, 3) };
+  return { pros, rel, dirs: (ci.dirigeants || []).filter((x) => !/commissaire/i.test(x.qualite || "")).slice(0, 3) };
 }
 function misAngle(m) {
   const d = m.details || {}, co = nice(m.company);
@@ -2488,17 +2501,46 @@ function misAngle(m) {
   if (m.kind === "daf") return `J'ai appris le départ de ${d.personne && !/inconnu/i.test(d.personne) ? d.personne : "votre directeur financier"}. Le temps de recruter son successeur, nous pouvons installer un DAF de transition en quelques jours pour sécuriser la clôture et la trésorerie, et nous menons aussi le recrutement en CDI. Comment gérez-vous cette période ?`;
   return `Vous recrutez actuellement ${d.poste ? "un(e) " + d.poste : "un directeur financier"}. Nous pouvons mener ce recrutement, et si le poste est déjà vacant, assurer l'intérim avec un DAF de transition d'ici l'arrivée du candidat. Où en êtes-vous de ce recrutement ?`;
 }
+// « SCP Abitbol & Rousselet en la personne de Me Joanna Rousselet 38 avenue Hoche… » → [{ firm, person }]
+function misActors(text) {
+  const t = String(text || "").replace(/\s+/g, " ");
+  const out = [], re = /((?:SCP|S[ée]larl|SELARL|SELAS|Selas|SELAFA|Selafa|SAS|AJ|AJRS|Ajrs)\b[^,;]*?)\s*,?\s+(?:prise\s+)?(?:en la personne de|mission conduite par|représentée par)\s+(?:Ma[iî]tre|Me)\s+([A-ZÀ-Ý][\wÀ-ÿ'’-]+(?:\s+(?:de\s+)?[A-ZÀ-Ý][\wÀ-ÿ'’-]+){0,3})/gi;
+  let m; while ((m = re.exec(t))) out.push({ firm: m[1].replace(/^SCP d'administrateurs judiciaires\s+/i, "SCP ").replace(/^(et|,)\s*/i, "").trim(), person: "Me " + m[2].replace(/\s+(?:\d.*|avec.*)$/i, "").trim() });
+  if (!out.length && t) out.push({ firm: t.split(/\s\d{1,3}[\s,/-]|\s+avec\s/i)[0].slice(0, 90), person: "" });
+  return out.map((x) => ({ firm: x.firm.split(/\s+/).map((w) => /^(SCP|SELARL|SELAS|SELAFA|SAS|AJ|AJRS|MJA|BTSG|FHBX)$/i.test(w) ? w.toUpperCase() : w.length > 3 && w === w.toUpperCase() ? w[0] + w.slice(1).toLowerCase() : w).join(" "), person: x.person }));
+}
+const misKey = (f) => normTxt(f.replace(/^(scp|selarl|selas|selafa|sas)\s+/i, "")).replace(/-(mission|en|prise).*$/, "");
+function misInScope(m) {
+  if (m.kind !== "rj") return true;
+  const ci = m.company_info || {}, eff = { "00": 0, "01": 1, "02": 3, "03": 6, "11": 10, "12": 20 }[ci.effectif_code];
+  if (/^(64\.|66\.|70\.10)/.test(ci.naf || "") && !["21", "22", "31", "32", "41", "42", "51", "52", "53"].includes(ci.effectif_code)) return false;
+  if (eff != null && eff < 20) return false;
+  if (m.event_date && m.event_date < new Date(Date.now() - 120 * 864e5).toISOString().slice(0, 10)) return false;
+  return true;
+}
+function misPrescribers(list) {
+  const by = {};
+  for (const m of list) if (m.kind === "rj") for (const a of misActors(m.details?.administrateur)) { const k = misKey(a.firm); (by[k] ||= { firm: a.firm, people: new Set(), cos: [] }); if (a.person) by[k].people.add(a.person); by[k].cos.push(nice(m.company)); }
+  const rows = Object.values(by).sort((a, b) => b.cos.length - a.cos.length).slice(0, 8);
+  return rows.length ? `<details class="mis-pres"><summary>Administrateurs judiciaires nommés : vos prescripteurs (${Object.keys(by).length})</summary><ul>${rows.map((r) => `<li><b>${esc(r.firm)}</b>${r.people.size ? ` · ${esc([...r.people].join(", "))}` : ""}<span>${r.cos.length} procédure${r.cos.length > 1 ? "s" : ""} : ${esc(r.cos.slice(0, 4).join(", "))}${r.cos.length > 4 ? "…" : ""}</span></li>`).join("")}</ul></details>` : "";
+}
+function misRjSummary(m) {
+  const t = m.proof || "", cess = (t.match(/cessation des paiements (?:le |au )?([0-9]{1,2}(?:er)? [a-zéû]+ [0-9]{4})/i) || [])[1];
+  const pouvoirs = /mission d'assistance|pour mission : d'assister|assister le débiteur|pouvoirs : d'assistance/i.test(t) ? "mission d'assistance" : /surveiller/i.test(t) ? "mission de surveillance" : "";
+  return `<ul class="mis-facts"><li><span>Procédure</span>${esc(m.details?.procedure || m.title || "")}</li><li><span>Jugement</span>${esc(oDate(m.event_date))}${m.details?.tribunal ? ` · ${esc(String(m.details.tribunal).replace(/^Greffe du /, ""))}` : ""}</li>${cess ? `<li><span>Cessation des paiements</span>${esc(cess)}</li>` : ""}${pouvoirs ? `<li><span>Administrateur</span>${esc(pouvoirs)}</li>` : ""}</ul>
+    <details class="mis-full"><summary>Texte complet du jugement</summary><p>${esc(t)}</p></details>`;
+}
 function misCard(m) {
   const [kl, kc] = MIS_KIND[m.kind] || ["", ""], d = m.details || {}, ci = m.company_info || {}, pp = misPeople(m);
   const meta = [EFFECTIF[ci.effectif_code], ci.commune && nice(ci.commune), ci.naf && `NAF ${ci.naf}`, m.siren && `SIREN ${m.siren}`].filter(Boolean).join(" · ");
   const ago = m.event_date ? Math.max(0, Math.round((Date.now() - new Date(m.event_date)) / 864e5)) : null;
   const who = [];
   if (m.kind === "rj") {
-    if (d.administrateur) who.push(`<li><span class="mis-role">Administrateur judiciaire</span><b>${esc(d.administrateur)}</b><em>prescripteur à contacter</em></li>`);
-    if (d.mandataire) who.push(`<li><span class="mis-role">Mandataire judiciaire</span>${esc(d.mandataire)}</li>`);
+    for (const a of misActors(d.administrateur)) who.push(`<li><span class="mis-role">Administrateur judiciaire · prescripteur</span><b>${esc(a.person || a.firm)}</b>${a.person ? `<em>${esc(a.firm)}</em>` : ""}</li>`);
+    for (const a of misActors(d.mandataire)) who.push(`<li><span class="mis-role">Mandataire judiciaire</span>${esc(a.person || a.firm)}${a.person ? ` <em>${esc(a.firm)}</em>` : ""}</li>`);
   }
   if (m.kind === "daf" && d.personne && !/inconnu/i.test(d.personne)) who.push(`<li><span class="mis-role">DAF sortant</span>${esc(d.personne)}${d.interim ? ` · intérim : ${esc(d.interim)}` : ""}</li>`);
-  for (const x of pp.dirs) who.push(`<li><span class="mis-role">${esc(x.qualite || "Dirigeant")}</span>${esc(nice(x.nom))} <em>registre</em></li>`);
+  for (const x of pp.dirs.filter((x) => !/commissaire/i.test(x.qualite || ""))) who.push(`<li><span class="mis-role">${esc(x.qualite || "Dirigeant")}</span>${esc(nice(x.nom))} <em>registre</em></li>`);
   for (const p of pp.pros.slice(0, 3)) who.push(`<li><span class="mis-role">${esc(p.job_title || "Prospect")}</span><b>${esc(p.first_name + " " + p.last_name)}</b> <button class="linkbtn" data-opp-open="${esc(p.id)}|${esc(p.list_id)}">Ouvrir la fiche</button></li>`);
   const angle = misAngle(m);
   return `<article class="oc mis">
@@ -2508,7 +2550,7 @@ function misCard(m) {
       <h2 class="oc-name">${esc(nice(m.company))}</h2><p class="hint">${esc(meta)}</p>
     </header>
     <section class="mis-proof"><h4><i class="dot ev"></i>${esc(m.title || kl)}</h4>
-      <blockquote>${esc(m.proof || "")}</blockquote>
+      ${m.kind === "rj" ? misRjSummary(m) : `<blockquote>${esc(m.proof || "")}</blockquote>`}
       <p class="oc-src">${esc(m.source || "")}${m.source_url ? ` · ${srcLink(m.source_url, m.kind === "rj" ? "Voir l'annonce BODACC" : m.kind === "poste" ? "Voir l'annonce" : "Lire l'article")}` : ""}</p>
       ${m.kind === "daf" ? `<p class="mis-check"><span>✓ Départ confirmé par l'article</span><span>${d.successeur === "non" ? "✓ Aucun successeur nommé" : "✓ Aucun successeur mentionné"}</span>${d.citation_successeur ? `<span class="hint">« ${esc(d.citation_successeur)} »</span>` : ""}</p>` : ""}
     </section>
